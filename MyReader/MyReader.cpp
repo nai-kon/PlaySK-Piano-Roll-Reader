@@ -557,14 +557,14 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 int OpenVideoFile(const HWND &hWnd)
 {
 
-	TCHAR szFilePath[MAX_LOADSTRING] = {0};
+	TCHAR szFilePath[MAX_PATH] = {0};
 
 	OPENFILENAME ofn = { sizeof(ofn) };
 	ofn.hwndOwner = hWnd;
 	ofn.lpstrFilter = _T("Video File(mp4, AVI)\0*.mp4;*.avi\0");
 	ofn.lpstrFile = szFilePath;
-	ofn.nMaxFile = MAX_LOADSTRING;
-	ofn.nMaxFileTitle = MAX_LOADSTRING;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.nMaxFileTitle = MAX_PATH;
 	ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 	ofn.lpstrTitle = _T("Open Roll Video File"); 
 
@@ -573,9 +573,9 @@ int OpenVideoFile(const HWND &hWnd)
 	std::string filepath;
 #ifdef UNICODE
 	size_t size(0);
-	char buffer[2 * MAX_LOADSTRING + 2] = {0};
+	char buffer[2 * MAX_PATH + 2] = {0};
 	setlocale(LC_CTYPE, "Japanese_Japan.932");
-	wcstombs_s(&size, buffer, (size_t)MAX_LOADSTRING, szFilePath, (size_t)MAX_LOADSTRING);
+	wcstombs_s(&size, buffer, (size_t)MAX_PATH, szFilePath, (size_t)MAX_PATH);
 	filepath.assign(buffer);
 #else
 	filepath = tcVideoFileNameFull;
