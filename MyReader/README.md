@@ -1,7 +1,7 @@
 # PlaySK Piano Roll Reader       
 ### Optically Reading a Piano Roll Scroll, Converts to Midi.
 
-![Overall System](Overall System.png)
+![Overall System](Overall_System.png)
 
 This software reads piano roll scroll captured by Webcam or Video File. The Virtual Tracker Bar calculates brightness of each hole. The brightness will be darker if roll hole passes the tracker hole, it activates the note-on signal. 
 
