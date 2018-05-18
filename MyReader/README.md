@@ -1,6 +1,8 @@
 # PlaySK Piano Roll Reader       
 ### Optically Reading a Piano Roll Scroll, Converts to Midi.
 
+![Overall System](Overall System.png)
+
 This software reads piano roll scroll captured by Webcam or Video File. The Virtual Tracker Bar calculates brightness of each hole. The brightness will be darker if roll hole passes the tracker hole, it activates the note-on signal. 
 
 The software is designed for "reading" a piano roll, not for "scanning or storage" a piano roll. If you are considering storage, hardware scanner such as SaMK4 scanner would be better. 
@@ -19,14 +21,12 @@ The software is designed for "reading" a piano roll, not for "scanning or storag
 
 - Output    
     -Midi Signal to Selected Midi Device    
-    e.x. Yamaha Disklavier, Piano VST(Ivory serires)
+    e.x. Yamaha Disklavier, Piano VST (Ivory serires)
     
 - Roll Tracking     
     -Manual Tracking (WebCam, VideoFile Input)   
     -Tracking Save function (VideoFile Input)     
      This function is save the manual tracking operation. It tracks roll automatically after recoding the manual tracking.
-
-## 
 
 ## Code Layout
 The code is written in C/C++ Win32API, OpenCV.  
@@ -40,4 +40,7 @@ AmpicoA.cpp - Ampico A player class
 
 * Build Environment     
 -Visual Studio 2017      
--OpenCV 2.4.8       
+-OpenCV 2.4.8 
+
+
+## How to Play
