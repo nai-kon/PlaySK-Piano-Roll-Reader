@@ -4,7 +4,7 @@
 bool mycv::cvtMat2HDC::operator() (HDC hdc, const cv::Mat image)
 {
 	cv::Mat _image;
-	cv::flip(image, _image, 0);	// è„â∫îΩì]
+	cv::flip(image, _image, 0);	// upset
 
 	const int x = _image.cols;
 	const int y = _image.rows;
