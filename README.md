@@ -43,13 +43,22 @@ The software is designed for "reading" a piano roll, not for "scanning or storag
 The code is written in C/C++ Win32API, OpenCV.  
 I know should rewrite by using GUI Framework such as .Net, but no time for it.
 
+- \ConfigFile     
+88-Note.txt - 88-note tracker hole position.     
+Duo-Art.txt - Duo-Art tracker hole position, velocity file.
+Ampico_A.txt - Ampico A tracker hole position, velocity file.       
+Setting.ini - Global setting of the Software
+
+
+
+- \MyReader   
 MyReader.cpp - main souce. UI control, reading thread       
 mycv.cpp - convert opencv image to device context   
 player.cpp - 88-note player class(base class)       
 DuoArt.cpp - Duo-Art player class     
 AmpicoA.cpp - Ampico A player class
 
-- Build Environment     
+Build Environment     
 -Visual Studio 2017      
 -OpenCV 2.4.8 
 

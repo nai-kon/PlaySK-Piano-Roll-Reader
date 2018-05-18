@@ -136,6 +136,9 @@
       <AdditionalLibraryDirectories>C:\Libs\lib\Win32\v120\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opencv_core248d.lib;opencv_highgui248d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y $(SolutionDir)ConfigFile\\* $(SolutionDir)$(ConfigurationName).</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -172,6 +175,9 @@
       <AdditionalLibraryDirectories>C:\Libs\lib\Win32\v120\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opencv_core248.lib;opencv_highgui248.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y $(SolutionDir)ConfigFile\\* $(SolutionDir)$(ConfigurationName).</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -212,6 +218,9 @@
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y $(SolutionDir)ConfigFile\\* $(SolutionDir)$(ConfigurationName).</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release64|x64'">
     <ClCompile>
