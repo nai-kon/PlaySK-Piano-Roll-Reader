@@ -3,8 +3,11 @@
 
 ![Overall System](./README_img/Overall_System.png)
 
+- GitHub      
+https://github.com/nai-kon/PlaySK-Piano-Roll-Reader
+
 - Software Download Link  
-https://drive.google.com/open?id=1NLd62Rn1izBsKbRlS4x6tuYE4-IxiKIE
+https://drive.google.com/open?id=1N79Sw_eyV6UJiyRP2ZZmjfrABc6lCmQd
 
 
 - [Demo] Reading Duo-Art roll with VST Piano   
@@ -45,7 +48,8 @@ I know should rewrite by using GUI Framework such as .Net, but no time for it.
 
 My Build Environment    
 -Windows 7 SP1 64bit    
--Visual Studio 2017      
+-Visual Studio 2017     
+-VC++2013, 2015 Runtime       
 -OpenCV 2.4.8 
 
 - \MyReader   
