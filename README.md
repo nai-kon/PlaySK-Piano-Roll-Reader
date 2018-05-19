@@ -16,7 +16,7 @@ https://www.youtube.com/watch?v=UzccJrikBEE
 
 This software reads piano roll scroll captured by Webcam or Video File. The Virtual Tracker Bar calculates brightness of each hole. The brightness will be darker if roll hole passes the tracker hole, it activates the note-on signal. 
 
-The software is designed for "reading" a piano roll, not for "scanning or storage" a piano roll. If you are considering storage, hardware scanner such as SaMK4 scanner would be better. 
+The software is designed for "reading" a piano roll, not for "scanning or storage" a piano roll. If you are considering storage, hardware scanner such as "MK4 scanner" would be better. 
 
 ## Specific
 - Virtual Tracker Bar   
@@ -75,23 +75,24 @@ Exec copy ConfigFile and OpenCV dlls to Release/Debug Folder, after building.
 
 ## How to Play
 
-### 1. Select Midi-Out and Player, Video Source
+### 1. Select Midi-Out and TrackerBar, Video Source
 
 Run PlaySK Piano Roll Reader.exe.
 
 ![Player Setting](README_img/Player_Setting.png)    
+- Player Setting      
 Select Midi-Out Device and Virtual Tracker Bar.
 
-![Source Select](README_img/Source_Select.png)  
-- Webcam Input - Click "Webcab" and "OK"
-- VideoFile Input - Click "Video File" and select a video file.
+- Input Video     
+-Webcam Input - Click "Webcab" and "OK"      
+-VideoFile Input - Click "Video File" and select a video file.      
 
-At Webcam Input, device no of wecam is set "0".     
-For changing, modify the WebCamDevNo item of "Setting.ini"      
+    At Webcam Input, default Device Number is "0".     
+For changing, modify the WebCamDevNo of "Setting.ini"      
 ```
 WebCamDevNo = 0
 ```
-### 2. Start Midi Emulating
+### 2. Start Reading and Emulating
 
 ![Main U I](README_img/MainUI.png)  
 Click "Play" for Emulating.     
@@ -104,6 +105,7 @@ You can simplly modify note position(pixel unit).
 59
 66
 ...
+570
 ```
 - Semi Automatic Tracking (Tracking Save)     
 Prepareing...
