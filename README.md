@@ -7,11 +7,11 @@
 https://drive.google.com/open?id=1NLd62Rn1izBsKbRlS4x6tuYE4-IxiKIE
 
 
-- [DemoVideo] Reading a Duo-Art roll with VST Piano   
+- [Demo] Reading Duo-Art roll with VST Piano   
 https://www.youtube.com/watch?v=qQDl1Rn39J0
  
 
-- [DemoVideo] Reading an Ampico A roll with Yamaha Disklavier     
+- [Demo] Reading Ampico A roll with Yamaha Disklavier     
 https://www.youtube.com/watch?v=UzccJrikBEE
 
 This software reads piano roll scroll captured by Webcam or Video File. The Virtual Tracker Bar calculates brightness of each hole. The brightness will be darker if roll hole passes the tracker hole, it activates the note-on signal. 
@@ -87,16 +87,23 @@ Select Midi-Out Device and Virtual Tracker Bar.
 - VideoFile Input - Click "Video File" and select a video file.
 
 At Webcam Input, device no of wecam is set "0".     
-For changing, modify the WebCamDevNo item of "Setting.ini"
-
+For changing, modify the WebCamDevNo item of "Setting.ini"      
+```
+WebCamDevNo = 0
+```
 ### 2. Start Midi Emulating
 
 ![Main U I](README_img/MainUI.png)  
 Click "Play" for Emulating.     
 
-- Adjust Tracker Hole Position    
+- Adjust the Tracker Hole Position    
 The hole position are written on player file (88-Note.txt, Ampico_A.txt, Duo-Art.txt)
 You can simplly modify note position(pixel unit). 
-
-- Semi Automatic Tracking (Tracking Save)
-
+```
+# 83 NOTES POSITION
+59
+66
+...
+```
+- Semi Automatic Tracking (Tracking Save)     
+Prepareing...
