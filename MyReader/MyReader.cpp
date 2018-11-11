@@ -76,7 +76,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 }
 
 
-int SelectPlayer(HWND &hWnd){
+int SelectPlayer(HWND &hWnd)
+{
 
 	::EnterCriticalSection(&g_csExclusiveThread);
 
@@ -379,7 +380,8 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 // Setting Dialog Proc
-BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam){
+BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
 
 	static VideoSource VSource;
 	static HWND hCmbMidioutDev;
@@ -621,7 +623,8 @@ int OpenWebcam(const HWND &hWnd)
 }
 
 
-HWND CreateStatusBar(const HWND &hWnd){
+HWND CreateStatusBar(const HWND &hWnd)
+{
 
 	int sb_pos[3] = { 300, 500, -1 };
 
@@ -637,7 +640,8 @@ HWND CreateStatusBar(const HWND &hWnd){
 }
 
 
-int CreateButton(const HWND &hWnd){
+int CreateButton(const HWND &hWnd)
+{
 	
 	// Play/Stop Button
 	g_hBtnStartEngine = CreateWindow(_T("BUTTON"),		

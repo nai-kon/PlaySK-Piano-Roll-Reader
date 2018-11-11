@@ -69,10 +69,6 @@ public:
 	virtual int NoteAllOff(const HMIDIOUT &hm);
 
 private:
-	enum BassTreble{
-		BASS,
-		TRABLE
-	};
 	int ReadExpressionHoles(cv::Mat &frame, const HMIDIOUT &hm);
 	int CalcBassVelocity();
 	int BassIntensityCurv(double &dintensityVelo);

@@ -70,20 +70,20 @@ protected:
 
 	void SendMidiMsg(const HMIDIOUT &hm);
 
-	void inline NoteOnMsg(const int &key, const int &velocity, const HMIDIOUT &g_hMidiOut) const{
+	void inline NoteOnMsg(int key, int velocity, const HMIDIOUT &g_hMidiOut) const{
 		DWORD dwMsg = velocity << 16 | key << 8 | 0x90;
 		midiOutShortMsg(g_hMidiOut, dwMsg);
 	}
-	void inline NoteOffMsg(const int &key, const HMIDIOUT &g_hMidiOut) const{
+	void inline NoteOffMsg(int key, const HMIDIOUT &g_hMidiOut) const{
 		static const int iNoteOffVelocity = 90; 
 		DWORD dwMsg = iNoteOffVelocity << 16 | key << 8 | 0x80;
 		midiOutShortMsg(g_hMidiOut, dwMsg);
 	}
-	void inline SusteinP(const bool &status, const HMIDIOUT &g_hMidiOut) const{
+	void inline SusteinP(bool status, const HMIDIOUT &g_hMidiOut) const{
 		if (status) midiOutShortMsg(g_hMidiOut, 127 << 16 | 64 << 8 | 0xb0);
 		else midiOutShortMsg(g_hMidiOut, 64 << 8 | 0xb0);
 	}
-	void inline SoftP(const bool &status, const HMIDIOUT &g_hMidiOut) const{
+	void inline SoftP(bool status, const HMIDIOUT &g_hMidiOut) const{
 		if (status) midiOutShortMsg(g_hMidiOut, 127 << 16 | 67 << 8 | 0xb0);
 		else midiOutShortMsg(g_hMidiOut, 67 << 8 | 0xb0);
 	}
