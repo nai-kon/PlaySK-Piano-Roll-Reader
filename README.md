@@ -15,7 +15,7 @@ https://www.youtube.com/watch?v=qQDl1Rn39J0
  
 
 - [Demo] Reading Ampico A roll with Yamaha Disklavier     
-https://www.youtube.com/watch?v=UzccJrikBEE
+https://www.youtube.com/watch?v=f7FEgWZceyU
 
 This software reads piano roll scroll captured by Webcam or Video File. The Virtual Tracker Bar calculates brightness of each hole. The brightness will be darker if roll hole passes the tracker hole, it activates the note-on signal. 
 
@@ -71,7 +71,7 @@ include\
 lib\     
 
     Important : Download OpenCV 2.4.8 and locate include, lib, bin, here.       
-    (I don't uploaded to GitHub)
+    (I don't upload OpenCV libs to GitHub)
 
 - PostBuildEvent.bat      
 Exec copy ConfigFile and OpenCV dlls to Release/Debug Folder, after building.
