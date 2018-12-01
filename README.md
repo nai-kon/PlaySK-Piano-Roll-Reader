@@ -68,7 +68,7 @@ Setting.ini - Global setting of the Software
 - \OpenCV_249_Libs     
 Contains OpenCV header/lib/binary
 
-- Output     
+- \Output     
 Built software will be output to here.
 
 - PostBuildEvent.bat      
