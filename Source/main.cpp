@@ -383,7 +383,6 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 
-	static VideoSource VSource;
 	static HWND hCmbMidioutDev;
 	static HWND hCmbPlayer;
 	static std::vector <int> vecMidiDevNo;
@@ -484,11 +483,11 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			bool bIsOpenVideo = false;
 			if (DlgState != SettingDlgState::DLG1ONLY){
 
-				if (VSource == VideoSource::VIDEOFILE){
+				if (g_videoSrc == VideoSource::VIDEOFILE){
 					if (OpenVideoFile(hDlg) != 0) bIsOpenVideo = true;
 					
 				}
-				else if (VSource == VideoSource::WEBCAM) {
+				else if (g_videoSrc == VideoSource::WEBCAM) {
 					if (OpenWebcam(hDlg) != 0) bIsOpenVideo = true;
 				}
 			}
@@ -539,11 +538,11 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			return TRUE;
 
 		case IDC_WEBCAM:
-			VSource = VideoSource::WEBCAM;
+			g_videoSrc = VideoSource::WEBCAM;
 			return TRUE;
 
 		case IDC_VIDEOFILE:
-			VSource = VideoSource::VIDEOFILE;
+			g_videoSrc = VideoSource::VIDEOFILE;
 			return TRUE;
 
 		case IDC_COMBO_PLAYER:
@@ -788,7 +787,10 @@ DWORD WINAPI PlayerThread(LPVOID lpdata)
 				}
 
 				// Do AutoTracking
-				if (!g_bIsTrackingSetMode && it != arTrackingOffsetVal.end() && iCurFrame == it->first){
+				if (g_videoSrc == VideoSource::VIDEOFILE 
+					&& !g_bIsTrackingSetMode 
+					&& it != arTrackingOffsetVal.end() 
+					&& iCurFrame == it->first){
 					
 					g_hInstPlayer->SetRollOffset(it->second);
 					TCHAR bufStr[MAX_LOADSTRING] = { 0 };

@@ -37,6 +37,7 @@ int OpenWebcam(const HWND &hWnd);
 DWORD WINAPI PlayerThread(LPVOID);
 
 enum VideoSource	{ WEBCAM, VIDEOFILE };				// Input Video Source
+static VideoSource g_videoSrc = VIDEOFILE;
 enum SettingDlgState{ DLG1, DLG2, DLG1ONLY, DLG2ONLY };	// Kind of Setting DLG
 enum VRPlayer	{ _88NOTE, _DUO_ART, _AMPICO_A };		// Kind of Virutal Tracker Bar
 static LPCTSTR VRPlayerName[] = { _T("88-Note"), _T("Duo-Art"), _T("Ampico A"), NULL };
