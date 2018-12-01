@@ -50,10 +50,10 @@ My Build Environment
 -Windows 7 SP1 64bit    
 -Visual Studio 2017     
 -VC++2013, 2015 Runtime       
--OpenCV 2.4.8 
+-OpenCV 2.4.9
 
-- \MyReader   
-MyReader.cpp - main souce. UI control, emulating thread       
+- \Source   
+main.cpp - main souce. UI control, emulating thread       
 mycv.cpp - convert opencv image to device context   
 player.cpp - 88-note player class(base class)       
 DuoArt.cpp - Duo-Art player class     
@@ -65,16 +65,14 @@ Duo-Art.txt - Duo-Art tracker hole position, velocity file
 Ampico_A.txt - Ampico A tracker hole position, velocity file       
 Setting.ini - Global setting of the Software
 
-- \OpenCV_248_Libs     
-bin\     
-include\     
-lib\     
+- \OpenCV_249_Libs     
+Contains OpenCV header/lib/binary
 
-    Important : Download OpenCV 2.4.8 and locate include, lib, bin, here.       
-    (I don't upload OpenCV libs to GitHub)
+- Output     
+Built software will be output to here.
 
 - PostBuildEvent.bat      
-Exec copy ConfigFile and OpenCV dlls to Release/Debug Folder, after building.
+Copy ConfigFile and OpenCV binary to Output Folder, after building.
 
 
 ## How to Play
