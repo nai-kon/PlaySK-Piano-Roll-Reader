@@ -11,7 +11,7 @@ https://drive.google.com/open?id=1lrzU756CfJcGIxVYJEooAjCzQFRYQX_T
 
 
 - [Demo] Reading Duo-Art roll with VST Piano   
-https://www.youtube.com/watch?v=qQDl1Rn39J0
+https://www.youtube.com/watch?v=8lkMRsoG9cg
  
 
 - [Demo] Reading Ampico A roll with Yamaha Disklavier     
