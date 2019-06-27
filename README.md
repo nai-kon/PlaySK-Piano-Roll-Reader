@@ -27,43 +27,41 @@ The software is designed for "reading" a piano roll, not for "scanning or storag
     -Duo-Art     
     -Ampico A
 
-    Note: Song Roll couldn't read well because of printed lyrics.
+    Note: Song roll couldn't read well because of printed lyrics.
 
 - Input     
-    -WebCam  (640x480, for real-time reading)    
-    -Video File (640x480, over 60fps recommended)
+    -Web Camera, for real-time reading         
+    -Video File (over 60fps recommended)    
+
+    Note: support only 640x480 resoluton
 
 - Output    
-    -Midi Signal to Selected Midi Device    
+    -Midi signal to selected midi device    
     e.x. Yamaha Disklavier, Piano VST (Ivory serires)
     
-- Roll Tracking     
-    -Manual Tracking (WebCam, VideoFile Input)   
-    -Tracking Save function (VideoFile Input)     
-     This function is save the manual tracking operation. It tracks roll automatically after recoding the manual tracking.
-
 ## Code Layout
 The code is written in C/C++ Win32API, OpenCV without GUI Framework.  
 I know should rewrite by using GUI Framework such as .Net, but no time for it.
 
 My Build Environment    
--Windows 7 SP1 64bit    
+-Windows 10 64bit    
 -Visual Studio 2017     
 -VC++2013, 2015 Runtime       
 -OpenCV 2.4.9
 
 - \Source   
 main.cpp - main souce. UI control, emulating thread       
-mycv.cpp - convert opencv image to device context   
+cvhelper.cpp - convert opencv image to device context   
+json11.cpp - json parser
 player.cpp - 88-note player class(base class)       
 DuoArt.cpp - Duo-Art player class     
 AmpicoA.cpp - Ampico A player class
 
-- \ConfigFile     
-88-Note.txt - 88-note tracker hole position     
-Duo-Art.txt - Duo-Art tracker hole position, velocity file
-Ampico_A.txt - Ampico A tracker hole position, velocity file       
-Setting.ini - Global setting of the Software
+- \ConfigFile       
+Setting.json - global setting of the software   
+88_tracker.json     
+AmpicoA_tracker.json    
+Duo-Art_tracker.json    
 
 - \OpenCV_249_Libs     
 Contains OpenCV header/lib/binary
@@ -89,10 +87,12 @@ Select Midi-Out Device and Virtual Tracker Bar.
 -Webcam Input - Click "Webcab" and "OK"      
 -VideoFile Input - Click "Video File" and select a video file.      
 
-    At Webcam Input, default Device Number is "0".     
-For changing, modify the WebCamDevNo of "Setting.ini"      
-```
-WebCamDevNo = 0
+The default webcam device number is "0".     
+For changing, modify the "Setting.json"      
+```json
+"device": {
+    "webcam_devno": 0
+}
 ```
 ### 2. Start Reading and Emulating
 
@@ -100,14 +100,16 @@ WebCamDevNo = 0
 Click "Play" for Emulating.     
 
 - Adjust the Tracker Hole Position    
-The hole position are written on player file (88-Note.txt, Ampico_A.txt, Duo-Art.txt)
-You can simplly modify note position(pixel unit). 
+The hole position are written on *_tracker.json at ConfigFile dir.     
+You can simplly modify note position. 
+```json
+"tracker_holes": {
+    "note": {
+        "x": [
+            48,
+            54,
+            60,
+            66,
+            ...
 ```
-# 83 NOTES POSITION
-59
-66
-...
-570
-```
-- Semi Automatic Tracking (Tracking Save)     
-Prepareing...
+

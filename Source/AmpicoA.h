@@ -7,76 +7,52 @@
 
 class AmpicoA : public Player{
 
+public:
+	AmpicoA();
+	virtual ~AmpicoA() {}
+	virtual void EmulateVelocity(cv::Mat &frame);
+	virtual int LoadPlayerSettings();
+	virtual int NoteAllOff(const HMIDIOUT &hm);
+	virtual int GetMinVelocity();
+	virtual int GetMaxVelocity();
+
 private:
-	// hole position
-	int m_BassSlowCres_x;
-	int m_BassLv2_x;
-	int m_BassLv4_x;
-	int m_BassFastCres_x;
-	int m_BassLv6_x;
-	int m_BassCancel_x;
-	int m_ReRoll_x;
-	int m_TrebleCancel_x;
-	int m_TrebleLv6_x;
-	int m_TrebleFastCres_x;
-	int m_TrebleLv4_x;
-	int m_TrebleLv2_x;
-	int m_TrebleSlowCres_x;
 
-	// hole size
-	int m_SlowCresHole_width;
-	int m_SlowCresHole_height;
-	int m_FastCresHole_width;
-	int m_FastCresHole_height;
-	int m_SusteinHole_width;
-	int m_SusteinHole_height;
-	int m_SoftHole_width;
-	int m_SoftHole_height;
-
-	// On Off TH
-	int mSusuteinOnTH, mSusuteinOffTH;
-	int mSoftOnTH, mSoftOffTH;
-	int mIntensityTH;
+	// expression holes
+	TRACKER_HOLE m_rcBassSlowCresc, m_rcTrebleSlowCresc;
+	TRACKER_HOLE m_rcBassFastCresc, m_rcTrebleFastCresc;
+	TRACKER_HOLE m_rcBassCancel, m_rcTrebleCancel;
+	TRACKER_HOLE m_rcBassIntensity[3], m_rcTrebleIntensity[3];
+	TRACKER_HOLE m_rcReRoll;
 
 	// Intensity
-	// [0]:all off [1]:2 [2]:4 [3]:2+4 [4]:6 [5]:2+6 [6]:4+6 [7]:2+4+6
-	double m_BassIntensity[8];
-	double m_TrebleIntensity[8];
-	bool m_bBassLv2;
-	bool m_bBassLv4;
-	bool m_bBassLv6;
-	bool m_bTrebleLv2;
-	bool m_bTrebleLv4;
-	bool m_bTrebleLv6;
+	// [0]:all off [1]:2 [2]:4 [3]:6(2+4) [4]:2+6 [5]:4+6 [6]:2+4+6
+	double m_dBassIntensity[7];
+	double m_dTrebleIntensity[7];
+
+	bool m_bBassLv2, m_bTrebleLv2;
+	bool m_bBassLv4, m_bTrebleLv4;
+	bool m_bBassLv6, m_bTrebleLv6;
 	bool m_bBassCancel, m_bTrebleCancel;
-
-	// Amplifier
-	double m_dAmpVelo;
-	double m_dMaxAmpVelo;
-	bool m_bAmpOn;
-
-	// Crescendo
 	bool m_bBassSlowCresOn, m_bBassFastCresOn;
 	bool m_bTrebleSlowCresOn, m_bTrebleFastCresOn;
 
-	double m_BassMaxVelo, m_BassMinVelo;
-	double m_TrebleMaxVelo, m_TrebleMinVelo;
-public:
-	AmpicoA();
-	virtual ~AmpicoA(){}
-	virtual int Emulate(cv::Mat &frame, HDC &g_hdcImage, const HMIDIOUT &hm);
-	virtual int LoadPlayerSettings();
-	virtual int NoteAllOff(const HMIDIOUT &hm);
+	double m_dBassMaxVelo, m_dBassMinVelo;
+	double m_dTrebleMaxVelo, m_dTrebleMinVelo;
 
-private:
-	int ReadExpressionHoles(cv::Mat &frame, const HMIDIOUT &hm);
-	int CalcBassVelocity();
-	int BassIntensityCurv(double &dintensityVelo);
-	int BassCrescendoCurv(double &dCresVelo);
-	int CalcTrebleVelocity();
-	int TrebleIntensityCurv(double &dintensityVelo);
-	int TrebleCrescendoCurv(double &dCresVelo);
-	int CalcAmplifier();	// should emulate...
+	double m_dSlowCrescSec;
+	double m_dFastCrescSec;
+	double m_dFullIntensityDelay;
+	
+
+	void CheckExpressionHoles(cv::Mat &frame);
+	void CalcBassVelocity();
+	void CalcTrebleVelocity();
+	void BassIntensityCurv(double &dintensityVelo);
+	void TrebleIntensityCurv(double &dintensityVelo);
+	void BassCrescendoCurv(double &dCresVelo);
+	void TrebleCrescendoCurv(double &dCresVelo);
+	//int CalcAmplifier();	// should emulate...
 
 };
 

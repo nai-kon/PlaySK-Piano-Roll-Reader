@@ -6,6 +6,8 @@
 #include "Player.h"
 #include "AmpicoA.h"
 #include "DuoArt.h"
+#include "cvhelper.h"
+
 
 
 #pragma comment (lib, "winmm.lib")
@@ -20,15 +22,15 @@
   language='*'\"")
 
 
-#define MAX_LOADSTRING	100
-#define MAX_g_dwVideoFrameRate			100
-#define SETTING_INI_NAME	_T("CommonSetting.ini")
+#define MAX_LOADSTRING			100
+#define MAX_g_dwVideoFrameRate	100
+#define SETTING_JSON_NAME		_T("Setting.json")
 
 // Global Func
-ATOM				MyRegisterClass(HINSTANCE hInstance);
-BOOL				InitInstance(HINSTANCE, int);
-LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+ATOM MyRegisterClass(HINSTANCE hInstance);
+BOOL InitInstance(HINSTANCE, int);
+LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK About(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 HWND CreateStatusBar(const HWND &hWnd);
 int CreateButton(const HWND &hWnd);

@@ -7,31 +7,29 @@
 
 class DuoArt : public Player{
 
+public:
+	DuoArt();
+	virtual ~DuoArt() {}
+	virtual void EmulateVelocity(cv::Mat &frame);
+	virtual int LoadPlayerSettings();
+	virtual int GetMinVelocity();
+	virtual int GetMaxVelocity();
+
 private:
-	int m_iAccompHoleX[4], m_iThemeHoleX[4];
-	int m_iBassSnakebiteX, m_iTrebleSnakebiteX;
-	int m_iDAHoleWidth, m_iDAHoleHeight;
-	int m_iSnakeHoleWidth, m_iSnakeHoleHeight;
-	int m_iDAHoleTH, m_iSnakeHoleTH;
-	int m_iAccentDelayFrames;
-	int m_iBassAccentDelayCnt, m_iTrebleAccentDelayCnt;
-	double m_dAccompVelo, m_dThemeVelo;
+	// expression holes
+	TRACKER_HOLE m_rcBassSnakebite, m_rcTrebleSnakebite;
+	TRACKER_HOLE m_rcAccomp[4], m_rcTheme[4];
+
 	double m_dTheme8 , m_dTheme4, m_dTheme2 , m_dTheme1;
 	double m_dAccomp8 , m_dAccomp4 , m_dAccomp2 , m_dAccomp1;
 	bool m_bBassAccent, m_bTrebleAccent;
-
-
-	int m_iThemeMinVelo, m_iThemeMaxVelo;
 	int m_iAccompMinVelo, m_iAccompMaxVelo;
-	int m_iPrevBassStackVelo, m_iPrevTrebleStackVelo;
+	int m_iThemeMinVelo, m_iThemeMaxVelo;
+	
 
-public:
-	DuoArt();
-	virtual ~DuoArt(){}
-	virtual int Emulate(cv::Mat &frame, HDC &g_hdcImage,const HMIDIOUT &hm);
-	virtual int LoadPlayerSettings();
+	void CheckExpressionHoles(cv::Mat &frame);
+	void CalcVelocity();
 
-private:
 	void Accomp8(bool bActive){
 		if (bActive){
 			m_dAccomp8 += 0.4;

@@ -12,10 +12,10 @@
 #include <tchar.h>
 
 
-#include "mycv.h"
 #include <iostream>
 #include <fstream>
 #include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <time.h>
 #include <windowsx.h>
 #include <commctrl.h>
@@ -23,5 +23,5 @@
 #include <mmsystem.h>
 
 // Video Resolution Define
-#define VIDEO_WIDTH	640
+#define VIDEO_WIDTH		640
 #define VIDEO_HEIGHT	480

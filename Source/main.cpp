@@ -2,7 +2,6 @@
 #include "main.h"
 
 
-
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
 	_In_ LPTSTR    lpCmdLine,
@@ -105,7 +104,7 @@ int SelectPlayer(HWND &hWnd)
 
 	// Load Player Settings
 	if (g_hInstPlayer->LoadPlayerSettings() != 0){
-		MessageBox(hWnd, _T("Error : Setting File Load Failed"), _T("Error"), MB_ICONWARNING | MB_OK);
+		MessageBox(hWnd, _T("Error : Player Setting File Load Failed"), _T("Error"), MB_ICONWARNING | MB_OK);
 		if(g_hInstPlayer) delete g_hInstPlayer;
 		g_hInstPlayer = NULL;
 		DestroyWindow(hWnd);
@@ -154,7 +153,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			fopen_s(&fpAutoTracking, strTrackingFile.c_str(), "w");
 		}
 
-		g_hdcImage = mycv::DoubleBuffer_Create(hWnd, VIDEO_WIDTH, VIDEO_HEIGHT);
+		g_hdcImage = cvhelper::DoubleBuffer_Create(hWnd, VIDEO_WIDTH, VIDEO_HEIGHT);
 
 		if (SelectPlayer(hWnd) == -1){
 			break;
@@ -602,17 +601,16 @@ int OpenVideoFile(const HWND &hWnd)
 
 int OpenWebcam(const HWND &hWnd) 
 {
-	// Load Webcam Devno
-	TCHAR szIniPath[MAX_PATH] = { 0 };
-	GetCurrentDirectory(sizeof(szIniPath), szIniPath);
-	_stprintf_s(szIniPath, _T("%s\\%s"), szIniPath, SETTING_INI_NAME);
-	DWORD dwWebCamDevNo = GetPrivateProfileInt(_T("Initialize Setting"), _T("WebCamDevNo"), 0, szIniPath);
+	// Load Webcam Device Number
+	std::ifstream ifs(SETTING_JSON_NAME);
+	std::string err, strjson((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	json11::Json json = json11::Json::parse(strjson, err);
+	int iWebcam_Devno = json["device"]["webcam_devno"].int_value();
 
 	// Open Webcam
 	if (g_CvCap.isOpened()) g_CvCap.release();
-	if (!g_CvCap.open(dwWebCamDevNo)) {
+	if (!g_CvCap.open(iWebcam_Devno)) {
 		MessageBox(hWnd, _T("Failed to Open Webcam"), _T("Error"), MB_OK | MB_ICONWARNING);
-
 		return -1;
 	}
 
@@ -752,14 +750,10 @@ static void LoadTrackingOffset(std::vector< std::pair<UINT, INT> > &arTrackingOf
 
 DWORD WINAPI PlayerThread(LPVOID lpdata)
 {
-	DWORD nPrevFPS = 0;
-	double dPassTime = 0;
-	LARGE_INTEGER nStartTime, nEndTime, nFreq;
-	memset(&nFreq, 0x00, sizeof(nFreq));
-	memset(&nStartTime, 0x00, sizeof(nStartTime));
-	memset(&nEndTime, 0x00, sizeof(nEndTime));
-	QueryPerformanceFrequency(&nFreq);
 	timeBeginPeriod(1);
+	DWORD nPrevFPS = 0;
+	LARGE_INTEGER nFreq;
+	QueryPerformanceFrequency(&nFreq);
 
 	// For Auto Tracking
 	std::vector< std::pair<UINT, INT> > arTrackingOffsetVal;
@@ -767,6 +761,7 @@ DWORD WINAPI PlayerThread(LPVOID lpdata)
 
 	while (!g_bAppEndFlag){
 
+		LARGE_INTEGER nStartTime;
 		QueryPerformanceCounter(&nStartTime);
 		::EnterCriticalSection(&g_csExclusiveThread);
 
@@ -806,7 +801,8 @@ DWORD WINAPI PlayerThread(LPVOID lpdata)
 
 				// Emulates Roll Image to Midi Siganl
 				g_hInstPlayer->SetFrameRate(nPrevFPS);
-				g_hInstPlayer->Emulate(frame, g_hdcImage, g_hMidiOut);
+				g_hInstPlayer->Emulate(frame, g_hMidiOut);
+				cvhelper::cvtMat2HDC()(g_hdcImage, frame);
 
 				static RECT rcClipping = { 0, 0, VIDEO_WIDTH, VIDEO_HEIGHT };
 				InvalidateRect((HWND)lpdata, &rcClipping, FALSE);
@@ -817,7 +813,13 @@ DWORD WINAPI PlayerThread(LPVOID lpdata)
 		}
 		::LeaveCriticalSection(&g_csExclusiveThread);
 
+
+		// Sleep for 6ms
+		Sleep(6);
+
 		// Wait for Set FrameRate
+		double dPassTime = 0;
+		LARGE_INTEGER nEndTime;
 		do{
 			QueryPerformanceCounter(&nEndTime);
 			dPassTime = (nEndTime.QuadPart - nStartTime.QuadPart) * 1000 / (double)nFreq.QuadPart;
