@@ -24,10 +24,10 @@
 #define IDC_STATIC1				211
 #define IDC_STATIC2				212
 #define IDC_WEBCAM              213
-#define IDC_VIDEOFILE             214
+#define IDC_VIDEOFILE			214
 #define IDM_OPTION2             215
 #define IDM_FILE				216
-#define IDC_SPIN_TRACKING_OFFSET		217
+#define IDC_SPIN_TRACKING_OFFSET	217
 #define IDC_SPIN_NOTEONFRAMES	218
 #define IDI_MYREADER			107
 #define IDI_SMALL				108

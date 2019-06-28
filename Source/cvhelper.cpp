@@ -1,7 +1,7 @@
 #include"stdafx.h"
+#include "cvhelper.h"
 
-
-bool mycv::cvtMat2HDC::operator() (HDC hdc, const cv::Mat image)
+bool cvhelper::cvtMat2HDC::operator() (HDC hdc, const cv::Mat image)
 {
 	cv::Mat _image;
 	cv::flip(image, _image, 0);	// upset
@@ -23,9 +23,9 @@ bool mycv::cvtMat2HDC::operator() (HDC hdc, const cv::Mat image)
 	return true;
 };
 
-BITMAPINFO mycv::cvtMat2HDC::hinfo = { sizeof(BITMAPINFOHEADER), VIDEO_WIDTH, VIDEO_HEIGHT, 1, 24, BI_RGB, 0, 0, 0, 0, 0, { NULL, NULL, NULL } };
+BITMAPINFO cvhelper::cvtMat2HDC::hinfo = { sizeof(BITMAPINFOHEADER), VIDEO_WIDTH, VIDEO_HEIGHT, 1, 24, BI_RGB, 0, 0, 0, 0, 0, { NULL, NULL, NULL } };
 
-HDC mycv::DoubleBuffer_Create(HWND hwnd, int xSize, int ySize)
+HDC cvhelper::DoubleBuffer_Create(HWND hwnd, int xSize, int ySize)
 {
 	HDC hdc;
 	static HDC bhdc;

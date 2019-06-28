@@ -2,73 +2,80 @@
 
 #include <mmsystem.h>
 #include <opencv2/core/core.hpp>
+#include "json11.hpp"
 
 #define KeyNum				88
 #define MAXNoteOnFrames		10
 
 
-class Player{
-	
-protected:
+typedef struct tagTRACKER_HOLE {
+	int x;
+	int y;
+	int w;
+	int h;
+	int th_on;		// hole on thereshold
+	int th_off;		// hole off thereshold
+} TRACKER_HOLE;
 
-	// Tracker Hole Status  // 0:off 1:off->on 2:on 3:on->off
+
+class Player{
+
+public:
+	Player();
+	virtual ~Player();
+	int Emulate(cv::Mat &frame, const HMIDIOUT &hm);
+	virtual int LoadPlayerSettings();
+	virtual int NoteAllOff(const HMIDIOUT &hm);
+	virtual int GetMinVelocity();
+	virtual int GetMaxVelocity();
+	int GetBassVelocity()				{ return m_iBassStackVelo; }
+	int GetTrebleVelocity()				{ return m_iTrebleStackVelo; }
+	void SetEmulateOn()					{ m_bEmulateOn = true; }
+	void SetEmulateOff()				{ m_bEmulateOn = false; }
+	void SetRollOffset(int iOffset)		{ m_iTrackingOffset = iOffset; }
+	int GetRollOffset()					{ return m_iTrackingOffset; }
+	void SetNoteOnFrames(int iFrames)	{ m_iNoteOnFrames = iFrames; }
+	int GetNoteOnFrames()				{ return m_iNoteOnFrames; }
+	void SetFrameRate(double dfps)		{ m_dFrameRate = dfps; }
+
+
+protected:
+	// tracker hole status  // -2:on->off -1:off 1:off->on 2:on 
 	enum NoteState {
 		offTriger = -2,
 		off = -1,
 		onTriger = 1,
 		on = 2,
 	};
+	NoteState m_NoteOn[KeyNum];
+	NoteState m_SusteinPedalOn, m_SoftPedalOn;
 
-	// NotePosition
-	int m_iSusteinPedalHoleX, m_iSoftPedalHoleX;
-	int m_iNoteHoleWidth, m_iNoteHoleHeigth;
-	int m_iPedalHoleWidth, m_iPedalHoleHeight;
-	int m_iNote_x[KeyNum];
+	// tracker hole 
+	TRACKER_HOLE m_rcSustainPedal, m_rcSoftPedal;
+	TRACKER_HOLE m_rcNote[KeyNum];
 
-	int m_iLowestNoteNo, m_iHighestNoteNo;	// 0 to 87 on 88-notes Tracker
-	int m_iStackDevide;						// Stack Devide Point
+	// split point  
+	// bass < [split point] <= treble, with 0 start index
+	UINT m_uiStackSplitPoint;
 
-	char m_cNoteOn[KeyNum];	
-	char m_cNoteOnCnt[KeyNum];
-	char m_cSusteinPedalOn, m_cSoftPedalOn;
-
-	// On-Off Image Thereshold
-	int m_iNoteOnTH, m_iNoteOffTH;
-	int m_iPedalOnTH, m_iPedalOffTH;
-
-	// Offset
-	int m_iTrackingOffset;
+	// note-on delay
 	int m_iNoteOnFrames;
+	int m_iNoteOnCnt[KeyNum];
 
+	int m_iTrackingOffset;
 	double m_dFrameRate;
-
 	int m_iBassStackVelo, m_iTrebleStackVelo;
-	int m_iMinVelocity, m_iMaxVelocity;
-
 	bool m_bEmulateOn;
 
-
-public:
-	Player();
-	virtual ~Player();
-	virtual int Emulate(cv::Mat &frame, HDC &g_hdcImage, const HMIDIOUT &hm);
-	virtual int LoadPlayerSettings();
-	virtual int NoteAllOff(const HMIDIOUT &hm);
-	int GetMinVelocity() { return m_iMinVelocity; }
-	int GetMaxVelocity() { return m_iMaxVelocity; }
-	int GetBassVelocity() { return m_iBassStackVelo; }
-	int GetTrebleVelocity() { return m_iTrebleStackVelo; }
-	void SetEmulateOn() { m_bEmulateOn = true; }
-	void SetEmulateOff() { m_bEmulateOn = false; }
-	void SetRollOffset(int offset) { m_iTrackingOffset = offset; }
-	int GetRollOffset() { return m_iTrackingOffset; }
-	void SetNoteOnFrames(int iFrames) { m_iNoteOnFrames = iFrames; }
-	int GetNoteOnFrames() { return m_iNoteOnFrames; }
-	void SetFrameRate(double ifps){ m_dFrameRate = ifps; }
-
-protected:
-
+	
+	virtual void EmulateVelocity(cv::Mat &frame);
+	void EmulatePedal(cv::Mat &frame);
+	void EmulateNote(cv::Mat &frame);
+	double GetAvgHoleBrightness(cv::Mat &frame, const TRACKER_HOLE &hole);
+	void DrawHole(cv::Mat &frame, const TRACKER_HOLE &hole, bool hole_on);
 	void SendMidiMsg(const HMIDIOUT &hm);
+	void SetHoleRectFromJsonObj(const json11::Json json, TRACKER_HOLE &rcSetHole);
+	void SetHoleRectListFromJsonObj(const json11::Json json, TRACKER_HOLE *prcSetHole, UINT rect_cnt);
 
 	void inline NoteOnMsg(int key, int velocity, const HMIDIOUT &g_hMidiOut) const{
 		DWORD dwMsg = velocity << 16 | key << 8 | 0x90;

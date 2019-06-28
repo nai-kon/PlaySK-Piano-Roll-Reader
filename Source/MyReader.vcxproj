@@ -171,7 +171,8 @@
   <ItemGroup>
     <ClInclude Include="AmpicoA.h" />
     <ClInclude Include="DuoArt.h" />
-    <ClInclude Include="mycv.h" />
+    <ClInclude Include="json11.hpp" />
+    <ClInclude Include="cvhelper.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Resource.h" />
@@ -181,7 +182,8 @@
   <ItemGroup>
     <ClCompile Include="AmpicoA.cpp" />
     <ClCompile Include="DuoArt.cpp" />
-    <ClCompile Include="mycv.cpp" />
+    <ClCompile Include="json11.cpp" />
+    <ClCompile Include="cvhelper.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="stdafx.cpp">

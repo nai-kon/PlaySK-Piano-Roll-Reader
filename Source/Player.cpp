@@ -5,30 +5,18 @@
 
 Player::Player()
 {
-	// Init
-	m_iSusteinPedalHoleX = m_iSoftPedalHoleX = 0;
-	m_iNoteHoleWidth = m_iNoteHoleHeigth = 0;
-	m_iPedalHoleWidth = m_iPedalHoleHeight = 0;
-
-	m_iLowestNoteNo = 0;
-	m_iHighestNoteNo = 87;
-	m_iStackDevide = 43; // Bass:0-43 Treble:44-87
-	
-	for (int i = 0; i < KeyNum; ++i){
-		m_iNote_x[i] = 0;
-		m_cNoteOn[i] = off;
-		m_cNoteOnCnt[i] = 0;
+	m_SusteinPedalOn = m_SoftPedalOn = off;
+	for (int i = 0; i < KeyNum; ++i) {
+		m_NoteOn[i] = off;
+		m_iNoteOnCnt[i] = 0;
 	}
 
-	m_cSusteinPedalOn = m_cSoftPedalOn = off;
-	m_iNoteOnTH = m_iNoteOffTH = 0;
-	m_iPedalOnTH = m_iPedalOffTH = 0;
-	m_iTrackingOffset = 0;
 	m_iNoteOnFrames = 0;
+	m_iTrackingOffset = 0;
 	m_dFrameRate = 0;
-	m_iMinVelocity = m_iMaxVelocity = m_iBassStackVelo = m_iTrebleStackVelo = 70;
-
 	m_bEmulateOn = false;
+
+	m_uiStackSplitPoint = 43;
 }
 
 Player::~Player()
@@ -36,240 +24,244 @@ Player::~Player()
 
 }
 
-int Player::NoteAllOff(const HMIDIOUT &hm)
+
+// Load 88-note setting 
+int Player::LoadPlayerSettings()
 {
+	std::ifstream ifs("88_tracker.json");
+	std::string err, strjson((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	json11::Json json = json11::Json::parse(strjson, err);
 
-	m_cSoftPedalOn = offTriger;
-	m_cSusteinPedalOn = offTriger;
-	for (int i = 0; i < KeyNum; ++i) {
-		m_cNoteOn[i] = offTriger;
-		m_cNoteOnCnt[i] = 0;
-	}
+	auto obj = json["expression"];
+	m_iBassStackVelo = m_iTrebleStackVelo = obj["velocity"].int_value();
 
-	SendMidiMsg(hm);
-
+	obj = json["tracker_holes"];
+	SetHoleRectFromJsonObj(obj["sustain"], m_rcSustainPedal);
+	SetHoleRectFromJsonObj(obj["soft"], m_rcSoftPedal);
+	SetHoleRectListFromJsonObj(obj["note"], m_rcNote, KeyNum);
+	
+	if (err.size() > 0) return -1;
 	return 0;
 }
 
-int Player::Emulate(cv::Mat &frame, HDC &g_hdcImage,const HMIDIOUT &hm)
+
+// emulate vitrual tracker bar
+int Player::Emulate(cv::Mat &frame, const HMIDIOUT &hm)
 {
-
-	// Send Midi Msg to Midi Device
+	// Send buffered midi msg
 	SendMidiMsg(hm);
+	
+	// Check tracker holes, draw and emulate it 
+	EmulateVelocity(frame);
+	EmulatePedal(frame);
+	EmulateNote(frame);
 
-	// Check Sustein Pedal Hole
-	double dAvg = 0;
-	for (int y = 237; y < m_iPedalHoleHeight + 237; y++){
-		for (int x = m_iSusteinPedalHoleX + m_iTrackingOffset; x < m_iSusteinPedalHoleX + m_iPedalHoleWidth + m_iTrackingOffset; ++x){
-
-			dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];  // Blue Channel
-		}
-	}
-	// Calc Avg Brightness
-	dAvg /= m_iPedalHoleHeight*m_iPedalHoleWidth;
-
-	if (dAvg < m_iPedalOnTH && m_cSusteinPedalOn == off && m_bEmulateOn)	{
-		m_cSusteinPedalOn = onTriger;
-	}
-	else if (dAvg > m_iPedalOffTH && m_cSusteinPedalOn == on) {
-		m_cSusteinPedalOn = offTriger;
-	}
-
-	if (m_cSusteinPedalOn > 0 && m_bEmulateOn)
-		cv::rectangle(frame, cv::Point(m_iSusteinPedalHoleX + m_iTrackingOffset, 237), cv::Point(m_iSusteinPedalHoleX + m_iPedalHoleWidth - 1 + m_iTrackingOffset, 237 + m_iPedalHoleHeight - 1), cv::Scalar(0, 0, 200), 1, 1);
-	else
-		cv::rectangle(frame, cv::Point(m_iSusteinPedalHoleX + m_iTrackingOffset, 237), cv::Point(m_iSusteinPedalHoleX + m_iPedalHoleWidth - 1 + m_iTrackingOffset, 237 + m_iPedalHoleHeight - 1), cv::Scalar(200, 0, 0), 1, 1);
-
-
-
-	// Check Soft Pedal Hole
-	dAvg = 0;
-	for (int y = 237; y < m_iPedalHoleHeight + 237; y++){
-		for (int x = m_iSoftPedalHoleX + m_iTrackingOffset; x < m_iSoftPedalHoleX + m_iPedalHoleWidth + m_iTrackingOffset; ++x){
-
-			dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
-		}
-	}
-	dAvg /= m_iPedalHoleHeight*m_iPedalHoleWidth;
-	if (dAvg < m_iPedalOnTH && m_cSoftPedalOn == off && m_bEmulateOn)	{
-		m_cSoftPedalOn = onTriger;
-	}
-	else if (dAvg > m_iPedalOffTH && m_cSoftPedalOn == on){
-		m_cSoftPedalOn = offTriger;
-	}
-
-	if (m_cSoftPedalOn > 0 && m_bEmulateOn)
-		cv::rectangle(frame, cv::Point(m_iSoftPedalHoleX + m_iTrackingOffset, 237), cv::Point(m_iSoftPedalHoleX + m_iPedalHoleWidth - 1 + m_iTrackingOffset, 237 + m_iPedalHoleHeight - 1), cv::Scalar(0, 0, 200), 1, 1);
-	else
-		cv::rectangle(frame, cv::Point(m_iSoftPedalHoleX + m_iTrackingOffset, 237), cv::Point(m_iSoftPedalHoleX + m_iPedalHoleWidth - 1 + m_iTrackingOffset, 237 + m_iPedalHoleHeight - 1), cv::Scalar(200, 0, 0), 1, 1);
-
-
-	// Check Reroll Hole
-	//dAvg = 0;
-	//for (int y = 237; y < 8 + 237; y++){
-	//	for (int x = 17 + m_iTrackingOffset; x < 22 + m_iTrackingOffset; ++x){
-	//		dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
-	//	}
-	//}
-	//cv::rectangle(frame, cv::Point(17 + m_iTrackingOffset, 237), cv::Point(22 - 1 + m_iTrackingOffset, 237 + 8 - 1), cv::Scalar(200, 0, 0), 1, 1);
-	//dAvg /= 8 * 5;
-	//if (dAvg<m_iNoteOnTH) {
-	//	tracking = false;
-	//	m_bEmulateOn = false;
-
-	//	cv::rectangle(frame, cv::Point(17 + m_iTrackingOffset, 237), cv::Point(22 - 1 + m_iTrackingOffset, 237 + 8 - 1), cv::Scalar(0, 0, 200), 1, 1);
-	//}
-
-	// Check Note Hole
-	for (int n = m_iLowestNoteNo; n <= m_iHighestNoteNo; ++n){
-
-		dAvg = 0;
-
-		for (int y = 240; y < m_iNoteHoleHeigth + 240; y++){
-			for (int x = m_iNote_x[n] + m_iTrackingOffset; x < m_iNoteHoleHeigth + m_iNote_x[n] + m_iTrackingOffset; ++x){
-
-				//  Blue 
-				dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
-			}
-		}
-		dAvg /= m_iNoteHoleWidth*m_iNoteHoleHeigth;
-		if (m_cNoteOn[n] == off && dAvg < m_iNoteOnTH && m_bEmulateOn)	{
-			if (m_cNoteOnCnt[n] >= m_iNoteOnFrames){
-				m_cNoteOnCnt[n] = 0;
-				m_cNoteOn[n] = onTriger;
-			}
-			else{
-				m_cNoteOnCnt[n]++;
-			}
-		}
-		else if (m_cNoteOn[n] == on && dAvg > m_iNoteOffTH){
-			m_cNoteOn[n] = offTriger;
-		}
-		if (m_cNoteOn[n] > 0 && m_bEmulateOn)
-			cv::rectangle(frame, cv::Point(m_iNote_x[n] + m_iTrackingOffset, 240), cv::Point(m_iNote_x[n] + m_iNoteHoleHeigth - 1 + m_iTrackingOffset, 240 + m_iNoteHoleHeigth - 1), cv::Scalar(0, 0, 200), 1, 1);
-		else
-			cv::rectangle(frame, cv::Point(m_iNote_x[n] + m_iTrackingOffset, 240), cv::Point(m_iNote_x[n] + m_iNoteHoleHeigth - 1 + m_iTrackingOffset, 240 + m_iNoteHoleHeigth - 1), cv::Scalar(200, 0, 0), 1, 1);
-
-	}
-
-	// Draw Trackerbar
+	// Draw tracker-bar frame
 	cv::line(frame, cv::Point(5, 235), cv::Point(5, 245), cv::Scalar(200, 0, 200), 1, 4);
 	cv::line(frame, cv::Point(635, 235), cv::Point(635, 245), cv::Scalar(200, 0, 200), 1, 4);
 	cv::line(frame, cv::Point(0, 255), cv::Point(639, 255), cv::Scalar(100, 100, 0), 1, 4);
 	cv::line(frame, cv::Point(0, 212), cv::Point(639, 212), cv::Scalar(100, 100, 0), 1, 4);
 
-	mycv::cvtMat2HDC()(g_hdcImage, frame);
-
 	return 0;
 }
 
 
-
-// Load 88-note setting 
-int Player::LoadPlayerSettings()
+void Player::EmulateVelocity(cv::Mat &frame)
 {
+	// 88-note emulation sets stable, so no changes
+	// m_iBassStackVelo = m_iTrebleStackVelo = ;
+}
 
-	char buf[256];
-	std::ifstream ifs;
 
-	ifs.open("88-Note.txt");
-	if (ifs.fail()) return -1;
-	ifs.getline(buf, sizeof(buf));
-	while (buf[0] == '#'){
-		ifs.getline(buf, sizeof(buf));
+void Player::EmulatePedal(cv::Mat &frame)
+{
+	// Check Sustein Pedal Hole
+	double dAvg = GetAvgHoleBrightness(frame, m_rcSustainPedal);
+	if (dAvg < m_rcSustainPedal.th_on && m_SusteinPedalOn == off && m_bEmulateOn) {
+		m_SusteinPedalOn = onTriger;
 	}
-	m_iNoteOnTH = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
+	else if (dAvg > m_rcSustainPedal.th_off && m_SusteinPedalOn == on) {
+		m_SusteinPedalOn = offTriger;
+	}
+	bool hole_on = (m_SusteinPedalOn > 0 && m_bEmulateOn);
+	DrawHole(frame, m_rcSustainPedal, hole_on);
 
-	m_iNoteOffTH = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
 
-	m_iNoteHoleWidth = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
+	// Check Soft Pedal Hole
+	dAvg = GetAvgHoleBrightness(frame, m_rcSoftPedal);
+	if (dAvg < m_rcSustainPedal.th_on && m_SoftPedalOn == off && m_bEmulateOn) {
+		m_SoftPedalOn = onTriger;
+	}
+	else if (dAvg > m_rcSustainPedal.th_off && m_SoftPedalOn == on) {
+		m_SoftPedalOn = offTriger;
+	}
+	hole_on = (m_SoftPedalOn > 0 && m_bEmulateOn);
+	DrawHole(frame, m_rcSoftPedal, hole_on);
+}
 
-	m_iNoteHoleHeigth = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
 
-	m_iPedalHoleWidth = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
+void Player::EmulateNote(cv::Mat &frame)
+{
+	// Check note holes
+	for (int key = 0; key < KeyNum; key++) {
 
-	m_iPedalHoleHeight = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
+		// skip for dummy position
+		if (m_rcNote[key].x == 0) continue;
 
-	m_iPedalOnTH = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
+		double dAvg = GetAvgHoleBrightness(frame, m_rcNote[key]);
+		if (m_NoteOn[key] == off && dAvg < m_rcNote[key].th_on && m_bEmulateOn) {
+			if (m_iNoteOnCnt[key] >= m_iNoteOnFrames) {
+				m_iNoteOnCnt[key] = 0;
+				m_NoteOn[key] = onTriger;
+			}
+			else {
+				m_iNoteOnCnt[key]++;
+			}
+		}
+		else if (m_NoteOn[key] == on && dAvg > m_rcNote[key].th_off) {
+			m_NoteOn[key] = offTriger;
+		}
+		bool hole_on = (m_NoteOn[key] > 0 && m_bEmulateOn);
+		DrawHole(frame, m_rcNote[key], hole_on);
+	}
+}
 
-	m_iPedalOffTH = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
 
-	m_iSusteinPedalHoleX = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-
-	m_iSoftPedalHoleX = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	for (int i = m_iLowestNoteNo; i <= m_iHighestNoteNo; ++i){
-		ifs.getline(buf, sizeof(buf));
-		m_iNote_x[i] = atoi(buf);
+double Player::GetAvgHoleBrightness(cv::Mat &frame, const TRACKER_HOLE &hole)
+{
+	double dSumBrightness = 0;
+	int hole_y_bottom = hole.y + hole.h;
+	int hole_x_left = hole.x + m_iTrackingOffset;
+	int hole_x_right = hole.x + hole.w + m_iTrackingOffset;
+	for (int y = hole.y; y < hole_y_bottom; y++) {
+		int yoffset = y * VIDEO_WIDTH * 3;
+		for (int x = hole_x_left; x < hole_x_right; x++) {
+			// only read blue channel instead of b/w image
+			dSumBrightness += frame.data[yoffset + 3 * x];
+		}
 	}
 
+	// return average brightness
+	return dSumBrightness / (hole.w * hole.h);
+}
 
-	ifs.close();
+void Player::DrawHole(cv::Mat &frame, const TRACKER_HOLE &hole, bool hole_on)
+{
+	// hole on : red colored, hole off : blue colored
+	auto hole_color = hole_on ? cv::Scalar(0, 0, 200) : cv::Scalar(200, 0, 0);
+
+	cv::Rect drawHole(hole.x, hole.y, hole.w, hole.h);
+	drawHole.x += m_iTrackingOffset;
+
+	cv::rectangle(frame, drawHole, hole_color);
+}
+
+int Player::GetMinVelocity() 
+{
+	// min velocity is stable at 88note mode
+	return m_iBassStackVelo;
+}
+
+int Player::GetMaxVelocity() 
+{
+	// max velocity is stable at 88note mode
+	return m_iBassStackVelo;
+}
+
+
+int Player::NoteAllOff(const HMIDIOUT &hm)
+{
+	m_SoftPedalOn = offTriger;
+	m_SusteinPedalOn = offTriger;
+	for (UINT key = 0; key < KeyNum; key++) {
+		m_NoteOn[key] = offTriger;
+		m_iNoteOnCnt[key] = 0;
+	}
+
+	SendMidiMsg(hm);
 
 	return 0;
 }
+
 
 void Player::SendMidiMsg(const HMIDIOUT &hm)
 {
-
 	// Send Bass Stack Note Msg
-	for (int iKey = 0; iKey < m_iStackDevide; ++iKey){
-		if (m_cNoteOn[iKey] == onTriger){
-			NoteOnMsg(iKey + 21, m_iBassStackVelo, hm);
-			m_cNoteOn[iKey] = on;
+	for (UINT key = 0; key < m_uiStackSplitPoint; key++){
+		if (m_NoteOn[key] == onTriger){
+			NoteOnMsg(key + 21, m_iBassStackVelo, hm);
+			m_NoteOn[key] = on;
 		}
-		else if (m_cNoteOn[iKey] == offTriger){
-			NoteOffMsg(iKey + 21, hm);
-			m_cNoteOn[iKey] = off;
+		else if (m_NoteOn[key] == offTriger){
+			NoteOffMsg(key + 21, hm);
+			m_NoteOn[key] = off;
 		}
 	}
 
 	// Send Treble Note Msg
-	for (int iKey = m_iStackDevide; iKey < KeyNum; ++iKey){
-		if (m_cNoteOn[iKey] == onTriger){
-			NoteOnMsg(iKey + 21, m_iTrebleStackVelo, hm);
-			m_cNoteOn[iKey] = on;
+	for (UINT key = m_uiStackSplitPoint; key < KeyNum; key++){
+		if (m_NoteOn[key] == onTriger){
+			NoteOnMsg(key + 21, m_iTrebleStackVelo, hm);
+			m_NoteOn[key] = on;
 		}
-		else if (m_cNoteOn[iKey] == offTriger){
-			NoteOffMsg(iKey + 21, hm);
-			m_cNoteOn[iKey] = off;
+		else if (m_NoteOn[key] == offTriger){
+			NoteOffMsg(key + 21, hm);
+			m_NoteOn[key] = off;
 		}
 	}
 
 	// Send Pedal Msg
-	if (m_cSusteinPedalOn == onTriger){
+	if (m_SusteinPedalOn == onTriger){
 		SusteinP(true, hm);
-		m_cSusteinPedalOn = on;
+		m_SusteinPedalOn = on;
 	}
-	else if (m_cSusteinPedalOn == offTriger){
+	else if (m_SusteinPedalOn == offTriger){
 		SusteinP(false, hm);
-		m_cSusteinPedalOn = off;
+		m_SusteinPedalOn = off;
 	}
 
-	if (m_cSoftPedalOn == onTriger){
+	if (m_SoftPedalOn == onTriger){
 		SoftP(true, hm);
-		m_cSoftPedalOn = on;
+		m_SoftPedalOn = on;
 	}
-	else if (m_cSoftPedalOn == offTriger){
+	else if (m_SoftPedalOn == offTriger){
 		SoftP(false, hm);
-		m_cSoftPedalOn = off;
+		m_SoftPedalOn = off;
+	}
+}
+
+
+void Player::SetHoleRectFromJsonObj(const json11::Json json, TRACKER_HOLE &rcSetHole) {
+	rcSetHole = {
+		json["x"].int_value(),
+		json["y"].int_value(),
+		json["w"].int_value(),
+		json["h"].int_value(),
+		json["th_on"].int_value(),
+		json["th_off"].int_value()
+	};
+}
+
+void Player::SetHoleRectListFromJsonObj(const json11::Json json, TRACKER_HOLE *prcSetHole, UINT rect_cnt) {
+
+	if (prcSetHole == NULL) {
+		return;
+	}
+
+	int note_y = json["y"].int_value();
+	int note_w = json["w"].int_value();
+	int note_h = json["h"].int_value();
+	int th_on = json["th_on"].int_value();
+	int th_off = json["th_off"].int_value();
+	std::vector<json11::Json> xpos = json["x"].array_items();
+	for (UINT i = 0; i < rect_cnt && i < xpos.size(); i++) {
+		prcSetHole[i] = {
+			xpos[i].int_value(),
+			note_y,
+			note_w,
+			note_h,
+			th_on,
+			th_off
+		};
 	}
 }

@@ -8,38 +8,9 @@
 
 AmpicoA::AmpicoA()
 {
-	m_BassSlowCres_x = 0;
-	m_BassLv2_x = 0;
-	m_BassLv4_x = 0;
-	m_BassFastCres_x = 0;
-	m_BassLv6_x = 0;
-	m_BassCancel_x = 0;
-	m_ReRoll_x = 0;
-	m_TrebleCancel_x = 0;
-	m_TrebleLv6_x = 0;
-	m_TrebleFastCres_x = 0;
-	m_TrebleLv4_x = 0;
-	m_TrebleLv2_x = 0;
-	m_TrebleSlowCres_x = 0;
-
-	m_SlowCresHole_width = 0;
-	m_SlowCresHole_height = 0;
-	m_FastCresHole_width = 0;
-	m_FastCresHole_height = 0;
-	m_SusteinHole_width = 0;
-	m_SusteinHole_height = 0;
-	m_SoftHole_width = 0;
-	m_SoftHole_height = 0;
-
-	mSoftOnTH = 0;
-	mSoftOffTH = 0;
-	mSusuteinOnTH = 0;
-	mSusuteinOffTH = 0;
-	mIntensityTH = 0;
-
 	for (int i = 0; i < 7; i++){
-		m_BassIntensity[i] = 0;
-		m_TrebleIntensity[i] = 0;
+		m_dBassIntensity[i] = 0;
+		m_dTrebleIntensity[i] = 0;
 	}
 
 	m_bBassLv2 = false;
@@ -55,18 +26,13 @@ AmpicoA::AmpicoA()
 	m_bTrebleSlowCresOn = false;
 	m_bTrebleFastCresOn = false;
 
-	m_iStackDevide = 43;
-	m_iLowestNoteNo = 2;
-	m_iHighestNoteNo = 84;
+	m_uiStackSplitPoint = 44;
 }
 
 int AmpicoA::NoteAllOff(const HMIDIOUT &hm)
 {
-
-
 	m_bBassCancel = true;
 	m_bTrebleCancel = true;
-
 	Player::NoteAllOff(hm);
 
 	return 0;
@@ -75,162 +41,66 @@ int AmpicoA::NoteAllOff(const HMIDIOUT &hm)
 
 int AmpicoA::LoadPlayerSettings()
 {
-	char buf[256];
-	std::ifstream ifs;
+	std::ifstream ifs("AmpicoA_tracker.json");
+	std::string err, strjson((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	json11::Json json = json11::Json::parse(strjson, err);
 
-	ifs.open("Ampico_A.txt");
-	if (ifs.fail()) return -1;
-	ifs.getline(buf, sizeof(buf));
-	while (buf[0] == '#'){
-		ifs.getline(buf, sizeof(buf));
+	auto obj = json["expression"];
+	std::vector<json11::Json> vec = obj["bass_intensity"].array_items();
+	for (UINT i = 0; i < 7; i++) {
+		m_dBassIntensity[i] = vec[i].int_value();
 	}
-	// Hole Size
-	m_iNoteHoleWidth = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_iNoteHoleHeigth = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_SusteinHole_width = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_SusteinHole_height = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_SoftHole_width = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_SoftHole_height = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_SlowCresHole_width = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_SlowCresHole_height = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_FastCresHole_width = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_FastCresHole_height = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-
-	// Hole Open/Close TH
-	m_iNoteOnTH = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_iNoteOffTH = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	mSusuteinOnTH = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	mSusuteinOffTH = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	mSoftOnTH = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	mSoftOffTH = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	mIntensityTH = m_iNoteOnTH; // same TH with NoteOn
-
-	// Bass Control Position
-	m_BassSlowCres_x = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_BassLv2_x = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_iSusteinPedalHoleX = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_BassLv4_x = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_BassFastCres_x = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_BassLv6_x = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_BassCancel_x = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-
-	// Treble Control Position
-	m_ReRoll_x = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_TrebleCancel_x = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_TrebleLv6_x = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_TrebleFastCres_x = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_TrebleLv4_x = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_iSoftPedalHoleX = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_TrebleLv2_x = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-	m_TrebleSlowCres_x = atoi(buf);
-	ifs.getline(buf, sizeof(buf));
-	ifs.getline(buf, sizeof(buf));
-
-	// Intensity 
-	for (int i = 0; i < 7; ++i){
-		m_BassIntensity[i] = atoi(buf);
-		ifs.getline(buf, sizeof(buf));
-	}
-	ifs.getline(buf, sizeof(buf));
-	for (int i = 0; i < 7; ++i){
-		m_TrebleIntensity[i] = atoi(buf);
-		ifs.getline(buf, sizeof(buf));
+	vec = obj["treble_intensity"].array_items();
+	for (UINT i = 0; i < 7; i++) {
+		m_dTrebleIntensity[i] = vec[i].int_value();
 	}
 
-	// Note Position
-	for (int i = m_iLowestNoteNo; i <= m_iHighestNoteNo; ++i){
-		ifs.getline(buf, sizeof(buf));
-		m_iNote_x[i] = atoi(buf);
-	}
+	m_dSlowCrescSec = obj["slow_cresc_sec"].number_value();
+	m_dFastCrescSec = obj["fast_cresc_sec"].number_value();
+	m_dFullIntensityDelay = obj["full_intensity_delay"].number_value();
 
-	// Set Min/Max velocity
-	m_iBassStackVelo = m_BassMinVelo = m_BassIntensity[0];
-	m_BassMaxVelo = m_BassIntensity[6];
-	m_iTrebleStackVelo = m_TrebleMinVelo = m_TrebleIntensity[0];
-	m_TrebleMaxVelo = m_TrebleIntensity[6];
+	obj = json["tracker_holes"];
+	SetHoleRectFromJsonObj(obj["sustain"], m_rcSustainPedal);
+	SetHoleRectFromJsonObj(obj["soft"], m_rcSoftPedal);
+	SetHoleRectFromJsonObj(obj["bass_slow_cresc"], m_rcBassSlowCresc);
+	SetHoleRectFromJsonObj(obj["bass_fast_cresc"], m_rcBassFastCresc);
+	SetHoleRectFromJsonObj(obj["treble_slow_cresc"], m_rcTrebleSlowCresc);
+	SetHoleRectFromJsonObj(obj["treble_fast_cresc"], m_rcTrebleFastCresc);
+	SetHoleRectListFromJsonObj(obj["bass_intensity"], m_rcBassIntensity, 3);
+	SetHoleRectFromJsonObj(obj["bass_cancel"], m_rcBassCancel);
+	SetHoleRectListFromJsonObj(obj["treble_intensity"], m_rcTrebleIntensity, 3);
+	SetHoleRectFromJsonObj(obj["treble_cancel"], m_rcTrebleCancel);
+	SetHoleRectListFromJsonObj(obj["note"], m_rcNote, KeyNum);
+	SetHoleRectFromJsonObj(obj["re-roll"], m_rcReRoll);
 
-	ifs.close();
+	m_dBassMinVelo = m_dBassIntensity[0];
+	m_dBassMaxVelo = m_dBassIntensity[6];
+	m_dTrebleMinVelo = m_dTrebleIntensity[0];
+	m_dTrebleMaxVelo = m_dTrebleIntensity[6];
 
-	m_iMinVelocity = (int)std::min(m_BassMinVelo, m_TrebleMinVelo);
-	m_iMaxVelocity = (int)std::max(m_BassMaxVelo, m_TrebleMaxVelo);
-
+	if (err.size() > 0) return -1;
 	return 0;
 }
 
-
-int AmpicoA::Emulate(cv::Mat &frame, HDC &g_hdcImage, const HMIDIOUT &hm)
+int AmpicoA::GetMinVelocity()
 {
+	return (int)std::min(m_dBassIntensity[0], m_dTrebleIntensity[0]);
+}
+int AmpicoA::GetMaxVelocity() 
+{
+	return (int)std::min(m_dBassIntensity[6], m_dTrebleIntensity[6]);
+}
 
-	// Send Midi Msg
-	SendMidiMsg(hm);
-
+void AmpicoA::EmulateVelocity(cv::Mat &frame)
+{
 	// Read Control Holes
-	ReadExpressionHoles(frame, hm);
+	CheckExpressionHoles(frame);
 
 	// Calc Velocity
 	CalcBassVelocity();
 	CalcTrebleVelocity();
 
+	// Delay Count
 	static int BassVelDelay[MAXNoteOnFrames + 2] = { 0 };
 	static int TrebleVelDelay[MAXNoteOnFrames + 2] = { 0 };
 	BassVelDelay[0] = m_iBassStackVelo;
@@ -238,278 +108,110 @@ int AmpicoA::Emulate(cv::Mat &frame, HDC &g_hdcImage, const HMIDIOUT &hm)
 	m_iBassStackVelo = BassVelDelay[m_iNoteOnFrames + 1];
 	m_iTrebleStackVelo = TrebleVelDelay[m_iNoteOnFrames + 1];
 
-	for (int i = m_iNoteOnFrames + 1; i > 0; i--){
+	for (int i = m_iNoteOnFrames + 1; i > 0; i--) {
 		int temp = BassVelDelay[i - 1];
 		BassVelDelay[i] = temp;
 		temp = TrebleVelDelay[i - 1];
 		TrebleVelDelay[i] = temp;
 	}
-
-
-	// Scan Note Holes
-	for (int n = m_iLowestNoteNo; n <= m_iHighestNoteNo; ++n) {
-
-		double dAvg = 0;
-
-		for (int y = 240; y < m_iNoteHoleHeigth + 240; y++){
-			for (int x = m_iNote_x[n] + m_iTrackingOffset; x < m_iNoteHoleHeigth + m_iNote_x[n] + m_iTrackingOffset; ++x){
-
-				dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
-			}
-		}
-		dAvg /= m_iNoteHoleWidth*m_iNoteHoleHeigth;
-		if (m_cNoteOn[n] == off && dAvg < m_iNoteOnTH && m_bEmulateOn)	{
-
-			if (m_cNoteOnCnt[n] >= m_iNoteOnFrames){
-				m_cNoteOnCnt[n] = 0;
-				m_cNoteOn[n] = onTriger;
-			}
-			else{
-				m_cNoteOnCnt[n]++;
-			}
-		}
-		else if (m_cNoteOn[n] == on && dAvg > m_iNoteOffTH){
-
-			m_cNoteOn[n] = offTriger;
-		}
-		if (m_cNoteOn[n] > 0 && m_bEmulateOn)
-			cv::rectangle(frame, cv::Point(m_iNote_x[n] + m_iTrackingOffset, 240), cv::Point(m_iNote_x[n] + m_iNoteHoleHeigth - 1 + m_iTrackingOffset, 240 + m_iNoteHoleHeigth - 1), cv::Scalar(0, 0, 200), 1, 1);
-		else
-			cv::rectangle(frame, cv::Point(m_iNote_x[n] + m_iTrackingOffset, 240), cv::Point(m_iNote_x[n] + m_iNoteHoleHeigth - 1 + m_iTrackingOffset, 240 + m_iNoteHoleHeigth - 1), cv::Scalar(200, 0, 0), 1, 1);
-	}
-
-	// Draw Trackerbar
-	cv::line(frame, cv::Point(3, 235), cv::Point(3, 245), cv::Scalar(200, 0, 200), 1, 4);
-	cv::line(frame, cv::Point(637, 235), cv::Point(637, 245), cv::Scalar(200, 0, 200), 1, 4);
-	cv::line(frame, cv::Point(0, 255), cv::Point(639, 255), cv::Scalar(100, 100, 0), 1, 4);
-	cv::line(frame, cv::Point(0, 212), cv::Point(639, 212), cv::Scalar(100, 100, 0), 1, 4);
-
-	mycv::cvtMat2HDC()(g_hdcImage, frame);
-	return 0;
 }
 
 
-// Scan Intensity,Pedal Holes from Video Frame
-int AmpicoA::ReadExpressionHoles(cv::Mat &frame, const HMIDIOUT &hm)
+// Scan Intensity Holes from Video Frame
+void AmpicoA::CheckExpressionHoles(cv::Mat &frame)
 {
-	double dAvg = 0;
-
 	// Bass Cancel
-	dAvg = 0;
-	for (int y = 240; y < m_iNoteHoleHeigth + 240; y++){
-		for (int x = m_BassCancel_x + m_iTrackingOffset; x < m_iNoteHoleHeigth + m_BassCancel_x + m_iTrackingOffset; ++x){
-			dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
-		}
-	}
-	dAvg /= m_iNoteHoleWidth*m_iNoteHoleHeigth;
-	m_bBassCancel = dAvg < mIntensityTH ? true : false;
-
-
-	// Treble Cancel
-	dAvg = 0;
-	for (int y = 240; y < m_iNoteHoleHeigth + 240; y++){
-		for (int x = m_TrebleCancel_x + m_iTrackingOffset; x < m_iNoteHoleHeigth + m_TrebleCancel_x + m_iTrackingOffset; ++x){
-			dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
-		}
-	}
-	dAvg /= m_iNoteHoleWidth*m_iNoteHoleHeigth;
-	m_bTrebleCancel = dAvg < mIntensityTH ? true : false;
-
-	// Cancel Valve
-	if (m_bBassCancel){
+	double dAvg = GetAvgHoleBrightness(frame, m_rcBassCancel);
+	m_bBassCancel = dAvg < m_rcBassCancel.th_on ? true : false;
+	if (m_bBassCancel) {
 		m_bBassLv2 = false;
 		m_bBassLv4 = false;
 		m_bBassLv6 = false;
 	}
-	if (m_bTrebleCancel){
+
+	// Treble Cancel
+	dAvg = GetAvgHoleBrightness(frame, m_rcTrebleCancel);
+	m_bTrebleCancel = dAvg < m_rcTrebleCancel.th_on ? true : false;
+	if (m_bTrebleCancel) {
 		m_bTrebleLv2 = false;
 		m_bTrebleLv4 = false;
 		m_bTrebleLv6 = false;
 	}
 
-	// Sustein Pedal 
-	dAvg = 0;
-	for (int y = 239; y < m_SusteinHole_height + 239; y++){
-		for (int x = m_iSusteinPedalHoleX + m_iTrackingOffset; x < m_iSusteinPedalHoleX + m_SusteinHole_width + m_iTrackingOffset; ++x){
-
-			dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
-		}
-	}
-	dAvg /= m_SusteinHole_height*m_SusteinHole_width;
-	if (dAvg < mSusuteinOnTH && m_cSusteinPedalOn == off){
-		m_cSusteinPedalOn = onTriger;
-	}
-	else if (dAvg > mSusuteinOffTH && m_cSusteinPedalOn == on){
-		m_cSusteinPedalOn = offTriger;
-	}
-
-	// Soft Pedal 
-	dAvg = 0;
-	for (int y = 234; y < m_SoftHole_height + 234; y++){
-		for (int x = m_iSoftPedalHoleX + m_iTrackingOffset; x < m_iSoftPedalHoleX + m_SoftHole_width + m_iTrackingOffset; ++x){
-
-			dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
-		}
-	}
-	dAvg /= m_SoftHole_height*m_SoftHole_width;
-	if (dAvg < mSoftOnTH && m_cSoftPedalOn == off){
-		m_cSoftPedalOn = onTriger;
-	}
-	else if (dAvg > mSoftOffTH && m_cSoftPedalOn == on){
-		m_cSoftPedalOn = offTriger;
-	}
-
 	// ReRoll 
-	dAvg = 0;
-	for (int y = 240; y < m_iNoteHoleHeigth + 240; y++){
-		for (int x = m_ReRoll_x + m_iTrackingOffset; x < m_iNoteHoleHeigth + m_ReRoll_x + m_iTrackingOffset; ++x){
-			dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
-		}
-	}
-	dAvg /= m_iNoteHoleWidth*m_iNoteHoleHeigth;
-	if (dAvg < mIntensityTH){
-		// Do ReRoll ...
-	}
+	dAvg = GetAvgHoleBrightness(frame, m_rcReRoll);
+	// currently, nothing to do with re-roll
 
 	// Bass Slow Crescendo
-	dAvg = 0;
-	for (int y = 234; y < m_SlowCresHole_height + 234; y++){
-		for (int x = m_BassSlowCres_x + m_iTrackingOffset; x < m_BassSlowCres_x + m_SlowCresHole_width + m_iTrackingOffset; ++x){
-
-			dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
-		}
-	}
-	dAvg /= m_SlowCresHole_height*m_SlowCresHole_width;
-	if (dAvg < m_iNoteOnTH && !m_bBassSlowCresOn){
+	dAvg = GetAvgHoleBrightness(frame, m_rcBassSlowCresc);
+	if (dAvg < m_rcBassSlowCresc.th_on && !m_bBassSlowCresOn){
 		m_bBassSlowCresOn = true;
 	}
-	else if (dAvg > m_iNoteOffTH && m_bBassSlowCresOn){
+	else if (dAvg > m_rcBassSlowCresc.th_off && m_bBassSlowCresOn){
 		m_bBassSlowCresOn = false;
 	}
 
 	// Treble Slow Crescendo
-	dAvg = 0;
-	for (int y = 234; y < m_SlowCresHole_height + 234; y++){
-		for (int x = m_TrebleSlowCres_x + m_iTrackingOffset; x < m_TrebleSlowCres_x + m_SlowCresHole_width + m_iTrackingOffset; ++x){
-
-			dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
-		}
-	}
-	dAvg /= m_SlowCresHole_height*m_SlowCresHole_width;
-	if (dAvg < m_iNoteOnTH && !m_bTrebleSlowCresOn){
+	dAvg = GetAvgHoleBrightness(frame, m_rcTrebleSlowCresc);
+	if (dAvg < m_rcTrebleSlowCresc.th_on && !m_bTrebleSlowCresOn){
 		m_bTrebleSlowCresOn = true;
 	}
-	else if (dAvg > m_iNoteOffTH && m_bTrebleSlowCresOn){
+	else if (dAvg > m_rcTrebleSlowCresc.th_off && m_bTrebleSlowCresOn){
 		m_bTrebleSlowCresOn = false;
 	}
 
 	// Bass Fast Crescendo
-	dAvg = 0;
-	for (int y = 238; y < m_FastCresHole_height + 238; y++){
-		for (int x = m_BassFastCres_x + m_iTrackingOffset; x < m_BassFastCres_x + m_FastCresHole_width + m_iTrackingOffset; ++x){
-
-			dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
-		}
-	}
-	dAvg /= m_FastCresHole_height*m_FastCresHole_width;
-	if (dAvg < m_iNoteOnTH - 5 && !m_bBassFastCresOn){
+	dAvg = GetAvgHoleBrightness(frame, m_rcBassFastCresc);
+	if (dAvg < m_rcBassFastCresc.th_on && !m_bBassFastCresOn){
 		m_bBassFastCresOn = true;
 	}
-	else if (dAvg > m_iNoteOffTH - 5 && m_bBassFastCresOn){
+	else if (dAvg > m_rcBassFastCresc.th_off && m_bBassFastCresOn){
 		m_bBassFastCresOn = false;
 	}
 
 	// Treble Fast Crescendo
-	dAvg = 0;
-	for (int y = 238; y < m_FastCresHole_height + 238; y++){
-		for (int x = m_TrebleFastCres_x + m_iTrackingOffset; x < m_TrebleFastCres_x + m_FastCresHole_width + m_iTrackingOffset; ++x){
-
-			dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
-		}
-	}
-	dAvg /= m_FastCresHole_height*m_FastCresHole_width;
-	if (dAvg < m_iNoteOnTH - 5 && !m_bTrebleFastCresOn){
+	dAvg = GetAvgHoleBrightness(frame, m_rcTrebleFastCresc);
+	if (dAvg < m_rcTrebleFastCresc.th_on && !m_bTrebleFastCresOn){
 		m_bTrebleFastCresOn = true;
 	}
-	else if (dAvg > m_iNoteOffTH - 5 && m_bTrebleFastCresOn){
+	else if (dAvg > m_rcTrebleFastCresc.th_off && m_bTrebleFastCresOn){
 		m_bTrebleFastCresOn = false;
 	}
 
-	const static int IntensityHoleY = 240;
-
-	// Bass Lv2 Intensity 
-	dAvg = 0;
-	for (int y = IntensityHoleY; y < m_iNoteHoleHeigth + IntensityHoleY; y++){
-		for (int x = m_BassLv2_x + m_iTrackingOffset; x < m_iNoteHoleHeigth + m_BassLv2_x + m_iTrackingOffset; ++x){
-			dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
+	// Bass Intensity 2->4->6
+	for (UINT hole = 0; hole < 3; hole++) {
+		dAvg = GetAvgHoleBrightness(frame, m_rcBassIntensity[hole]);
+		if (dAvg < m_rcBassIntensity[hole].th_on) {
+			switch (hole) {
+			case 0:
+				m_bBassLv2 = true;
+				break;
+			case 1:
+				m_bBassLv4 = true;
+				break;
+			case 2:
+				m_bBassLv6 = true;
+				break;
+			}
 		}
 	}
-	dAvg /= m_iNoteHoleWidth*m_iNoteHoleHeigth;
-	if (dAvg < mIntensityTH){
-		m_bBassLv2 = true;
-	}
 
-	// Bass Lv4 Intensity 
-	dAvg = 0;
-	for (int y = IntensityHoleY; y < m_iNoteHoleHeigth + IntensityHoleY; y++){
-		for (int x = m_BassLv4_x + m_iTrackingOffset; x < m_iNoteHoleHeigth + m_BassLv4_x + m_iTrackingOffset; ++x){
-			dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
+	// Treble Intensity 2->4->6
+	for (UINT hole = 0; hole < 3; hole++) {
+		dAvg = GetAvgHoleBrightness(frame, m_rcTrebleIntensity[hole]);
+		if (dAvg < m_rcTrebleIntensity[hole].th_on) {
+			switch (hole) {
+			case 0:
+				m_bTrebleLv2 = true;
+				break;
+			case 1:
+				m_bTrebleLv4 = true;
+				break;
+			case 2:
+				m_bTrebleLv6 = true;
+				break;
+			}
 		}
-	}
-	dAvg /= m_iNoteHoleWidth*m_iNoteHoleHeigth;
-	if (dAvg < mIntensityTH){
-		m_bBassLv4 = true;
-	}
-	// Bass Lv6 Intensity 
-	dAvg = 0;
-	for (int y = IntensityHoleY; y < m_iNoteHoleHeigth + IntensityHoleY; y++){
-		for (int x = m_BassLv6_x + m_iTrackingOffset; x < m_iNoteHoleHeigth + m_BassLv6_x + m_iTrackingOffset; ++x){
-			dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
-		}
-	}
-	dAvg /= m_iNoteHoleWidth*m_iNoteHoleHeigth;
-	if (dAvg < mIntensityTH){
-		m_bBassLv6 = true;
-	}
-
-	// Treble Lv2 Intensity 
-	dAvg = 0;
-	for (int y = IntensityHoleY; y < m_iNoteHoleHeigth + IntensityHoleY; y++){
-		for (int x = m_TrebleLv2_x + m_iTrackingOffset; x < m_iNoteHoleHeigth + m_TrebleLv2_x + m_iTrackingOffset; ++x){
-			dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
-		}
-	}
-	dAvg /= m_iNoteHoleWidth*m_iNoteHoleHeigth;
-	if (dAvg < mIntensityTH){
-		m_bTrebleLv2 = true;
-	}
-
-	// Treble Lv4 Intensity 
-	dAvg = 0;
-	for (int y = IntensityHoleY; y < m_iNoteHoleHeigth + IntensityHoleY; y++){
-		for (int x = m_TrebleLv4_x + m_iTrackingOffset; x < m_iNoteHoleHeigth + m_TrebleLv4_x + m_iTrackingOffset; ++x){
-			dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
-		}
-	}
-	dAvg /= m_iNoteHoleWidth*m_iNoteHoleHeigth;
-	if (dAvg < mIntensityTH){
-		m_bTrebleLv4 = true;
-	}
-
-	// Treble Lv6 Intensity 
-	dAvg = 0;
-	for (int y = IntensityHoleY; y < m_iNoteHoleHeigth + IntensityHoleY; y++){
-		for (int x = m_TrebleLv6_x + m_iTrackingOffset; x < m_iNoteHoleHeigth + m_TrebleLv6_x + m_iTrackingOffset; ++x){
-			dAvg += frame.data[y * VIDEO_WIDTH * 3 + x * 3];
-		}
-	}
-	dAvg /= m_iNoteHoleWidth*m_iNoteHoleHeigth;
-	if (dAvg < mIntensityTH){
-		m_bTrebleLv6 = true;
-	}
-
-	for (int i = 0; i < 5; i++){
-
 	}
 
 	if (!m_bEmulateOn){
@@ -525,165 +227,124 @@ int AmpicoA::ReadExpressionHoles(cv::Mat &frame, const HMIDIOUT &hm)
 		m_bTrebleSlowCresOn = false;
 		m_bTrebleFastCresOn = false;
 		m_bTrebleCancel = false;
-		m_cSusteinPedalOn = offTriger;
-		m_cSoftPedalOn = offTriger;
 	}
-
-
+	
 	// Draw Holes
-	cv::Scalar scr;
-	cv::Scalar scrOn(0, 0, 200);
-	cv::Scalar scrOff(200, 0, 0);
+	DrawHole(frame, m_rcBassCancel, m_bBassCancel);
+	DrawHole(frame, m_rcTrebleCancel, m_bTrebleCancel);
+	DrawHole(frame, m_rcBassSlowCresc, m_bBassSlowCresOn);
+	DrawHole(frame, m_rcTrebleSlowCresc, m_bTrebleSlowCresOn);
+	DrawHole(frame, m_rcBassFastCresc, m_bBassFastCresOn);
+	DrawHole(frame, m_rcTrebleFastCresc, m_bTrebleFastCresOn);
+	DrawHole(frame, m_rcBassIntensity[0], m_bBassLv2);
+	DrawHole(frame, m_rcBassIntensity[1], m_bBassLv4);
+	DrawHole(frame, m_rcBassIntensity[2], m_bBassLv6);
+	DrawHole(frame, m_rcTrebleIntensity[0], m_bTrebleLv2);
+	DrawHole(frame, m_rcTrebleIntensity[1], m_bTrebleLv4);
+	DrawHole(frame, m_rcTrebleIntensity[2], m_bTrebleLv6);
+	DrawHole(frame, m_rcReRoll, false);
 
-	// Sustein Pedal
-	scr = (m_cSusteinPedalOn > 0) ? scrOn : scrOff;
-	cv::rectangle(frame, cv::Point(m_iSusteinPedalHoleX + m_iTrackingOffset, 239), cv::Point(m_iSusteinPedalHoleX + m_SusteinHole_width - 1 + m_iTrackingOffset, 239 + m_SusteinHole_height - 1), scr, 1, 1);
-	// Soft Pedal
-	scr = (m_cSoftPedalOn > 0) ? scrOn : scrOff;
-	cv::rectangle(frame, cv::Point(m_iSoftPedalHoleX + m_iTrackingOffset, 234), cv::Point(m_iSoftPedalHoleX + m_SoftHole_width - 1 + m_iTrackingOffset, 234 + m_SoftHole_height - 1), scr, 1, 1);
-	// ReRoll Hole
-	//
-	scr = scrOff;
-	cv::rectangle(frame, cv::Point(m_ReRoll_x + m_iTrackingOffset, 240), cv::Point(m_ReRoll_x + m_iNoteHoleWidth - 1 + m_iTrackingOffset, 240 + m_iNoteHoleHeigth - 1), scr, 1, 1);
-	// Bass Slow Cres Hole
-	scr = m_bBassSlowCresOn ? scrOn : scrOff;
-	cv::rectangle(frame, cv::Point(m_BassSlowCres_x + m_iTrackingOffset, 234), cv::Point(m_BassSlowCres_x + m_SlowCresHole_width - 1 + m_iTrackingOffset, 234 + m_SlowCresHole_height - 1), scr, 1, 1);
-	// Bass Fast Cres Hole
-	scr = m_bBassFastCresOn ? scrOn : scrOff;
-	cv::rectangle(frame, cv::Point(m_BassFastCres_x + m_iTrackingOffset, 238), cv::Point(m_BassFastCres_x + m_FastCresHole_width - 1 + m_iTrackingOffset, 238 + m_FastCresHole_height - 1), scr, 1, 1);
-	// Bass Lv2 Hole
-	scr = m_bBassLv2 ? scrOn : scrOff;
-	cv::rectangle(frame, cv::Point(m_BassLv2_x + m_iTrackingOffset, 240), cv::Point(m_BassLv2_x + m_iNoteHoleWidth - 1 + m_iTrackingOffset, 240 + m_iNoteHoleHeigth - 1), scr, 1, 1);
-	// Bass Lv4 Hole
-	scr = m_bBassLv4 ? scrOn : scrOff;
-	cv::rectangle(frame, cv::Point(m_BassLv4_x + m_iTrackingOffset, 240), cv::Point(m_BassLv4_x + m_iNoteHoleWidth - 1 + m_iTrackingOffset, 240 + m_iNoteHoleHeigth - 1), scr, 1, 1);
-	// Bass Lv6 Hole
-	scr = m_bBassLv6 ? scrOn : scrOff;
-	cv::rectangle(frame, cv::Point(m_BassLv6_x + m_iTrackingOffset, 240), cv::Point(m_BassLv6_x + m_iNoteHoleWidth - 1 + m_iTrackingOffset, 240 + m_iNoteHoleHeigth - 1), scr, 1, 1);
-	// Bass Cancel Hole
-	scr = m_bBassCancel ? scrOn : scrOff;
-	cv::rectangle(frame, cv::Point(m_BassCancel_x + m_iTrackingOffset, 240), cv::Point(m_BassCancel_x + m_iNoteHoleWidth - 1 + m_iTrackingOffset, 240 + m_iNoteHoleHeigth - 1), scr, 1, 1);
-	// Treble Slow Cres Hole
-	scr = m_bTrebleSlowCresOn ? scrOn : scrOff;
-	cv::rectangle(frame, cv::Point(m_TrebleSlowCres_x + m_iTrackingOffset, 234), cv::Point(m_TrebleSlowCres_x + m_SlowCresHole_width - 1 + m_iTrackingOffset, 234 + m_SlowCresHole_height - 1), scr, 1, 1);
-	// Treble Fast Cres Hole
-	scr = m_bTrebleFastCresOn ? scrOn : scrOff;
-	cv::rectangle(frame, cv::Point(m_TrebleFastCres_x + m_iTrackingOffset, 238), cv::Point(m_TrebleFastCres_x + m_FastCresHole_width - 1 + m_iTrackingOffset, 238 + m_FastCresHole_height - 1), scr, 1, 1);
-	// Treble Lv2 Hole
-	scr = m_bTrebleLv2 ? scrOn : scrOff;
-	cv::rectangle(frame, cv::Point(m_TrebleLv2_x + m_iTrackingOffset, 240), cv::Point(m_TrebleLv2_x + m_iNoteHoleWidth - 1 + m_iTrackingOffset, 240 + m_iNoteHoleHeigth - 1), scr, 1, 1);
-	// Treble Lv4 Hole
-	scr = m_bTrebleLv4 ? scrOn : scrOff;
-	cv::rectangle(frame, cv::Point(m_TrebleLv4_x + m_iTrackingOffset, 240), cv::Point(m_TrebleLv4_x + m_iNoteHoleWidth - 1 + m_iTrackingOffset, 240 + m_iNoteHoleHeigth - 1), scr, 1, 1);
-	// Treble Lv6 Hole
-	scr = m_bTrebleLv6 ? scrOn : scrOff;
-	cv::rectangle(frame, cv::Point(m_TrebleLv6_x + m_iTrackingOffset, 240), cv::Point(m_TrebleLv6_x + m_iNoteHoleWidth - 1 + m_iTrackingOffset, 240 + m_iNoteHoleHeigth - 1), scr, 1, 1);
-	// Treble Cancel Hole
-	scr = m_bTrebleCancel ? scrOn : scrOff;
-	cv::rectangle(frame, cv::Point(m_TrebleCancel_x + m_iTrackingOffset, 240), cv::Point(m_TrebleCancel_x + m_iNoteHoleWidth - 1 + m_iTrackingOffset, 240 + m_iNoteHoleHeigth - 1), scr, 1, 1);
-
-	return 0;
+	return;
 }
 
-int AmpicoA::CalcBassVelocity()
+void AmpicoA::CalcBassVelocity()
 {
-	static double intensityVelo = 0;
+	static double dIntensityVelo = 0;
 
 	// Intensity Operation
-	BassIntensityCurv(intensityVelo);
+	BassIntensityCurv(dIntensityVelo);
 
 	// Crescendo Operation
-	static double dCresVelo = m_BassMinVelo;
+	static double dCresVelo = m_dBassMinVelo;
 	BassCrescendoCurv(dCresVelo);
 
-	m_iBassStackVelo = intensityVelo + (dCresVelo - m_BassMinVelo);
+	m_iBassStackVelo = (int)(dIntensityVelo + dCresVelo - m_dBassMinVelo);
 
-	if (m_iBassStackVelo > m_BassMaxVelo){
-		m_iBassStackVelo = (int)m_BassMaxVelo;
+	if (m_iBassStackVelo > m_dBassMaxVelo){
+		m_iBassStackVelo = (int)m_dBassMaxVelo;
 	}
-	else if (m_iBassStackVelo <  m_BassMinVelo){
-		m_iBassStackVelo = (int)m_BassMinVelo;
+	else if (m_iBassStackVelo <  m_dBassMinVelo){
+		m_iBassStackVelo = (int)m_dBassMinVelo;
 	}
 
-	return 0;
+	return;
 }
 
 
-int AmpicoA::CalcTrebleVelocity()
+void AmpicoA::CalcTrebleVelocity()
 {
-	static double intensityVelo = 0;
+	static double dIntensityVelo = 0;
 
 	// Intensity Operation
-	TrebleIntensityCurv(intensityVelo);
+	TrebleIntensityCurv(dIntensityVelo);
 
 	// Crescendo Operation
-	static double dCresVelo = m_TrebleMinVelo;
+	static double dCresVelo = m_dTrebleMinVelo;
 	TrebleCrescendoCurv(dCresVelo);
 
-	m_iTrebleStackVelo = intensityVelo + (dCresVelo - m_TrebleMinVelo);
+	m_iTrebleStackVelo = (int)(dIntensityVelo + dCresVelo - m_dTrebleMinVelo);
 
-	if (m_iTrebleStackVelo > m_TrebleMaxVelo){
-		m_iTrebleStackVelo = (int)m_TrebleMaxVelo;
+	if (m_iTrebleStackVelo > m_dTrebleMaxVelo){
+		m_iTrebleStackVelo = (int)m_dTrebleMaxVelo;
 	}
-	else if (m_iTrebleStackVelo <  m_TrebleMinVelo){
-		m_iTrebleStackVelo = (int)m_TrebleMinVelo;
+	else if (m_iTrebleStackVelo <  m_dTrebleMinVelo){
+		m_iTrebleStackVelo = (int)m_dTrebleMinVelo;
 	}
 
-	return 0;
+	return;
 }
 
-int AmpicoA::BassIntensityCurv(double &dintensityVelo)
+void AmpicoA::BassIntensityCurv(double &dintensityVelo)
 {
 
-	const static double dVeloRange = m_BassMaxVelo - m_BassMinVelo;
-	const double dIntensityStep = dVeloRange / (m_dFrameRate * 0.15); // 0 to 2-4-6 full intensity needs 0.15sec
-
-	double newintensityVelo = 0;
+	const static double dVeloRange = m_dBassMaxVelo - m_dBassMinVelo;
+	const double dIntensityStep = dVeloRange / (m_dFrameRate * m_dFullIntensityDelay); // 0 to 2-4-6 full intensity needs delay
+	double dNewIntensityVelo = 0;
 
 	// Intensity Operation
 	if (m_bBassLv2 && m_bBassLv4 && m_bBassLv6){
-		newintensityVelo = m_BassIntensity[6];
+		dNewIntensityVelo = m_dBassIntensity[6];
 	}
 	else if (m_bBassLv4 && m_bBassLv6){
-		newintensityVelo = m_BassIntensity[5];
+		dNewIntensityVelo = m_dBassIntensity[5];
 	}
 	else if (m_bBassLv2 && m_bBassLv6){
-		newintensityVelo = m_BassIntensity[4];
+		dNewIntensityVelo = m_dBassIntensity[4];
 	}
 	else if (m_bBassLv2 && m_bBassLv4 || m_bBassLv6){
-		newintensityVelo = m_BassIntensity[3];
+		dNewIntensityVelo = m_dBassIntensity[3];
 	}
 	else if (m_bBassLv4){
-		newintensityVelo = m_BassIntensity[2];
+		dNewIntensityVelo = m_dBassIntensity[2];
 	}
 	else if (m_bBassLv2){
-		newintensityVelo = m_BassIntensity[1];
+		dNewIntensityVelo = m_dBassIntensity[1];
 	}
 	else{
-		newintensityVelo = m_BassIntensity[0];
+		dNewIntensityVelo = m_dBassIntensity[0];
 	}
 
-	if (dintensityVelo < newintensityVelo){
+	if (dintensityVelo < dNewIntensityVelo){
 		dintensityVelo += dIntensityStep;
 	}
-	if (dintensityVelo > newintensityVelo){
-		dintensityVelo = newintensityVelo;
+	if (dintensityVelo > dNewIntensityVelo){
+		dintensityVelo = dNewIntensityVelo;
 	}
 
-	return 0;
+	return;
 }
 
 
-int AmpicoA::BassCrescendoCurv(double &dCresVelo)
+void AmpicoA::BassCrescendoCurv(double &dCresVelo)
 {
 
-	const static double dVeloRange = m_BassMaxVelo - m_BassMinVelo;
+	const static double dVeloRange = m_dBassMaxVelo - m_dBassMinVelo;
 
 #ifdef _AMPICO_LINEAR_CRESCENDO
 
 	// linear Curv
-	const double dSlowCresStep = dVeloRange / (m_dFrameRate * 9);	// slow crescendo 9sec
-	const double dFastCresStep = dVeloRange / (m_dFrameRate * 2); // fast crescendo 2sec
+	const double dSlowCresStep = dVeloRange / (m_dFrameRate * m_dSlowCrescSec);	// slow crescendo 9sec
+	const double dFastCresStep = dVeloRange / (m_dFrameRate * m_dFastCrescSec); // fast crescendo 2sec
 	if (m_bBassSlowCresOn){
 		// Crescendo
 		dCresVelo += m_bBassFastCresOn ? dFastCresStep : dSlowCresStep;
@@ -698,87 +359,87 @@ int AmpicoA::BassCrescendoCurv(double &dCresVelo)
 	const static double dCurvRad = M_PI / 2; // =90deg
 	if (m_bBassSlowCresOn){
 		// Crescendo
-		double dCurSinRad = asin((dCresVelo - m_BassMinVelo) / dVeloRange);
-		dCurSinRad += m_bBassFastCresOn ? (dCurvRad / (m_dFrameRate * 2)) : (dCurvRad / (m_dFrameRate * 9));
+		double dCurSinRad = asin((dCresVelo - m_dBassMinVelo) / dVeloRange);
+		dCurSinRad += m_bBassFastCresOn ? (dCurvRad / (m_dFrameRate * m_dFastCrescSec)) : (dCurvRad / (m_dFrameRate * m_dSlowCrescSec));
 		if (dCurSinRad > M_PI / 2){
 			dCurSinRad = M_PI / 2;
 		}
 		// Sin Cresendo Curv sin(0 - pi/2)
-		dCresVelo = m_BassMinVelo + dVeloRange * sin(dCurSinRad);
+		dCresVelo = m_dBassMinVelo + dVeloRange * sin(dCurSinRad);
 	}
 	else{
 		// Decrescendo
-		double dDecCosRad = acos((dCresVelo - m_BassMaxVelo) / dVeloRange);
-		dDecCosRad += m_bBassFastCresOn ? (dCurvRad / (m_dFrameRate * 2)) : (dCurvRad / (m_dFrameRate * 9));
+		double dDecCosRad = acos((dCresVelo - m_dBassMaxVelo) / dVeloRange);
+		dDecCosRad += m_bBassFastCresOn ? (dCurvRad / (m_dFrameRate * m_dFastCrescSec)) : (dCurvRad / (m_dFrameRate * m_dSlowCrescSec));
 		if (dDecCosRad > M_PI){
 			dDecCosRad = M_PI;
 		}
 		// Cos Cresendo Curv cos(pi/2 - pi)
-		dCresVelo = m_BassMaxVelo + dVeloRange * cos(dDecCosRad);
+		dCresVelo = m_dBassMaxVelo + dVeloRange * cos(dDecCosRad);
 	}
 
 #endif
 
-	if (dCresVelo < m_BassMinVelo){
-		dCresVelo = m_BassMinVelo;
+	if (dCresVelo < m_dBassMinVelo){
+		dCresVelo = m_dBassMinVelo;
 	}
-	else if (dCresVelo > m_BassMaxVelo){
-		dCresVelo = m_BassMaxVelo;
+	else if (dCresVelo > m_dBassMaxVelo){
+		dCresVelo = m_dBassMaxVelo;
 	}
 
-	return 0;
+	return;
 }
 
-int AmpicoA::TrebleIntensityCurv(double &dintensityVelo)
+void AmpicoA::TrebleIntensityCurv(double &dintensityVelo)
 {
 
-	const static double dVeloRange = m_TrebleMaxVelo - m_TrebleMinVelo;
-	const double dIntensityStep = dVeloRange / (m_dFrameRate * 0.15); // 0 to 2-4-6 full intensity needs 0.15sec
+	const static double dVeloRange = m_dTrebleMaxVelo - m_dTrebleMinVelo;
+	const double dIntensityStep = dVeloRange / (m_dFrameRate * m_dFullIntensityDelay); // 0 to 2-4-6 full intensity needs delay
 
-	double newintensityVelo = 0;
+	double dNewIntensityVelo = 0;
 
 	// Intensity Operation
 	if (m_bTrebleLv2 && m_bTrebleLv4 && m_bTrebleLv6){
-		newintensityVelo = m_TrebleIntensity[6];
+		dNewIntensityVelo = m_dTrebleIntensity[6];
 	}
 	else if (m_bTrebleLv4 && m_bTrebleLv6){
-		newintensityVelo = m_TrebleIntensity[5];
+		dNewIntensityVelo = m_dTrebleIntensity[5];
 	}
 	else if (m_bTrebleLv2 && m_bTrebleLv6){
-		newintensityVelo = m_TrebleIntensity[4];
+		dNewIntensityVelo = m_dTrebleIntensity[4];
 	}
 	else if (m_bTrebleLv2 && m_bTrebleLv4 || m_bTrebleLv6){
-		newintensityVelo = m_TrebleIntensity[3];
+		dNewIntensityVelo = m_dTrebleIntensity[3];
 	}
 	else if (m_bTrebleLv4){
-		newintensityVelo = m_TrebleIntensity[2];
+		dNewIntensityVelo = m_dTrebleIntensity[2];
 	}
 	else if (m_bTrebleLv2){
-		newintensityVelo = m_TrebleIntensity[1];
+		dNewIntensityVelo = m_dTrebleIntensity[1];
 	}
 	else{
-		newintensityVelo = m_TrebleIntensity[0];
+		dNewIntensityVelo = m_dTrebleIntensity[0];
 	}
 
-	if (dintensityVelo < newintensityVelo){
+	if (dintensityVelo < dNewIntensityVelo){
 		dintensityVelo += dIntensityStep;
 	}
-	if (dintensityVelo > newintensityVelo){
-		dintensityVelo = newintensityVelo;
+	if (dintensityVelo > dNewIntensityVelo){
+		dintensityVelo = dNewIntensityVelo;
 	}
 
-	return 0;
+	return;
 }
 
-int AmpicoA::TrebleCrescendoCurv(double &dCresVelo)
+void AmpicoA::TrebleCrescendoCurv(double &dCresVelo)
 {
-	const static double dVeloRange = m_TrebleMaxVelo - m_TrebleMinVelo;
+	const static double dVeloRange = m_dTrebleMaxVelo - m_dTrebleMinVelo;
 
 #ifdef _AMPICO_LINEAR_CRESCENDO
 
 	// linear Curv
-	const double dSlowCresStep = dVeloRange / (m_dFrameRate * 9);	// slow crescendo 9sec
-	const double dFastCresStep = dVeloRange / (m_dFrameRate * 2); // fast crescendo 2sec
+	const double dSlowCresStep = dVeloRange / (m_dFrameRate * m_dSlowCrescSec);	// slow crescendo 9sec
+	const double dFastCresStep = dVeloRange / (m_dFrameRate * m_dFastCrescSec); // fast crescendo 2sec
 	if (m_bTrebleSlowCresOn){
 		// Crescendo
 		dCresVelo += m_bTrebleFastCresOn ? dFastCresStep : dSlowCresStep;
@@ -793,33 +454,33 @@ int AmpicoA::TrebleCrescendoCurv(double &dCresVelo)
 	const static double dCurvRad = M_PI / 2; // =90deg
 	if (m_bTrebleSlowCresOn){
 		// Crescendo
-		double dCurSinRad = asin((dCresVelo - m_TrebleMinVelo) / dVeloRange);
-		dCurSinRad += m_bTrebleFastCresOn ? (dCurvRad / (m_dFrameRate * 2)) : (dCurvRad / (m_dFrameRate * 9));
+		double dCurSinRad = asin((dCresVelo - m_dTrebleMinVelo) / dVeloRange);
+		dCurSinRad += m_bTrebleFastCresOn ? (dCurvRad / (m_dFrameRate * m_dFastCrescSec)) : (dCurvRad / (m_dFrameRate * m_dSlowCrescSec));
 		if (dCurSinRad > M_PI / 2){
 			dCurSinRad = M_PI / 2;
 		}
 		// Sin Cresendo Curv sin(0 - pi/2)
-		dCresVelo = m_TrebleMinVelo + dVeloRange * sin(dCurSinRad);
+		dCresVelo = m_dTrebleMinVelo + dVeloRange * sin(dCurSinRad);
 	}
 	else{
 		// Decrescendo
-		double dDecCosRad = acos((dCresVelo - m_TrebleMaxVelo) / dVeloRange);
-		dDecCosRad += m_bTrebleFastCresOn ? (dCurvRad / (m_dFrameRate * 2)) : (dCurvRad / (m_dFrameRate * 9));
+		double dDecCosRad = acos((dCresVelo - m_dTrebleMaxVelo) / dVeloRange);
+		dDecCosRad += m_bTrebleFastCresOn ? (dCurvRad / (m_dFrameRate * m_dFastCrescSec)) : (dCurvRad / (m_dFrameRate * m_dSlowCrescSec));
 		if (dDecCosRad > M_PI){
 			dDecCosRad = M_PI;
 		}
 		// Cos Cresendo Curv cos(pi/2 - pi)
-		dCresVelo = m_TrebleMaxVelo + dVeloRange * cos(dDecCosRad);
+		dCresVelo = m_dTrebleMaxVelo + dVeloRange * cos(dDecCosRad);
 	}
 
 #endif
 
-	if (dCresVelo < m_TrebleMinVelo){
-		dCresVelo = m_TrebleMinVelo;
+	if (dCresVelo < m_dTrebleMinVelo){
+		dCresVelo = m_dTrebleMinVelo;
 	}
-	else if (dCresVelo > m_TrebleMaxVelo){
-		dCresVelo = m_TrebleMaxVelo;
+	else if (dCresVelo > m_dTrebleMaxVelo){
+		dCresVelo = m_dTrebleMaxVelo;
 	}
 
-	return 0;
+	return;
 }
