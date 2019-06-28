@@ -7,7 +7,7 @@
 https://github.com/nai-kon/PlaySK-Piano-Roll-Reader
 
 - Software Download Link  
-https://drive.google.com/open?id=1lrzU756CfJcGIxVYJEooAjCzQFRYQX_T
+https://drive.google.com/file/d/1yq7jKq54Z2azlLiP5jscRGhe1VcRFkRv/view
 
 
 - [Demo] Reading Duo-Art roll with VST Piano   
