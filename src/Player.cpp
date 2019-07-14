@@ -28,7 +28,7 @@ Player::~Player()
 // Load 88-note setting 
 int Player::LoadPlayerSettings()
 {
-	std::ifstream ifs("88_tracker.json");
+	std::ifstream ifs("config\\88_tracker.json");
 	std::string err, strjson((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	json11::Json json = json11::Json::parse(strjson, err);
 

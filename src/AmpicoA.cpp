@@ -41,7 +41,7 @@ int AmpicoA::NoteAllOff(const HMIDIOUT &hm)
 
 int AmpicoA::LoadPlayerSettings()
 {
-	std::ifstream ifs("AmpicoA_tracker.json");
+	std::ifstream ifs("config\\AmpicoA_tracker.json");
 	std::string err, strjson((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	json11::Json json = json11::Json::parse(strjson, err);
 
