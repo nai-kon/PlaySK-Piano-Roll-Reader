@@ -14,8 +14,8 @@ https://drive.google.com/file/d/1yq7jKq54Z2azlLiP5jscRGhe1VcRFkRv/view
 https://www.youtube.com/watch?v=8lkMRsoG9cg
  
 
-- [Demo] Reading Ampico A roll with Yamaha Disklavier     
-https://www.youtube.com/watch?v=f7FEgWZceyU
+- [Demo] Reading Ampico roll with Yamaha Disklavier     
+https://www.youtube.com/watch?v=2SyNJrevcNk
 
 This software reads piano roll scroll captured by Webcam or Video File. The Virtual Tracker Bar calculates brightness of each hole. The brightness will be darker if roll hole passes the tracker hole, it activates the note-on signal. 
 
