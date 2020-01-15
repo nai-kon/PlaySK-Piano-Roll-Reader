@@ -1,7 +1,7 @@
 # PlaySK Piano Roll Reader       
 ### Optically Reading a Piano Roll Scroll, Converts to Midi.
 
-![Overall System](./README_img/Overall_System.png)
+![Overall System](./docs/Overall_System.png)
 
 - GitHub      
 https://github.com/nai-kon/PlaySK-Piano-Roll-Reader
@@ -49,7 +49,7 @@ My Build Environment
 -VC++2013, 2015 Runtime       
 -OpenCV 2.4.9
 
-- \Source   
+- \src   
 main.cpp - main souce. UI control, emulating thread       
 cvhelper.cpp - convert opencv image to device context   
 json11.cpp - json parser
@@ -57,17 +57,17 @@ player.cpp - 88-note player class(base class)
 DuoArt.cpp - Duo-Art player class     
 AmpicoA.cpp - Ampico A player class
 
-- \ConfigFile       
+- \config       
 Setting.json - global setting of the software   
 88_tracker.json     
 AmpicoA_tracker.json    
 Duo-Art_tracker.json    
 
-- \OpenCV_249_Libs     
+- \lib_opencv_249     
 Contains OpenCV header/lib/binary
 
-- \Output     
-Built software will be output to here.
+- \bin     
+Built software binaries will be output to here.
 
 - PostBuildEvent.bat      
 Copy ConfigFile and OpenCV binary to Output Folder, after building.
@@ -79,7 +79,7 @@ Copy ConfigFile and OpenCV binary to Output Folder, after building.
 
 Run PlaySK Piano Roll Reader.exe.
 
-![Player Setting](README_img/Player_Setting.png)    
+![Player Setting](docs/Player_Setting.png)    
 - Player Setting      
 Select Midi-Out Device and Virtual Tracker Bar.
 
@@ -96,12 +96,12 @@ For changing, modify the "Setting.json"
 ```
 ### 2. Start Reading and Emulating
 
-![Main U I](README_img/MainUI.png)  
+![Main U I](docs/MainUI.png)  
 Click "Play" for Emulating.     
 
-- Adjust the Tracker Hole Position    
-The hole position are written on *_tracker.json at ConfigFile dir.     
-You can simplly modify note position. 
+### Adjust the Tracker Hole Position    
+Hole positions are written on tracker.json at ConfigFile directory.     
+The "x" position indicates left side of each tracker hole.
 ```json
 "tracker_holes": {
     "note": {
@@ -110,6 +110,7 @@ You can simplly modify note position.
             54,
             60,
             66,
-            ...
+            ,
+            ,
 ```
 
