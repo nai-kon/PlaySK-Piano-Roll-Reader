@@ -43,52 +43,51 @@ The software is designed for "reading" a piano roll, not for "scanning or storag
 The code is written in C/C++ Win32API, OpenCV without GUI Framework.  
 I know should rewrite by using GUI Framework such as .Net, but no time for it.
 
-My Build Environment    
--Windows 10 64bit    
--Visual Studio 2017     
--VC++2013, 2015 Runtime       
--OpenCV 2.4.9
+**Build Environment**
+* Windows 10 64bit
+* Visual Studio 2017
+* OpenCV 2.4.9
 
-- \src   
-main.cpp - main souce. UI control, emulating thread       
-cvhelper.cpp - convert opencv image to device context   
-json11.cpp - json parser
-player.cpp - 88-note player class(base class)       
-DuoArt.cpp - Duo-Art player class     
-AmpicoA.cpp - Ampico A player class
+**layout**
 
-- \config       
-Setting.json - global setting of the software   
-88_tracker.json     
-AmpicoA_tracker.json    
-Duo-Art_tracker.json    
+* src/
+  * main.cpp - main souce. UI control, emulating thread
+  * cvhelper.cpp - convert opencv image to device context
+  * json11.cpp - json parser
+  * player.cpp - 88-note player class(base class)
+  * DuoArt.cpp - Duo-Art player class
+  * AmpicoA.cpp - Ampico A player class
 
-- \lib_opencv_249     
-Contains OpenCV header/lib/binary
+* config/
+  * Setting.json - global setting of the software
+  * 88_tracker.json
+  * AmpicoA_tracker.json
+  * Duo-Art_tracker.json    
 
-- \bin     
-Built software binaries will be output to here.
+* lib_opencv_249/     
+Contains OpenCV header/lib/bin
 
-- PostBuildEvent.bat      
-Copy ConfigFile and OpenCV binary to Output Folder, after building.
+* bin/     
+Built binary dir.
+
+* PostBuildEvent.bat      
+Copy config files and OpenCV libs to output dir.
 
 
 ## How to Play
 
 ### 1. Select Midi-Out and TrackerBar, Video Source
 
-Run PlaySK Piano Roll Reader.exe.
-
 ![Player Setting](docs/Player_Setting.png)    
-- Player Setting      
+* Player Setting    
 Select Midi-Out Device and Virtual Tracker Bar.
 
-- Input Video     
--Webcam Input - Click "Webcab" and "OK"      
--VideoFile Input - Click "Video File" and select a video file.      
+* Input Video   
+  * Webcam  - Click "Webcab" and "OK"
+  * VideoFile  - Click "Video File" and select a video file.      
 
 The default webcam device number is "0".     
-For changing, modify the "Setting.json"      
+For changing, modify the "config/Setting.json"      
 ```json
 "device": {
     "webcam_devno": 0
@@ -97,7 +96,8 @@ For changing, modify the "Setting.json"
 ### 2. Start Reading and Emulating
 
 ![Main U I](docs/MainUI.png)  
-Click "Play" for Emulating.     
+Click "Play" and "Midi On".
+     
 
 ### Adjust the Tracker Hole Position    
 Hole positions are written on tracker.json at ConfigFile directory.     
