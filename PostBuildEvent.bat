@@ -10,3 +10,4 @@ rem Copy OpenCV binary to Release/Debug Dir
 copy /Y %1lib_opencv_249\bin\opencv_ffmpeg249*.dll %output_dir%.
 copy /Y %1lib_opencv_249\bin\%2\opencv_core249*.dll %output_dir%.
 copy /Y %1lib_opencv_249\bin\%2\opencv_highgui249*.dll %output_dir%.
+copy /Y %1lib_opencv_249\bin\%2\opencv_imgproc249*.dll %output_dir%.

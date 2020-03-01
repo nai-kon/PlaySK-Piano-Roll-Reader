@@ -57,7 +57,7 @@ int Player::Emulate(cv::Mat &frame, const HMIDIOUT &hm)
 	EmulateNote(frame);
 
 	// Draw tracker-bar frame
-	cv::line(frame, cv::Point(5, 235), cv::Point(5, 245), cv::Scalar(200, 0, 200), 1, 4);
+	cv::line(frame, cv::Point(4, 235), cv::Point(4, 245), cv::Scalar(200, 0, 200), 1, 4);
 	cv::line(frame, cv::Point(635, 235), cv::Point(635, 245), cv::Scalar(200, 0, 200), 1, 4);
 	cv::line(frame, cv::Point(0, 255), cv::Point(639, 255), cv::Scalar(100, 100, 0), 1, 4);
 	cv::line(frame, cv::Point(0, 212), cv::Point(639, 212), cv::Scalar(100, 100, 0), 1, 4);
@@ -77,10 +77,10 @@ void Player::EmulatePedal(cv::Mat &frame)
 {
 	// Check Sustein Pedal Hole
 	double dAvg = GetAvgHoleBrightness(frame, m_rcSustainPedal);
-	if (dAvg < m_rcSustainPedal.th_on && m_SusteinPedalOn == off && m_bEmulateOn) {
+	if (isHoleOn(dAvg, m_rcSustainPedal.th_on) && m_SusteinPedalOn == off && m_bEmulateOn) {
 		m_SusteinPedalOn = onTriger;
 	}
-	else if (dAvg > m_rcSustainPedal.th_off && m_SusteinPedalOn == on) {
+	else if (isHoleOff(dAvg, m_rcSustainPedal.th_off) && m_SusteinPedalOn == on) {
 		m_SusteinPedalOn = offTriger;
 	}
 	bool hole_on = (m_SusteinPedalOn > 0 && m_bEmulateOn);
@@ -89,10 +89,10 @@ void Player::EmulatePedal(cv::Mat &frame)
 
 	// Check Soft Pedal Hole
 	dAvg = GetAvgHoleBrightness(frame, m_rcSoftPedal);
-	if (dAvg < m_rcSustainPedal.th_on && m_SoftPedalOn == off && m_bEmulateOn) {
+	if (isHoleOn(dAvg, m_rcSustainPedal.th_on) && m_SoftPedalOn == off && m_bEmulateOn) {
 		m_SoftPedalOn = onTriger;
 	}
-	else if (dAvg > m_rcSustainPedal.th_off && m_SoftPedalOn == on) {
+	else if (isHoleOff(dAvg, m_rcSustainPedal.th_off) && m_SoftPedalOn == on) {
 		m_SoftPedalOn = offTriger;
 	}
 	hole_on = (m_SoftPedalOn > 0 && m_bEmulateOn);
@@ -109,7 +109,7 @@ void Player::EmulateNote(cv::Mat &frame)
 		if (m_rcNote[key].x == 0) continue;
 
 		double dAvg = GetAvgHoleBrightness(frame, m_rcNote[key]);
-		if (m_NoteOn[key] == off && dAvg < m_rcNote[key].th_on && m_bEmulateOn) {
+		if (m_NoteOn[key] == off && isHoleOn(dAvg, m_rcNote[key].th_on) && m_bEmulateOn) {
 			if (m_iNoteOnCnt[key] >= m_iNoteOnFrames) {
 				m_iNoteOnCnt[key] = 0;
 				m_NoteOn[key] = onTriger;
@@ -118,7 +118,7 @@ void Player::EmulateNote(cv::Mat &frame)
 				m_iNoteOnCnt[key]++;
 			}
 		}
-		else if (m_NoteOn[key] == on && dAvg > m_rcNote[key].th_off) {
+		else if (m_NoteOn[key] == on && isHoleOff(dAvg, m_rcNote[key].th_off)) {
 			m_NoteOn[key] = offTriger;
 		}
 		bool hole_on = (m_NoteOn[key] > 0 && m_bEmulateOn);
@@ -263,5 +263,24 @@ void Player::SetHoleRectListFromJsonObj(const json11::Json json, TRACKER_HOLE *p
 			th_on,
 			th_off
 		};
+	}
+}
+
+
+bool Player::isHoleOn(double dAvgBrightness, int dOnBrightness) {
+	if (m_bInvert) {
+		return (dAvgBrightness > dOnBrightness);
+	}
+	else {
+		return (dAvgBrightness < dOnBrightness);
+	}
+}
+
+bool Player::isHoleOff(double dAvgBrightness, int dOffBrightness) {
+	if (m_bInvert) {
+		return (dAvgBrightness < dOffBrightness);
+	}
+	else {
+		return (dAvgBrightness > dOffBrightness);
 	}
 }

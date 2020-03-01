@@ -80,7 +80,7 @@ void DuoArt::CheckExpressionHoles(cv::Mat &frame)
 	// Duo-Art Accomp Holes check(Accomp lv.1->lv.8)
 	for (int n = 0; n < 4; n++) {
 		dAvg = GetAvgHoleBrightness(frame, m_rcAccomp[n]);
-		bool bActive = (dAvg < m_rcAccomp[n].th_on && m_bEmulateOn) ? true : false;
+		bool bActive = (isHoleOn(dAvg, m_rcAccomp[n].th_on) && m_bEmulateOn) ? true : false;
 
 		switch (n) {
 		case 0:
@@ -102,7 +102,7 @@ void DuoArt::CheckExpressionHoles(cv::Mat &frame)
 	// Duo-Art Theme Holes check(Theme lv.1->lv.8)
 	for (int n = 0; n < 4; n++) {
 		dAvg = GetAvgHoleBrightness(frame, m_rcTheme[n]);
-		bool bActive = (dAvg < m_rcTheme[n].th_on && m_bEmulateOn) ? true : false;
+		bool bActive = (isHoleOn(dAvg, m_rcTheme[n].th_on) && m_bEmulateOn) ? true : false;
 
 		switch (n) {
 		case 0:
@@ -124,8 +124,8 @@ void DuoArt::CheckExpressionHoles(cv::Mat &frame)
 	// Check Bass Snakebite
 	static int iBassAccentDelayCnt = 0;
 	dAvg = GetAvgHoleBrightness(frame, m_rcBassSnakebite);
-	if ((dAvg < m_rcBassSnakebite.th_on && m_bEmulateOn) || iBassAccentDelayCnt > 0) {
-		if (dAvg < m_rcBassSnakebite.th_on && m_bEmulateOn) iBassAccentDelayCnt = 3;
+	if ((isHoleOn(dAvg, m_rcBassSnakebite.th_on) && m_bEmulateOn) || iBassAccentDelayCnt > 0) {
+		if (isHoleOn(dAvg, m_rcBassSnakebite.th_on) && m_bEmulateOn) iBassAccentDelayCnt = 3;
 		m_bBassAccent = true;
 	}
 	else {
@@ -137,8 +137,8 @@ void DuoArt::CheckExpressionHoles(cv::Mat &frame)
 	// Check Treble Snakebite
 	static int iTrebleAccentDelayCnt = 0;
 	dAvg = GetAvgHoleBrightness(frame, m_rcTrebleSnakebite);
-	if ((dAvg < m_rcTrebleSnakebite.th_on && m_bEmulateOn) || iTrebleAccentDelayCnt > 0) {
-		if (dAvg < m_rcTrebleSnakebite.th_on && m_bEmulateOn) iTrebleAccentDelayCnt = 3;
+	if ((isHoleOn(dAvg, m_rcTrebleSnakebite.th_on) && m_bEmulateOn) || iTrebleAccentDelayCnt > 0) {
+		if (isHoleOn(dAvg, m_rcTrebleSnakebite.th_on) && m_bEmulateOn) iTrebleAccentDelayCnt = 3;
 		m_bTrebleAccent = true;
 	}
 	else {

@@ -54,6 +54,7 @@ private:
 	void TrebleCrescendoCurv(double &dCresVelo);
 	//int CalcAmplifier();	// should emulate...
 
+
 };
 
 

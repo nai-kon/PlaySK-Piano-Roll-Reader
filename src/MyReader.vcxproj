@@ -101,7 +101,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_core249d.lib;opencv_highgui249d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_core249d.lib;opencv_highgui249d.lib;opencv_imgproc249d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
@@ -142,7 +142,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_core249.lib;opencv_highgui249.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_core249.lib;opencv_highgui249.lib;opencv_imgproc249.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
@@ -173,6 +173,9 @@
   <ItemGroup>
     <ClInclude Include="AmpicoA.h" />
     <ClInclude Include="DuoArt.h" />
+    <ClInclude Include="InputScanImg.h" />
+    <ClInclude Include="InputVideo.h" />
+    <ClInclude Include="InputWebcam.h" />
     <ClInclude Include="json11.hpp" />
     <ClInclude Include="cvhelper.h" />
     <ClInclude Include="main.h" />
@@ -184,6 +187,9 @@
   <ItemGroup>
     <ClCompile Include="AmpicoA.cpp" />
     <ClCompile Include="DuoArt.cpp" />
+    <ClCompile Include="InputScanImg.cpp" />
+    <ClCompile Include="InputVideo.cpp" />
+    <ClCompile Include="InputWebcam.cpp" />
     <ClCompile Include="json11.cpp" />
     <ClCompile Include="cvhelper.cpp" />
     <ClCompile Include="main.cpp" />

@@ -67,11 +67,14 @@ protected:
 	int m_iBassStackVelo, m_iTrebleStackVelo;
 	bool m_bEmulateOn;
 
+	bool m_bInvert = true;
 	
 	virtual void EmulateVelocity(cv::Mat &frame);
 	void EmulatePedal(cv::Mat &frame);
 	void EmulateNote(cv::Mat &frame);
 	double GetAvgHoleBrightness(cv::Mat &frame, const TRACKER_HOLE &hole);
+	bool isHoleOn(double dAvgBrightness, int dOnBrightness);
+	bool isHoleOff(double dAvgBrightness, int dOffBrightness);
 	void DrawHole(cv::Mat &frame, const TRACKER_HOLE &hole, bool hole_on);
 	void SendMidiMsg(const HMIDIOUT &hm);
 	void SetHoleRectFromJsonObj(const json11::Json json, TRACKER_HOLE &rcSetHole);

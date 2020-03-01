@@ -40,8 +40,9 @@ int AmpicoA::NoteAllOff(const HMIDIOUT &hm)
 
 
 int AmpicoA::LoadPlayerSettings()
-{
-	std::ifstream ifs("config\\AmpicoA_tracker.json");
+{	
+
+	std::ifstream ifs(m_bInvert ? "config\\AmpicoA_Scanned_tracker.json" : "config\\AmpicoA_tracker.json");
 	std::string err, strjson((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	json11::Json json = json11::Json::parse(strjson, err);
 
@@ -122,7 +123,7 @@ void AmpicoA::CheckExpressionHoles(cv::Mat &frame)
 {
 	// Bass Cancel
 	double dAvg = GetAvgHoleBrightness(frame, m_rcBassCancel);
-	m_bBassCancel = dAvg < m_rcBassCancel.th_on ? true : false;
+	m_bBassCancel = isHoleOn(dAvg, m_rcBassCancel.th_on) ? true : false;
 	if (m_bBassCancel) {
 		m_bBassLv2 = false;
 		m_bBassLv4 = false;
@@ -131,7 +132,7 @@ void AmpicoA::CheckExpressionHoles(cv::Mat &frame)
 
 	// Treble Cancel
 	dAvg = GetAvgHoleBrightness(frame, m_rcTrebleCancel);
-	m_bTrebleCancel = dAvg < m_rcTrebleCancel.th_on ? true : false;
+	m_bTrebleCancel = isHoleOn(dAvg, m_rcTrebleCancel.th_on) ? true : false;
 	if (m_bTrebleCancel) {
 		m_bTrebleLv2 = false;
 		m_bTrebleLv4 = false;
@@ -144,44 +145,44 @@ void AmpicoA::CheckExpressionHoles(cv::Mat &frame)
 
 	// Bass Slow Crescendo
 	dAvg = GetAvgHoleBrightness(frame, m_rcBassSlowCresc);
-	if (dAvg < m_rcBassSlowCresc.th_on && !m_bBassSlowCresOn){
+	if (isHoleOn(dAvg, m_rcBassSlowCresc.th_on) && !m_bBassSlowCresOn){
 		m_bBassSlowCresOn = true;
 	}
-	else if (dAvg > m_rcBassSlowCresc.th_off && m_bBassSlowCresOn){
+	else if (isHoleOff(dAvg, m_rcBassSlowCresc.th_off) && m_bBassSlowCresOn){
 		m_bBassSlowCresOn = false;
 	}
 
 	// Treble Slow Crescendo
 	dAvg = GetAvgHoleBrightness(frame, m_rcTrebleSlowCresc);
-	if (dAvg < m_rcTrebleSlowCresc.th_on && !m_bTrebleSlowCresOn){
+	if (isHoleOn(dAvg, m_rcTrebleSlowCresc.th_on) && !m_bTrebleSlowCresOn){
 		m_bTrebleSlowCresOn = true;
 	}
-	else if (dAvg > m_rcTrebleSlowCresc.th_off && m_bTrebleSlowCresOn){
+	else if (isHoleOff(dAvg, m_rcTrebleSlowCresc.th_off) && m_bTrebleSlowCresOn){
 		m_bTrebleSlowCresOn = false;
 	}
 
 	// Bass Fast Crescendo
 	dAvg = GetAvgHoleBrightness(frame, m_rcBassFastCresc);
-	if (dAvg < m_rcBassFastCresc.th_on && !m_bBassFastCresOn){
+	if (isHoleOn(dAvg, m_rcBassFastCresc.th_on) && !m_bBassFastCresOn){
 		m_bBassFastCresOn = true;
 	}
-	else if (dAvg > m_rcBassFastCresc.th_off && m_bBassFastCresOn){
+	else if (isHoleOff(dAvg, m_rcBassFastCresc.th_off) && m_bBassFastCresOn){
 		m_bBassFastCresOn = false;
 	}
 
 	// Treble Fast Crescendo
 	dAvg = GetAvgHoleBrightness(frame, m_rcTrebleFastCresc);
-	if (dAvg < m_rcTrebleFastCresc.th_on && !m_bTrebleFastCresOn){
+	if (isHoleOn(dAvg, m_rcTrebleFastCresc.th_on) && !m_bTrebleFastCresOn){
 		m_bTrebleFastCresOn = true;
 	}
-	else if (dAvg > m_rcTrebleFastCresc.th_off && m_bTrebleFastCresOn){
+	else if (isHoleOff(dAvg, m_rcTrebleFastCresc.th_off) && m_bTrebleFastCresOn){
 		m_bTrebleFastCresOn = false;
 	}
 
 	// Bass Intensity 2->4->6
 	for (UINT hole = 0; hole < 3; hole++) {
 		dAvg = GetAvgHoleBrightness(frame, m_rcBassIntensity[hole]);
-		if (dAvg < m_rcBassIntensity[hole].th_on) {
+		if (isHoleOn(dAvg, m_rcBassIntensity[hole].th_on)) {
 			switch (hole) {
 			case 0:
 				m_bBassLv2 = true;
@@ -199,7 +200,7 @@ void AmpicoA::CheckExpressionHoles(cv::Mat &frame)
 	// Treble Intensity 2->4->6
 	for (UINT hole = 0; hole < 3; hole++) {
 		dAvg = GetAvgHoleBrightness(frame, m_rcTrebleIntensity[hole]);
-		if (dAvg < m_rcTrebleIntensity[hole].th_on) {
+		if (isHoleOn(dAvg, m_rcTrebleIntensity[hole].th_on)) {
 			switch (hole) {
 			case 0:
 				m_bTrebleLv2 = true;

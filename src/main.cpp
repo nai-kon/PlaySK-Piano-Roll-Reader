@@ -105,7 +105,7 @@ int SelectPlayer(HWND &hWnd)
 	// Load Player Settings
 	if (g_hInstPlayer->LoadPlayerSettings() != 0){
 		MessageBox(hWnd, _T("Error : Player Setting File Load Failed"), _T("Error"), MB_ICONWARNING | MB_OK);
-		if(g_hInstPlayer) delete g_hInstPlayer;
+		delete g_hInstPlayer;
 		g_hInstPlayer = NULL;
 		DestroyWindow(hWnd);
 		return -1;
@@ -142,12 +142,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 
-		if (!g_CvCap.isOpened()) {
-			MessageBox(hWnd, _T("Error : Input Source not found! program exit"), _T("Error"), MB_ICONWARNING | MB_OK);
-			DestroyWindow(hWnd);
-			break;
-		}
-
 		if(g_bIsTrackingSetMode){
 			std::string strTrackingFile = g_strVideoPath.substr(0, g_strVideoPath.find_last_of(".")) + "_Tracking.txt";
 			fopen_s(&fpAutoTracking, strTrackingFile.c_str(), "w");
@@ -172,7 +166,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case IDM_FILE:
 			::EnterCriticalSection(&g_csExclusiveThread);
-			OpenVideoFile(hWnd);
+			delete g_hVideoSrc;
+			g_hVideoSrc = new InputScanImg();
+			g_hVideoSrc->SelSrcFile(hWnd);
 			::LeaveCriticalSection(&g_csExclusiveThread);
 			break;
 		case IDM_ABOUT:
@@ -285,9 +281,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				SetWindowText(g_stRollOffset, strBuf);
 
 				// Write Tracking Offset to File
-				if (g_bIsTrackingSetMode && fpAutoTracking) {
-					fprintf_s(fpAutoTracking, "%u : %d\n", (UINT)g_CvCap.get(CV_CAP_PROP_POS_FRAMES), iTrackinfOff);
-				}
+				//if (g_bIsTrackingSetMode && fpAutoTracking) {
+				//	fprintf_s(fpAutoTracking, "%u : %d\n", (UINT)g_CvCap.get(CV_CAP_PROP_POS_FRAMES), iTrackinfOff);
+				//}
 			}
 			break;
 
@@ -344,7 +340,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_DESTROY:
-		if (g_hInstPlayer) delete g_hInstPlayer;
+		delete g_hInstPlayer;
+		delete g_hVideoSrc;
 		if(fpAutoTracking) fclose(fpAutoTracking);
 		midiOutReset(g_hMidiOut);
 		midiOutClose(g_hMidiOut);
@@ -479,19 +476,14 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			wsprintf(strBuf, _T("Player : %s"), VRPlayerName[g_VRPlayer]);
 			SendMessage(g_hStatusBar, SB_SETTEXT, 1, (LPARAM)strBuf);
 
-			bool bIsOpenVideo = false;
+			// select video src file
+			bool bSelOK = true;
 			if (DlgState != SettingDlgState::DLG1ONLY){
-
-				if (g_videoSrc == VideoSource::VIDEOFILE){
-					if (OpenVideoFile(hDlg) != 0) bIsOpenVideo = true;
-					
-				}
-				else if (g_videoSrc == VideoSource::WEBCAM) {
-					if (OpenWebcam(hDlg) != 0) bIsOpenVideo = true;
-				}
+				bSelOK = g_hVideoSrc->SelSrcFile(hDlg);
 			}
 
-			if (!bIsOpenVideo) EndDialog(hDlg, IDOK);
+			if (bSelOK) EndDialog(hDlg, IDOK);
+
 			::LeaveCriticalSection(&g_csExclusiveThread);
 
 			return TRUE;
@@ -537,11 +529,14 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			return TRUE;
 
 		case IDC_WEBCAM:
-			g_videoSrc = VideoSource::WEBCAM;
+			delete g_hVideoSrc;
+			g_hVideoSrc = new InputScanImg();
 			return TRUE;
 
 		case IDC_VIDEOFILE:
-			g_videoSrc = VideoSource::VIDEOFILE;
+			delete g_hVideoSrc;
+			g_hVideoSrc = new InputVideo();
+
 			return TRUE;
 
 		case IDC_COMBO_PLAYER:
@@ -551,72 +546,6 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 
 	}
 	return FALSE;
-}
-
-
-int OpenVideoFile(const HWND &hWnd)
-{
-
-	TCHAR szFilePath[MAX_PATH] = {0};
-
-	OPENFILENAME ofn = { sizeof(ofn) };
-	ofn.hwndOwner = hWnd;
-	ofn.lpstrFilter = _T("Video File(mp4, AVI)\0*.mp4;*.avi\0");
-	ofn.lpstrFile = szFilePath;
-	ofn.nMaxFile = MAX_PATH;
-	ofn.nMaxFileTitle = MAX_PATH;
-	ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-	ofn.lpstrTitle = _T("Open Roll Video File"); 
-
-	if (!GetOpenFileName(&ofn)) return -1;
-
-	std::string filepath;
-#ifdef UNICODE
-	size_t size(0);
-	char buffer[2 * MAX_PATH + 2] = {0};
-	setlocale(LC_CTYPE, "Japanese_Japan.932");
-	wcstombs_s(&size, buffer, (size_t)MAX_PATH, szFilePath, (size_t)MAX_PATH);
-	filepath.assign(buffer);
-#else
-	filepath = tcVideoFileNameFull;
-#endif
-
-	g_strVideoPath = filepath;
-
-	// Check Video Resolution
-	cv::VideoCapture dummyCap(filepath);
-	if ((dummyCap.get(CV_CAP_PROP_FRAME_WIDTH) != VIDEO_WIDTH) || (dummyCap.get(CV_CAP_PROP_FRAME_HEIGHT) != VIDEO_HEIGHT)){
-		MessageBox(hWnd, _T("Video Resultion is not 640x480"), _T("Error"), MB_OK | MB_ICONWARNING);
-
-		return -1;
-	}
-
-	// Open Video File
-	if(g_CvCap.isOpened()) g_CvCap.release();
-	g_CvCap.open(filepath);
-
-	return 0;
-}
-
-
-int OpenWebcam(const HWND &hWnd) 
-{
-	// Load Webcam Device Number
-	std::ifstream ifs(SETTING_JSON_NAME);
-	std::string err, strjson((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	json11::Json json = json11::Json::parse(strjson, err);
-	int iWebcam_Devno = json["device"]["webcam_devno"].int_value();
-
-	// Open Webcam
-	if (g_CvCap.isOpened()) g_CvCap.release();
-	if (!g_CvCap.open(iWebcam_Devno)) {
-		MessageBox(hWnd, _T("Failed to Open Webcam"), _T("Error"), MB_OK | MB_ICONWARNING);
-		return -1;
-	}
-
-	g_CvCap.set(CV_CAP_PROP_FPS, MAX_g_dwVideoFrameRate);
-
-	return 0;
 }
 
 
@@ -631,7 +560,7 @@ HWND CreateStatusBar(const HWND &hWnd)
 	SendMessage(status, SB_SETPARTS, 3, (LPARAM)sb_pos);
 	SendMessage(status, SB_SETTEXT, 0, (LPARAM)_T("Midi Out"));
 	SendMessage(status, SB_SETTEXT, 1, (LPARAM)_T("Player "));
-	SendMessage(status, SB_SETTEXT, 2, (LPARAM)_T("Frames"));
+	SendMessage(status, SB_SETTEXT, 2, (LPARAM)_T("Frames : 0 fps"));
 
 	return status;
 }
@@ -726,27 +655,6 @@ int CreateButton(const HWND &hWnd)
 	return 0;
 }
 
-static void LoadTrackingOffset(std::vector< std::pair<UINT, INT> > &arTrackingOffsetVal)
-{
-	arTrackingOffsetVal.clear();
-	if (g_bIsTrackingSetMode) return;
-
-	std::string strPath = g_strVideoPath.substr(0, g_strVideoPath.find_last_of(".")) + "_Tracking.txt";
-	FILE *fp = NULL;
-	fopen_s(&fp, strPath.c_str(), "r");
-	if (fp) {
-		UINT uiFrames = 0;
-		INT iOffset = 0;
-		while (fscanf_s(fp, "%u : %d", &uiFrames, &iOffset) != EOF) {
-			arTrackingOffsetVal.push_back(std::pair<UINT, UINT>(uiFrames, iOffset));
-		}
-
-		fclose(fp);
-	}
-
-	return;
-}
-
 
 DWORD WINAPI PlayerThread(LPVOID lpdata)
 {
@@ -755,61 +663,40 @@ DWORD WINAPI PlayerThread(LPVOID lpdata)
 	LARGE_INTEGER nFreq;
 	QueryPerformanceFrequency(&nFreq);
 
-	// For Auto Tracking
-	std::vector< std::pair<UINT, INT> > arTrackingOffsetVal;
-	std::vector< std::pair<UINT, INT> >::iterator it;
-
 	while (!g_bAppEndFlag){
 
 		LARGE_INTEGER nStartTime;
 		QueryPerformanceCounter(&nStartTime);
 		::EnterCriticalSection(&g_csExclusiveThread);
 
-		static bool bLastFrame = false;
-		UINT iCurFrame = (UINT)g_CvCap.get(CV_CAP_PROP_POS_FRAMES);
-		if (iCurFrame == 0) bLastFrame = false;
+		//PostMessage(g_hBtnStartEngine, BM_CLICK, 0, 0);
+		
 
-		if ((g_bEngineStart || iCurFrame == 0) && !bLastFrame){
+		// show beginning frame
+		if (g_bEngineStart || g_hVideoSrc->isBegin()){
 
 			cv::Mat frame;
-			if (g_CvCap.grab() && g_CvCap.retrieve(frame)){
-				bLastFrame = false;
-
-				// Load AutoTracking File
-				if (iCurFrame == 0) {
-					LoadTrackingOffset(arTrackingOffsetVal);
-					it = arTrackingOffsetVal.begin();
-				}
-
-				// Do AutoTracking
-				if (g_videoSrc == VideoSource::VIDEOFILE 
-					&& !g_bIsTrackingSetMode 
-					&& it != arTrackingOffsetVal.end() 
-					&& iCurFrame == it->first){
-					
-					g_hInstPlayer->SetRollOffset(it->second);
+			if (g_hVideoSrc->GetNextFrame(frame)) {
+				// AutoTracking 
+				static int pre_offset = 0;
+				int cur_offset = g_hVideoSrc->GetTrackingOffset();
+				if (pre_offset != cur_offset) {
+					pre_offset = cur_offset;
+					g_hInstPlayer->SetRollOffset(cur_offset);
 					TCHAR bufStr[MAX_LOADSTRING] = { 0 };
-					wsprintf(bufStr, TEXT("%d"), it->second);
+					wsprintf(bufStr, TEXT("%d"), cur_offset);
 					SetWindowText(g_stRollOffset, bufStr);
-					it++;
-#ifdef DEBUG
-					static TCHAR strBuf[20];
-					wsprintf(strBuf, _T("%u frames\n"), uiCurFrame);
-					OutputDebugString(strBuf);
-#endif // DEBUG
 				}
 
 				// Emulates Roll Image to Midi Siganl
 				g_hInstPlayer->SetFrameRate(nPrevFPS);
 				g_hInstPlayer->Emulate(frame, g_hMidiOut);
 				cvhelper::cvtMat2HDC()(g_hdcImage, frame);
+			}
 
-				static RECT rcClipping = { 0, 0, VIDEO_WIDTH, VIDEO_HEIGHT };
-				InvalidateRect((HWND)lpdata, &rcClipping, FALSE);
-			}
-			else {
-				bLastFrame = true;
-			}
+			static RECT rcClipping = { 0, 0, VIDEO_WIDTH, VIDEO_HEIGHT };
+			InvalidateRect((HWND)lpdata, &rcClipping, FALSE);
+
 		}
 		::LeaveCriticalSection(&g_csExclusiveThread);
 
@@ -827,7 +714,7 @@ DWORD WINAPI PlayerThread(LPVOID lpdata)
 
 
 		// Show FrameRate to Status Bar
-		DWORD nCurFPS = (DWORD)round(1000 / dPassTime);
+		DWORD nCurFPS = g_bEngineStart ? (DWORD)round(1000 / dPassTime) : 0;
 		if (nPrevFPS != nCurFPS){
 			TCHAR strBuf[20];
 			wsprintf(strBuf, _T("Frames : %d fps"), nCurFPS);

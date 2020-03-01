@@ -7,7 +7,9 @@
 #include "AmpicoA.h"
 #include "DuoArt.h"
 #include "cvhelper.h"
-
+#include "InputVideo.h"
+#include "InputWebcam.h"
+#include "InputScanImg.h"
 
 
 #pragma comment (lib, "winmm.lib")
@@ -24,7 +26,6 @@
 
 #define MAX_LOADSTRING			100
 #define MAX_g_dwVideoFrameRate	100
-#define SETTING_JSON_NAME		_T("Setting.json")
 
 // Global Func
 ATOM MyRegisterClass(HINSTANCE hInstance);
@@ -38,8 +39,6 @@ int OpenVideoFile(const HWND &hWnd);
 int OpenWebcam(const HWND &hWnd);
 DWORD WINAPI PlayerThread(LPVOID);
 
-enum VideoSource	{ WEBCAM, VIDEOFILE };				// Input Video Source
-static VideoSource g_videoSrc = VIDEOFILE;
 enum SettingDlgState{ DLG1, DLG2, DLG1ONLY, DLG2ONLY };	// Kind of Setting DLG
 enum VRPlayer	{ _88NOTE, _DUO_ART, _AMPICO_A };		// Kind of Virutal Tracker Bar
 static LPCTSTR VRPlayerName[] = { _T("88-Note"), _T("Duo-Art"), _T("Ampico A"), NULL };
@@ -58,12 +57,13 @@ HWND g_hStMaxVelo, g_hStMinVelo, g_hStBassVelo, g_hStTrebleVelo, g_stRollOffset,
 VRPlayer g_VRPlayer = _88NOTE;
 HDC g_hdcImage;									// Image from Video Frame
 Player *g_hInstPlayer = NULL;					// Player Instance
+InputVideo *g_hVideoSrc = NULL;					// Input Video Src
 HWND g_hStatusBar;								// Status Bar Handle
 HMIDIOUT g_hMidiOut;							// Midiout Handle
 cv::VideoCapture g_CvCap;						// OpenCV Video Capture Class
 bool g_bIsTrackingSetMode = false;				// Tracking Offset Set Mode
 CRITICAL_SECTION g_csExclusiveThread;			// Player Thread Exclusive by Cretical Section
-bool g_bEngineStart = false;					// State of Emulates Start/Stop
+bool g_bEngineStart = false;						// State of Emulates Start/Stop
 DWORD g_dwVideoFrameRate = 60;					// Video FrameRate
 std::string g_strVideoPath;						// Video File Path
 
