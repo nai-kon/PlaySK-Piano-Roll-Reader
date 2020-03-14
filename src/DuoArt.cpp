@@ -24,7 +24,7 @@ DuoArt::DuoArt()
 
 int DuoArt::LoadPlayerSettings()
 {
-	std::ifstream ifs("config\\Duo-Art_tracker.json");
+	std::ifstream ifs(m_bInvert ? "config\\Duo-Art_Scanned_tracker.json" : "config\\Duo-Art_tracker.json");
 	std::string err, strjson((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	json11::Json json = json11::Json::parse(strjson, err);
 

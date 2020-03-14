@@ -54,11 +54,11 @@ bool InputScanImg::SelSrcFile(const HWND &hParentWnd)
 
 bool InputScanImg::GetNextFrame(cv::Mat &frame)
 {
-	UINT cropx = m_uiRollLeftPos - m_uiMargin;
-	UINT cropw = m_uiRollWidth + 2 * m_uiMargin;
-	UINT croph = (VIDEO_HEIGHT * cropw / VIDEO_WIDTH);
-	UINT cropy = m_img.rows - croph - (int)m_dCurYPos;
-
+	int cropx = m_uiRollLeftPos - m_uiMargin;
+	int cropw = m_uiRollWidth + 2 * m_uiMargin;
+	int croph = (VIDEO_HEIGHT * cropw / VIDEO_WIDTH);
+	int cropy = m_img.rows - croph - (int)m_dCurYPos;
+	
 	if (cropy < 0) {
 		return false;
 	}
@@ -71,7 +71,7 @@ bool InputScanImg::GetNextFrame(cv::Mat &frame)
 		croph);
 
 	cv::resize(m_img(roi), frame, cv::Size(VIDEO_WIDTH, VIDEO_HEIGHT));
-	m_dCurYPos += 2.5;
+	m_dCurYPos += 2;
 
 	return true;
 }

@@ -89,10 +89,10 @@ void Player::EmulatePedal(cv::Mat &frame)
 
 	// Check Soft Pedal Hole
 	dAvg = GetAvgHoleBrightness(frame, m_rcSoftPedal);
-	if (isHoleOn(dAvg, m_rcSustainPedal.th_on) && m_SoftPedalOn == off && m_bEmulateOn) {
+	if (isHoleOn(dAvg, m_rcSoftPedal.th_on) && m_SoftPedalOn == off && m_bEmulateOn) {
 		m_SoftPedalOn = onTriger;
 	}
-	else if (isHoleOff(dAvg, m_rcSustainPedal.th_off) && m_SoftPedalOn == on) {
+	else if (isHoleOff(dAvg, m_rcSoftPedal.th_off) && m_SoftPedalOn == on) {
 		m_SoftPedalOn = offTriger;
 	}
 	hole_on = (m_SoftPedalOn > 0 && m_bEmulateOn);
