@@ -11,7 +11,7 @@ public:
 	AmpicoA();
 	virtual ~AmpicoA() {}
 	virtual void EmulateVelocity(cv::Mat &frame);
-	virtual int LoadPlayerSettings();
+	virtual int LoadPlayerSettings(LPCTSTR config_path);
 	virtual int NoteAllOff(const HMIDIOUT &hm);
 	virtual int GetMinVelocity();
 	virtual int GetMaxVelocity();

@@ -11,6 +11,7 @@
 #include "InputWebcam.h"
 #include "InputScanImg.h"
 
+typedef basic_string<_TCHAR> tstring;
 
 #pragma comment (lib, "winmm.lib")
 #pragma comment(lib, "ComCtl32.lib")
@@ -35,18 +36,16 @@ INT_PTR CALLBACK About(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 HWND CreateStatusBar(const HWND &hWnd);
 int CreateButton(const HWND &hWnd);
-int OpenVideoFile(const HWND &hWnd); 
-int OpenWebcam(const HWND &hWnd);
+vector<tstring> GetTrackerFiles();
 DWORD WINAPI PlayerThread(LPVOID);
 
 enum SettingDlgState{ DLG1, DLG2, DLG1ONLY, DLG2ONLY };	// Kind of Setting DLG
-enum VRPlayer	{ _88NOTE, _DUO_ART, _AMPICO_A };		// Kind of Virutal Tracker Bar
-static LPCTSTR VRPlayerName[] = { _T("88-Note"), _T("Duo-Art"), _T("Ampico A"), NULL };
 
 // Global Variable
 HINSTANCE hInst;
 TCHAR szTitle[MAX_LOADSTRING];
 TCHAR szWindowClass[MAX_LOADSTRING];
+tstring g_strTrackerName;
 
 static bool g_bAppEndFlag = false;
 static SettingDlgState DlgState = SettingDlgState::DLG1;
@@ -54,7 +53,6 @@ static SettingDlgState DlgState = SettingDlgState::DLG1;
 // Control Handles
 HWND g_hBtnStartEngine, g_hBtnMidiOn, g_hSlFrameRate;
 HWND g_hStMaxVelo, g_hStMinVelo, g_hStBassVelo, g_hStTrebleVelo, g_stRollOffset, g_stNoteOnFrame;
-VRPlayer g_VRPlayer = _88NOTE;
 HDC g_hdcImage;									// Image from Video Frame
 Player *g_hInstPlayer = NULL;					// Player Instance
 InputVideo *g_hVideoSrc = NULL;					// Input Video Src

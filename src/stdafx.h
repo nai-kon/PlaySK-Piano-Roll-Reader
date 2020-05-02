@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <tchar.h>
 
-
 #include <iostream>
 #include <fstream>
 #include <opencv2/core/core.hpp>
@@ -21,6 +20,7 @@
 #include <commctrl.h>
 #include <commdlg.h>
 #include <mmsystem.h>
+
 
 // Video Resolution Define
 #define VIDEO_WIDTH		640

@@ -9,7 +9,7 @@ using namespace std;
 class InputWebcam : public InputVideo{
 
 public:
-	InputWebcam() {};
+	InputWebcam();
 	virtual ~InputWebcam();
 	virtual bool SelSrcFile(const HWND &hParentWnd);
 	virtual bool GetNextFrame(cv::Mat &frame);

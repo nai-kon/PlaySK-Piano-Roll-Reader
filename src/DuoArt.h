@@ -11,7 +11,7 @@ public:
 	DuoArt();
 	virtual ~DuoArt() {}
 	virtual void EmulateVelocity(cv::Mat &frame);
-	virtual int LoadPlayerSettings();
+	virtual int LoadPlayerSettings(LPCTSTR config_path);
 	virtual int GetMinVelocity();
 	virtual int GetMaxVelocity();
 

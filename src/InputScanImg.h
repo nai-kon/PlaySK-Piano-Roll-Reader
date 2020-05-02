@@ -10,7 +10,7 @@ using namespace std;
 class InputScanImg : public InputVideo {
 
 public:
-	InputScanImg() {};
+	InputScanImg();
 	virtual ~InputScanImg();
 	virtual bool SelSrcFile(const HWND &hParentWnd);
 	virtual bool GetNextFrame(cv::Mat &frame);
@@ -26,5 +26,5 @@ private:
 	UINT m_uiMargin;
 	UINT m_uiRollWidth;
 
-	void FindBothEndsPos();
+	void FindRollEdges();
 };

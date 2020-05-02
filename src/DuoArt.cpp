@@ -21,10 +21,9 @@ DuoArt::DuoArt()
 }
 
 
-
-int DuoArt::LoadPlayerSettings()
+int DuoArt::LoadPlayerSettings(LPCTSTR config_path)
 {
-	std::ifstream ifs(m_bInvert ? "config\\Duo-Art_Scanned_tracker.json" : "config\\Duo-Art_tracker.json");
+	std::ifstream ifs(config_path);
 	std::string err, strjson((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	json11::Json json = json11::Json::parse(strjson, err);
 
@@ -37,6 +36,8 @@ int DuoArt::LoadPlayerSettings()
 	m_iThemeMaxVelo = obj["max"].int_value();
 
 	obj = json["tracker_holes"];
+	m_bIsDarkHole = obj["is_dark_hole"].bool_value();
+	m_iHoleOnth = obj["on_brightness"].int_value();
 	SetHoleRectFromJsonObj(obj["sustain"], m_rcSustainPedal);
 	SetHoleRectFromJsonObj(obj["soft"], m_rcSoftPedal);
 	SetHoleRectFromJsonObj(obj["bass_snakebite"], m_rcBassSnakebite);
@@ -79,8 +80,8 @@ void DuoArt::CheckExpressionHoles(cv::Mat &frame)
 
 	// Duo-Art Accomp Holes check(Accomp lv.1->lv.8)
 	for (int n = 0; n < 4; n++) {
-		dAvg = GetAvgHoleBrightness(frame, m_rcAccomp[n]);
-		bool bActive = (isHoleOn(dAvg, m_rcAccomp[n].th_on) && m_bEmulateOn) ? true : false;
+		dAvg = GetHoleApatureRatio(frame, m_rcAccomp[n]);
+		bool bActive = (isHoleOn(dAvg, m_rcAccomp[n].on_apature) && m_bEmulateOn);
 
 		switch (n) {
 		case 0:
@@ -101,8 +102,8 @@ void DuoArt::CheckExpressionHoles(cv::Mat &frame)
 
 	// Duo-Art Theme Holes check(Theme lv.1->lv.8)
 	for (int n = 0; n < 4; n++) {
-		dAvg = GetAvgHoleBrightness(frame, m_rcTheme[n]);
-		bool bActive = (isHoleOn(dAvg, m_rcTheme[n].th_on) && m_bEmulateOn) ? true : false;
+		dAvg = GetHoleApatureRatio(frame, m_rcTheme[n]);
+		bool bActive = (isHoleOn(dAvg, m_rcTheme[n].on_apature) && m_bEmulateOn);
 
 		switch (n) {
 		case 0:
@@ -123,9 +124,10 @@ void DuoArt::CheckExpressionHoles(cv::Mat &frame)
 
 	// Check Bass Snakebite
 	static int iBassAccentDelayCnt = 0;
-	dAvg = GetAvgHoleBrightness(frame, m_rcBassSnakebite);
-	if ((isHoleOn(dAvg, m_rcBassSnakebite.th_on) && m_bEmulateOn) || iBassAccentDelayCnt > 0) {
-		if (isHoleOn(dAvg, m_rcBassSnakebite.th_on) && m_bEmulateOn) iBassAccentDelayCnt = 3;
+	dAvg = GetHoleApatureRatio(frame, m_rcBassSnakebite);
+	bool isBassAccent = isHoleOn(dAvg, m_rcBassSnakebite.on_apature);
+	if ((isBassAccent && m_bEmulateOn) || iBassAccentDelayCnt > 0) {
+		if (isBassAccent && m_bEmulateOn) iBassAccentDelayCnt = 3;
 		m_bBassAccent = true;
 	}
 	else {
@@ -136,9 +138,10 @@ void DuoArt::CheckExpressionHoles(cv::Mat &frame)
 
 	// Check Treble Snakebite
 	static int iTrebleAccentDelayCnt = 0;
-	dAvg = GetAvgHoleBrightness(frame, m_rcTrebleSnakebite);
-	if ((isHoleOn(dAvg, m_rcTrebleSnakebite.th_on) && m_bEmulateOn) || iTrebleAccentDelayCnt > 0) {
-		if (isHoleOn(dAvg, m_rcTrebleSnakebite.th_on) && m_bEmulateOn) iTrebleAccentDelayCnt = 3;
+	dAvg = GetHoleApatureRatio(frame, m_rcTrebleSnakebite);
+	bool isTrebleAccent = isHoleOn(dAvg, m_rcTrebleSnakebite.on_apature);
+	if ((isTrebleAccent && m_bEmulateOn) || iTrebleAccentDelayCnt > 0) {
+		if (isTrebleAccent && m_bEmulateOn) iTrebleAccentDelayCnt = 3;
 		m_bTrebleAccent = true;
 	}
 	else {

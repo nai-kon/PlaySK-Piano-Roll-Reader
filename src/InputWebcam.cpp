@@ -3,9 +3,13 @@
 #include "InputWebcam.h"
 #include "json11.hpp"
 
-InputWebcam::~InputWebcam()
+InputWebcam::InputWebcam()
 {
 	m_iTrackingOffset = 0;
+}
+
+InputWebcam::~InputWebcam()
+{
 }
 
 
@@ -30,10 +34,5 @@ bool InputWebcam::SelSrcFile(const HWND &hParentWnd)
 
 bool InputWebcam::GetNextFrame(cv::Mat &frame)
 {
-	if (m_cap.grab() && m_cap.retrieve(frame)) {
-		
-		return true;
-	}
-
-	return false;
+	return (m_cap.grab() && m_cap.retrieve(frame));
 }

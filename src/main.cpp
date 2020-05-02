@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "main.h"
 
+using namespace std;
 
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
@@ -77,7 +78,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 int SelectPlayer(HWND &hWnd)
 {
-
+	GetTrackerFiles();
 	::EnterCriticalSection(&g_csExclusiveThread);
 
 	// Release Player instance
@@ -88,22 +89,19 @@ int SelectPlayer(HWND &hWnd)
 	}
 
 	// Create Player instance
-	switch (g_VRPlayer) {
-	case VRPlayer::_88NOTE:
+	if (g_strTrackerName.find(_T("88Note")) != string::npos) {
 		g_hInstPlayer = new Player();
-		break;
-	case VRPlayer::_DUO_ART:
+	}
+	else if (g_strTrackerName.find(_T("Duo-Art")) != string::npos) {
 		g_hInstPlayer = new DuoArt();
-		break;
-	case VRPlayer::_AMPICO_A:
+	}
+	else if (g_strTrackerName.find(_T("Ampico_A")) != string::npos) {
 		g_hInstPlayer = new AmpicoA();
-		break;
-	default:
-		break;
 	}
 
 	// Load Player Settings
-	if (g_hInstPlayer->LoadPlayerSettings() != 0){
+	tstring configpath = _T("config\\") + g_strTrackerName + _T(".json");
+	if (!g_hInstPlayer || g_hInstPlayer->LoadPlayerSettings(configpath.c_str()) != 0){
 		MessageBox(hWnd, _T("Error : Player Setting File Load Failed"), _T("Error"), MB_ICONWARNING | MB_OK);
 		delete g_hInstPlayer;
 		g_hInstPlayer = NULL;
@@ -143,7 +141,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 
 		if(g_bIsTrackingSetMode){
-			std::string strTrackingFile = g_strVideoPath.substr(0, g_strVideoPath.find_last_of(".")) + "_Tracking.txt";
+			string strTrackingFile = g_strVideoPath.substr(0, g_strVideoPath.find_last_of(".")) + "_Tracking.txt";
 			fopen_s(&fpAutoTracking, strTrackingFile.c_str(), "w");
 		}
 
@@ -308,15 +306,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_PAINT:
 	{
-		// Disp Velocity
-		static int iDispCnt = 0;
-		if (++iDispCnt % 2 == 0){
-			iDispCnt = 0;
-			TCHAR szBufVelocity[10];
-			wsprintf(szBufVelocity, _T("%d"), g_hInstPlayer->GetBassVelocity());
-			SetWindowText(g_hStBassVelo, szBufVelocity);
-			wsprintf(szBufVelocity, _T("%d"), g_hInstPlayer->GetTrebleVelocity());
-			SetWindowText(g_hStTrebleVelo, szBufVelocity);
+		// show velocity
+		static int pre_bass_vel = 0;
+		static TCHAR szbuf[10];
+		int bass_vel = g_hInstPlayer->GetBassVelocity();
+		if (pre_bass_vel != bass_vel) {
+			pre_bass_vel = bass_vel;
+			wsprintf(szbuf, _T("%d"), bass_vel);
+			SetWindowText(g_hStBassVelo, szbuf);
+		}
+
+		static int pre_treb_vel = 0;
+		int treb_vel = g_hInstPlayer->GetTrebleVelocity();
+		if (pre_treb_vel != treb_vel) {
+			pre_treb_vel = treb_vel;
+			wsprintf(szbuf, _T("%d"), treb_vel);
+			SetWindowText(g_hStTrebleVelo, szbuf);
 		}
 
 		PAINTSTRUCT ps;
@@ -332,11 +337,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_CLOSE:
-		if (MessageBox(hWnd, _T("Are you sure you want to quit?"), szTitle, MB_YESNO|MB_ICONQUESTION) == IDYES){
-			g_bAppEndFlag = true;
-			WaitForSingleObject(hPlayerThread, 500);
-			if (CloseHandle(hPlayerThread)) DestroyWindow(hWnd);
-		}
+		g_bAppEndFlag = true;
+		WaitForSingleObject(hPlayerThread, 500);
+		if (CloseHandle(hPlayerThread)) DestroyWindow(hWnd);		
 		break;
 
 	case WM_DESTROY:
@@ -375,13 +378,38 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 
+// list config file names
+vector<tstring> GetTrackerFiles()
+{
+	vector<tstring> vecFNames;
+	WIN32_FIND_DATA fd;
+	HANDLE hnd = FindFirstFile(_T("config\\*.json"), &fd);
+
+	if (hnd != INVALID_HANDLE_VALUE) {
+		do {
+			if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+				continue;
+			}
+			tstring fname = fd.cFileName;
+			if (fname.find(SETTING_JSON_NAME) != string::npos) {
+				continue;
+			}
+			vecFNames.push_back(fname.substr(0, fname.rfind(_T(".json"))));
+		} while (FindNextFile(hnd, &fd));
+	}
+	FindClose(hnd);
+
+	return vecFNames;
+}
+
+
 // Setting Dialog Proc
 BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 
 	static HWND hCmbMidioutDev;
 	static HWND hCmbPlayer;
-	static std::vector <int> vecMidiDevNo;
+	static vector <int> vecMidiDevNo;
 	static MIDIOUTCAPS cap;
 
 	switch (message)
@@ -411,12 +439,13 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 		}
 		ComboBox_SetCurSel(hCmbMidioutDev, 0);
 
-		// Show Player List
+		// Show Virtual Tracker File List
 		hCmbPlayer = GetDlgItem(hDlg, IDC_COMBO_PLAYER);
-		for (int iPlayerNo = 0; VRPlayerName[iPlayerNo] != NULL; ++iPlayerNo){
-			ComboBox_AddString(hCmbPlayer, VRPlayerName[iPlayerNo]);
+
+		for (tstring fname : GetTrackerFiles()) {
+			ComboBox_AddString(hCmbPlayer, fname.c_str());
 		}
-		ComboBox_SetCurSel(hCmbPlayer, g_VRPlayer);
+		ComboBox_SetCurSel(hCmbPlayer, 0);
 
 		// Change Dlg State
 		switch (DlgState) {
@@ -424,6 +453,7 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			EnableWindow(GetDlgItem(hDlg, IDOKDLG), FALSE);
 			ShowWindow(GetDlgItem(hDlg, IDC_WEBCAM), SW_HIDE);
 			ShowWindow(GetDlgItem(hDlg, IDC_VIDEOFILE), SW_HIDE);
+			ShowWindow(GetDlgItem(hDlg, IDC_SCAN), SW_HIDE);
 			break;
 
 		case SettingDlgState::DLG1ONLY:
@@ -431,6 +461,7 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			ShowWindow(GetDlgItem(hDlg, IDC_DLGNEXT), SW_HIDE);
 			ShowWindow(GetDlgItem(hDlg, IDC_WEBCAM), SW_HIDE);
 			ShowWindow(GetDlgItem(hDlg, IDC_VIDEOFILE), SW_HIDE);
+			ShowWindow(GetDlgItem(hDlg, IDC_SCAN), SW_HIDE);
 			break;
 
 		case SettingDlgState::DLG2ONLY:
@@ -442,6 +473,7 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			ShowWindow(GetDlgItem(hDlg, IDC_STATIC2), SW_HIDE);
 			ShowWindow(GetDlgItem(hDlg, IDC_WEBCAM), SW_SHOW);
 			ShowWindow(GetDlgItem(hDlg, IDC_VIDEOFILE), SW_SHOW);
+			ShowWindow(GetDlgItem(hDlg, IDC_SCAN), SW_SHOW);
 			break;
 		}
 
@@ -458,9 +490,9 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 				midiOutReset(g_hMidiOut);
 				midiOutClose(g_hMidiOut);
 			}
-			int iMidioutDevNo = vecMidiDevNo.at(ComboBox_GetCurSel(hCmbMidioutDev));
 
 			// Open Midiout
+			int iMidioutDevNo = vecMidiDevNo.at(ComboBox_GetCurSel(hCmbMidioutDev));
 			if (midiOutOpen(&g_hMidiOut, iMidioutDevNo, 0, 0, CALLBACK_NULL) != MMSYSERR_NOERROR){
 				MessageBox(hDlg, _T("Error : Midi port can't open!"), _T("Error"), MB_ICONWARNING | MB_OK);
 				return TRUE;
@@ -473,8 +505,7 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			SendMessage(g_hStatusBar, SB_SETTEXT, 0, (LPARAM)strBuf);
 
 			// Show Player Name to Status Bar
-			wsprintf(strBuf, _T("Player : %s"), VRPlayerName[g_VRPlayer]);
-			SendMessage(g_hStatusBar, SB_SETTEXT, 1, (LPARAM)strBuf);
+			SendMessage(g_hStatusBar, SB_SETTEXT, 1, (LPARAM)g_strTrackerName.c_str());
 
 			// select video src file
 			bool bSelOK = true;
@@ -498,7 +529,7 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			if (DlgState == SettingDlgState::DLG1){
 				
 				// Transition to Inputsrc Sel Dlg
-				SetWindowText(hDlg, _T("Input Video"));
+				SetWindowText(hDlg, _T("Input"));
 				SetWindowText(GetDlgItem(hDlg, IDC_DLGNEXT), _T("Prev"));
 				EnableWindow(GetDlgItem(hDlg, IDOKDLG), TRUE);
 				ShowWindow(GetDlgItem(hDlg, IDC_COMBO_MIDIOUT), SW_HIDE);
@@ -508,6 +539,7 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 
 				ShowWindow(GetDlgItem(hDlg, IDC_WEBCAM), SW_SHOW);
 				ShowWindow(GetDlgItem(hDlg, IDC_VIDEOFILE), SW_SHOW);
+				ShowWindow(GetDlgItem(hDlg, IDC_SCAN), SW_SHOW);
 				DlgState = SettingDlgState::DLG2;
 
 			}
@@ -524,23 +556,30 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 
 				ShowWindow(GetDlgItem(hDlg, IDC_WEBCAM), SW_HIDE);
 				ShowWindow(GetDlgItem(hDlg, IDC_VIDEOFILE), SW_HIDE);
+				ShowWindow(GetDlgItem(hDlg, IDC_SCAN), SW_HIDE);
 				DlgState = SettingDlgState::DLG1;
 			}
 			return TRUE;
 
 		case IDC_WEBCAM:
 			delete g_hVideoSrc;
-			g_hVideoSrc = new InputScanImg();
+			g_hVideoSrc = new InputWebcam();
 			return TRUE;
 
 		case IDC_VIDEOFILE:
 			delete g_hVideoSrc;
 			g_hVideoSrc = new InputVideo();
+			return TRUE;
 
+		case IDC_SCAN:
+			delete g_hVideoSrc;
+			g_hVideoSrc = new InputScanImg();
 			return TRUE;
 
 		case IDC_COMBO_PLAYER:
-			g_VRPlayer = (VRPlayer)ComboBox_GetCurSel(hCmbPlayer);
+			TCHAR szBuf[MAX_PATH];
+			ComboBox_GetText(hCmbPlayer, szBuf, sizeof(szBuf));
+			g_strTrackerName = szBuf;
 			return TRUE;
 		}
 
@@ -551,9 +590,7 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 
 HWND CreateStatusBar(const HWND &hWnd)
 {
-
 	int sb_pos[3] = { 300, 500, -1 };
-
 	HWND status = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | SBARS_SIZEGRIP | CCS_BOTTOM | WS_VISIBLE,
 		0, 0, 0, 0, hWnd, (HMENU)MY_STATUS, hInst, NULL);
 
@@ -567,8 +604,7 @@ HWND CreateStatusBar(const HWND &hWnd)
 
 
 int CreateButton(const HWND &hWnd)
-{
-	
+{	
 	// Play/Stop Button
 	g_hBtnStartEngine = CreateWindow(_T("BUTTON"),		
 		_T("Play"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON ,
@@ -679,7 +715,8 @@ DWORD WINAPI PlayerThread(LPVOID lpdata)
 			if (g_hVideoSrc->GetNextFrame(frame)) {
 				// AutoTracking 
 				static int pre_offset = 0;
-				int cur_offset = g_hVideoSrc->GetTrackingOffset();
+				//int cur_offset = g_hVideoSrc->GetTrackingOffset();
+				int cur_offset = g_hInstPlayer->GetTrackerOffset(frame);
 				if (pre_offset != cur_offset) {
 					pre_offset = cur_offset;
 					g_hInstPlayer->SetRollOffset(cur_offset);

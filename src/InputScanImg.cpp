@@ -3,7 +3,8 @@
 #include "InputScanImg.h"
 #include <opencv2/imgproc/imgproc.hpp>
 
-InputScanImg::~InputScanImg()
+typedef basic_string<_TCHAR> tstring;
+InputScanImg::InputScanImg()
 {
 	m_iTrackingOffset = 0;
 	m_dCurYPos = 0;
@@ -12,6 +13,10 @@ InputScanImg::~InputScanImg()
 	m_uiMargin = 0;
 }
 
+
+InputScanImg::~InputScanImg()
+{
+}
 
 bool InputScanImg::SelSrcFile(const HWND &hParentWnd)
 {
@@ -36,13 +41,15 @@ bool InputScanImg::SelSrcFile(const HWND &hParentWnd)
 	wcstombs_s(&size, buffer, MAX_PATH, szFilePath, MAX_PATH);
 	strImgPath.assign(buffer);
 
+	HCURSOR pre = SetCursor(LoadCursor(NULL, IDC_WAIT));  // wait cursor
 	m_img = cv::imread(strImgPath);
-	if (m_img.data == NULL) {
+	SetCursor(pre);
+	if (!m_img.data) {
 		MessageBox(hParentWnd, _T("Failed to Load Image"), _T("Error"), MB_OK | MB_ICONWARNING);
 		return false;
 	}
 
-	FindBothEndsPos();
+	FindRollEdges();
 	m_uiRollWidth = m_uiRollRightPos - m_uiRollLeftPos + 1;
 	// 640x480 video has 5px of margin on roll edge, so how about with scanned image?
 	m_uiMargin = (5 * m_uiRollWidth) / (VIDEO_WIDTH - 10);
@@ -64,12 +71,7 @@ bool InputScanImg::GetNextFrame(cv::Mat &frame)
 	}
 
 	// crop to rect
-	cv::Rect roi(
-		cropx,
-		cropy,
-		cropw,
-		croph);
-
+	cv::Rect roi(cropx, cropy, cropw, croph);
 	cv::resize(m_img(roi), frame, cv::Size(VIDEO_WIDTH, VIDEO_HEIGHT));
 	m_dCurYPos += 2;
 
@@ -77,7 +79,7 @@ bool InputScanImg::GetNextFrame(cv::Mat &frame)
 }
 
 
-void InputScanImg::FindBothEndsPos()
+void InputScanImg::FindRollEdges()
 {
 	// measure at half place of the roll
 	int th = 200;
@@ -85,7 +87,6 @@ void InputScanImg::FindBothEndsPos()
 
 	// find roll left edge
 	for (int x = 0; x < m_img.cols / 2; x++) {
-		// use blue channel
 		if (m_img.data[yoffset + 3 * x] < th) {
 			m_uiRollLeftPos = x;
 			break;
@@ -94,7 +95,6 @@ void InputScanImg::FindBothEndsPos()
 
 	// find roll right edge
 	for (int x = m_img.cols - 1; x > m_img.cols / 2; x--) {
-		// use blue channel
 		if (m_img.data[yoffset + 3 * x] < th) {
 			m_uiRollRightPos = x;
 			break;

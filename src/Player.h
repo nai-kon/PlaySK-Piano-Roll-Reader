@@ -13,8 +13,8 @@ typedef struct tagTRACKER_HOLE {
 	int y;
 	int w;
 	int h;
-	int th_on;		// hole on thereshold
-	int th_off;		// hole off thereshold
+	double on_apature;	// note on hole apature ratio
+	double off_apature;	// note off hole apature ratio
 } TRACKER_HOLE;
 
 
@@ -24,7 +24,7 @@ public:
 	Player();
 	virtual ~Player();
 	int Emulate(cv::Mat &frame, const HMIDIOUT &hm);
-	virtual int LoadPlayerSettings();
+	virtual int LoadPlayerSettings(LPCTSTR config_path);
 	virtual int NoteAllOff(const HMIDIOUT &hm);
 	virtual int GetMinVelocity();
 	virtual int GetMaxVelocity();
@@ -37,7 +37,7 @@ public:
 	void SetNoteOnFrames(int iFrames)	{ m_iNoteOnFrames = iFrames; }
 	int GetNoteOnFrames()				{ return m_iNoteOnFrames; }
 	void SetFrameRate(double dfps)		{ m_dFrameRate = dfps; }
-
+	int GetTrackerOffset(const cv::Mat &frame);
 
 protected:
 	// tracker hole status  // -2:on->off -1:off 1:off->on 2:on 
@@ -67,14 +67,15 @@ protected:
 	int m_iBassStackVelo, m_iTrebleStackVelo;
 	bool m_bEmulateOn;
 
-	bool m_bInvert = true;
+	bool m_bIsDarkHole;
+	int m_iHoleOnth;	// hole on pix threshold
 	
 	virtual void EmulateVelocity(cv::Mat &frame);
 	void EmulatePedal(cv::Mat &frame);
 	void EmulateNote(cv::Mat &frame);
-	double GetAvgHoleBrightness(cv::Mat &frame, const TRACKER_HOLE &hole);
-	bool isHoleOn(double dAvgBrightness, int dOnBrightness);
-	bool isHoleOff(double dAvgBrightness, int dOffBrightness);
+	double GetHoleApatureRatio(cv::Mat &frame, const TRACKER_HOLE &hole);
+	bool isHoleOn(double dApatureRatio, double dOnRatio);
+	bool isHoleOff(double dApatureRatio, double dOffRatio);
 	void DrawHole(cv::Mat &frame, const TRACKER_HOLE &hole, bool hole_on);
 	void SendMidiMsg(const HMIDIOUT &hm);
 	void SetHoleRectFromJsonObj(const json11::Json json, TRACKER_HOLE &rcSetHole);

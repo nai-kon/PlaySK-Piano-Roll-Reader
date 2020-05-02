@@ -16,7 +16,9 @@ Player::Player()
 	m_dFrameRate = 0;
 	m_bEmulateOn = false;
 
-	m_uiStackSplitPoint = 43;
+	m_uiStackSplitPoint = 43; 
+	m_bIsDarkHole = true;
+	m_iHoleOnth = 0;
 }
 
 Player::~Player()
@@ -26,16 +28,17 @@ Player::~Player()
 
 
 // Load 88-note setting 
-int Player::LoadPlayerSettings()
+int Player::LoadPlayerSettings(LPCTSTR config_path)
 {
-	std::ifstream ifs("config\\88_tracker.json");
+	std::ifstream ifs(config_path);
 	std::string err, strjson((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	json11::Json json = json11::Json::parse(strjson, err);
 
 	auto obj = json["expression"];
 	m_iBassStackVelo = m_iTrebleStackVelo = obj["velocity"].int_value();
-
 	obj = json["tracker_holes"];
+	m_bIsDarkHole = obj["is_dark_hole"].bool_value();
+	m_iHoleOnth = obj["on_brightness"].bool_value();
 	SetHoleRectFromJsonObj(obj["sustain"], m_rcSustainPedal);
 	SetHoleRectFromJsonObj(obj["soft"], m_rcSoftPedal);
 	SetHoleRectListFromJsonObj(obj["note"], m_rcNote, KeyNum);
@@ -66,6 +69,52 @@ int Player::Emulate(cv::Mat &frame, const HMIDIOUT &hm)
 }
 
 
+// emulate vitrual tracker bar
+int Player::GetTrackerOffset(const cv::Mat &frame)
+{
+
+	// right end
+	int right_offset = 0;
+	for (int y = 235; y < 245; y++) { // check average offset
+		int yidx = y * VIDEO_WIDTH * 3; // half height
+		for (int x = 4; x >= 0; x--) {
+			int idx = yidx + 3 * x;
+			int b = frame.data[idx + 0];
+			int g = frame.data[idx + 1];
+			int r = frame.data[idx + 2];
+			if (m_bIsDarkHole) {
+				if (b > m_iHoleOnth && g > m_iHoleOnth && r > m_iHoleOnth) right_offset++;
+			}
+			else {
+				if (b < m_iHoleOnth && g < m_iHoleOnth && r < m_iHoleOnth) right_offset++;
+			}
+		}
+	}
+	right_offset /= 10;
+
+	// left end
+	int left_offset = 0;
+	for (int y = 235; y < 245; y++) { // check average offset
+		int yidx = y * VIDEO_WIDTH * 3; // half height
+		for (int x = 635; x < VIDEO_WIDTH; x++) {
+			int idx = yidx + 3 * x;
+			int b = frame.data[idx + 0];
+			int g = frame.data[idx + 1];
+			int r = frame.data[idx + 2];
+			if (m_bIsDarkHole) {
+				if (b > m_iHoleOnth && g > m_iHoleOnth && r > m_iHoleOnth) left_offset++;
+			}
+			else {
+				if (b < m_iHoleOnth && g < m_iHoleOnth && r < m_iHoleOnth) left_offset++;
+			}
+		}
+	}
+	left_offset /= 10;
+
+	return left_offset - right_offset;
+}
+
+
 void Player::EmulateVelocity(cv::Mat &frame)
 {
 	// 88-note emulation sets stable, so no changes
@@ -76,11 +125,11 @@ void Player::EmulateVelocity(cv::Mat &frame)
 void Player::EmulatePedal(cv::Mat &frame)
 {
 	// Check Sustein Pedal Hole
-	double dAvg = GetAvgHoleBrightness(frame, m_rcSustainPedal);
-	if (isHoleOn(dAvg, m_rcSustainPedal.th_on) && m_SusteinPedalOn == off && m_bEmulateOn) {
+	double dAvg = GetHoleApatureRatio(frame, m_rcSustainPedal);
+	if (m_SusteinPedalOn == off && isHoleOn(dAvg, m_rcSustainPedal.on_apature) && m_bEmulateOn) {
 		m_SusteinPedalOn = onTriger;
 	}
-	else if (isHoleOff(dAvg, m_rcSustainPedal.th_off) && m_SusteinPedalOn == on) {
+	else if (m_SusteinPedalOn == on && isHoleOff(dAvg, m_rcSustainPedal.off_apature)) {
 		m_SusteinPedalOn = offTriger;
 	}
 	bool hole_on = (m_SusteinPedalOn > 0 && m_bEmulateOn);
@@ -88,11 +137,11 @@ void Player::EmulatePedal(cv::Mat &frame)
 
 
 	// Check Soft Pedal Hole
-	dAvg = GetAvgHoleBrightness(frame, m_rcSoftPedal);
-	if (isHoleOn(dAvg, m_rcSoftPedal.th_on) && m_SoftPedalOn == off && m_bEmulateOn) {
+	dAvg = GetHoleApatureRatio(frame, m_rcSoftPedal);
+	if (m_SoftPedalOn == off && isHoleOn(dAvg, m_rcSoftPedal.on_apature) && m_bEmulateOn) {
 		m_SoftPedalOn = onTriger;
 	}
-	else if (isHoleOff(dAvg, m_rcSoftPedal.th_off) && m_SoftPedalOn == on) {
+	else if (m_SoftPedalOn == on && isHoleOff(dAvg, m_rcSoftPedal.off_apature)) {
 		m_SoftPedalOn = offTriger;
 	}
 	hole_on = (m_SoftPedalOn > 0 && m_bEmulateOn);
@@ -108,8 +157,8 @@ void Player::EmulateNote(cv::Mat &frame)
 		// skip for dummy position
 		if (m_rcNote[key].x == 0) continue;
 
-		double dAvg = GetAvgHoleBrightness(frame, m_rcNote[key]);
-		if (m_NoteOn[key] == off && isHoleOn(dAvg, m_rcNote[key].th_on) && m_bEmulateOn) {
+		double dAvg = GetHoleApatureRatio(frame, m_rcNote[key]);
+		if (m_NoteOn[key] == off && isHoleOn(dAvg, m_rcNote[key].on_apature) && m_bEmulateOn) {
 			if (m_iNoteOnCnt[key] >= m_iNoteOnFrames) {
 				m_iNoteOnCnt[key] = 0;
 				m_NoteOn[key] = onTriger;
@@ -118,7 +167,7 @@ void Player::EmulateNote(cv::Mat &frame)
 				m_iNoteOnCnt[key]++;
 			}
 		}
-		else if (m_NoteOn[key] == on && isHoleOff(dAvg, m_rcNote[key].th_off)) {
+		else if (m_NoteOn[key] == on && isHoleOff(dAvg, m_rcNote[key].off_apature)) {
 			m_NoteOn[key] = offTriger;
 		}
 		bool hole_on = (m_NoteOn[key] > 0 && m_bEmulateOn);
@@ -127,23 +176,51 @@ void Player::EmulateNote(cv::Mat &frame)
 }
 
 
-double Player::GetAvgHoleBrightness(cv::Mat &frame, const TRACKER_HOLE &hole)
+
+double Player::GetHoleApatureRatio(cv::Mat &frame, const TRACKER_HOLE &hole)
 {
 	double dSumBrightness = 0;
 	int hole_y_bottom = hole.y + hole.h;
 	int hole_x_left = hole.x + m_iTrackingOffset;
-	int hole_x_right = hole.x + hole.w + m_iTrackingOffset;
+	int hole_x_right = hole_x_left + hole.w;
+	int hole_on_pixs = 0;
 	for (int y = hole.y; y < hole_y_bottom; y++) {
 		int yoffset = y * VIDEO_WIDTH * 3;
 		for (int x = hole_x_left; x < hole_x_right; x++) {
-			// only read blue channel instead of b/w image
-			dSumBrightness += frame.data[yoffset + 3 * x];
+			int idx = yoffset + 3 * x;
+			int b = frame.data[idx + 0];
+			int g = frame.data[idx + 1];
+			int r = frame.data[idx + 2];
+			if (m_bIsDarkHole) {
+				if (b < m_iHoleOnth && g < m_iHoleOnth && r < m_iHoleOnth) hole_on_pixs++;
+			}
+			else {
+				if (b > m_iHoleOnth && g > m_iHoleOnth && r > m_iHoleOnth) hole_on_pixs++;
+			}
 		}
 	}
 
-	// return average brightness
-	return dSumBrightness / (hole.w * hole.h);
+	// return on hole apature ratio
+	return (double)hole_on_pixs / (hole.w * hole.h);
 }
+
+
+bool Player::isHoleOn(double dApatureRatio, double dOnRatio) {
+	//if (dApatureRatio > 0) {
+
+	//	TCHAR strBuf[20];
+	//	wsprintf(strBuf, _T("ratio : %d \n"), (int)(100 * dApatureRatio));
+	//	OutputDebugString(strBuf);
+	//}
+
+	return dApatureRatio > dOnRatio;
+}
+
+
+bool Player::isHoleOff(double dApatureRatio, double dOffRatio) {
+	return dApatureRatio < dOffRatio;
+}
+
 
 void Player::DrawHole(cv::Mat &frame, const TRACKER_HOLE &hole, bool hole_on)
 {
@@ -156,11 +233,13 @@ void Player::DrawHole(cv::Mat &frame, const TRACKER_HOLE &hole, bool hole_on)
 	cv::rectangle(frame, drawHole, hole_color);
 }
 
+
 int Player::GetMinVelocity() 
 {
 	// min velocity is stable at 88note mode
 	return m_iBassStackVelo;
 }
+
 
 int Player::GetMaxVelocity() 
 {
@@ -237,8 +316,8 @@ void Player::SetHoleRectFromJsonObj(const json11::Json json, TRACKER_HOLE &rcSet
 		json["y"].int_value(),
 		json["w"].int_value(),
 		json["h"].int_value(),
-		json["th_on"].int_value(),
-		json["th_off"].int_value()
+		json["on_apature"].number_value(),
+		json["off_apature"].number_value(),
 	};
 }
 
@@ -251,8 +330,8 @@ void Player::SetHoleRectListFromJsonObj(const json11::Json json, TRACKER_HOLE *p
 	int note_y = json["y"].int_value();
 	int note_w = json["w"].int_value();
 	int note_h = json["h"].int_value();
-	int th_on = json["th_on"].int_value();
-	int th_off = json["th_off"].int_value();
+	double on_apature = json["on_apature"].number_value();
+	double off_apature = json["off_apature"].number_value();
 	std::vector<json11::Json> xpos = json["x"].array_items();
 	for (UINT i = 0; i < rect_cnt && i < xpos.size(); i++) {
 		prcSetHole[i] = {
@@ -260,27 +339,9 @@ void Player::SetHoleRectListFromJsonObj(const json11::Json json, TRACKER_HOLE *p
 			note_y,
 			note_w,
 			note_h,
-			th_on,
-			th_off
+			on_apature,
+			off_apature,
 		};
 	}
 }
 
-
-bool Player::isHoleOn(double dAvgBrightness, int dOnBrightness) {
-	if (m_bInvert) {
-		return (dAvgBrightness > dOnBrightness);
-	}
-	else {
-		return (dAvgBrightness < dOnBrightness);
-	}
-}
-
-bool Player::isHoleOff(double dAvgBrightness, int dOffBrightness) {
-	if (m_bInvert) {
-		return (dAvgBrightness < dOffBrightness);
-	}
-	else {
-		return (dAvgBrightness > dOffBrightness);
-	}
-}
