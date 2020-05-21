@@ -16,7 +16,12 @@ public:
 	virtual bool isBegin() {
 		return false; // always false
 	};
-	
+	virtual void SetTempo(int tempo) {
+		// do nothing
+	};
+	virtual double GetNextFPS(double curFPS) {
+		return curFPS;
+	};
 private:
 	cv::VideoCapture m_cap;
 };

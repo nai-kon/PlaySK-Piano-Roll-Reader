@@ -5,6 +5,7 @@
 
 Player::Player()
 {
+	m_iBassStackVelo = m_iTrebleStackVelo = 0;
 	m_SusteinPedalOn = m_SoftPedalOn = off;
 	for (int i = 0; i < KeyNum; ++i) {
 		m_NoteOn[i] = off;

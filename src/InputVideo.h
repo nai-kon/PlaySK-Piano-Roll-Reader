@@ -21,6 +21,12 @@ public:
 		return m_iTrackingOffset;
 	};
 
+	virtual void SetTempo(int tempo) {
+		// do nothing
+	};
+	virtual double GetNextFPS(double curFPS) {
+		return curFPS;
+	};
 
 protected:
 	int m_iTrackingOffset = 0;

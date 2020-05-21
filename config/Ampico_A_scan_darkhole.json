@@ -1,24 +1,24 @@
 {
-  "Note": "Ampico A setting for scanned roll",
+  "Note": "Ampico A player setting for scanned roll",
 
   "expression": {
     "bass_intensity": [
-      39,
-      43,
-      48,
+      37,
+      41,
+      47,
       54,
-      62,
-      72,
-      84
+      63,
+      75,
+      89
     ],
     "treble_intensity": [
-      39,
-      43,
-      48,
+      37,
+      41,
+      47,
       54,
-      62,
-      72,
-      84
+      63,
+      75,
+      89
     ],
     "slow_cresc_sec": 9.0,
     "fast_cresc_sec": 2.0,
@@ -28,8 +28,8 @@
     "diameter": 1.8
   },
   "tracker_holes": {
-    "is_dark_hole": false,
-    "on_brightness": 220,
+    "is_dark_hole": true,
+    "on_brightness": 100,
     "sustain": {
       "x": 28,
       "y": 239,

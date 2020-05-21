@@ -15,8 +15,8 @@
     "diameter": 1.9
   },
   "tracker_holes": {
-    "is_dark_hole": false,
-    "on_brightness": 220,
+    "is_dark_hole": true,
+    "on_brightness": 100,
     "sustain": {
       "x": 28,
       "y": 237,

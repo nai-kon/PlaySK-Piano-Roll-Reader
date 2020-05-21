@@ -695,21 +695,32 @@ int CreateButton(const HWND &hWnd)
 DWORD WINAPI PlayerThread(LPVOID lpdata)
 {
 	timeBeginPeriod(1);
-	DWORD nPrevFPS = 0;
+	double dPrevFPS = 0;
 	LARGE_INTEGER nFreq;
 	QueryPerformanceFrequency(&nFreq);
 
 	while (!g_bAppEndFlag){
 
+		static double dRequiredFps = 80.0;  // 80 as initial value
 		LARGE_INTEGER nStartTime;
 		QueryPerformanceCounter(&nStartTime);
 		::EnterCriticalSection(&g_csExclusiveThread);
 
-		//PostMessage(g_hBtnStartEngine, BM_CLICK, 0, 0);
-		
+		static int pre_tempo = 0;
+		if (g_dwVideoFrameRate != pre_tempo || g_hVideoSrc->isBegin()) {
+			pre_tempo = g_dwVideoFrameRate;
+			g_hVideoSrc->SetTempo(pre_tempo);
+			TCHAR strBuf[20];
+			wsprintf(strBuf, _T("temp : %d \n"), pre_tempo);
+			OutputDebugString(strBuf);
+		}
+
 
 		// show beginning frame
 		if (g_bEngineStart || g_hVideoSrc->isBegin()){
+			// roll acceleration by increse frame rate
+			//dRequiredFps = g_hVideoSrc->GetNextFPS(dRequiredFps)
+			dRequiredFps = g_hVideoSrc->GetNextFPS(g_dwVideoFrameRate);
 
 			cv::Mat frame;
 			if (g_hVideoSrc->GetNextFrame(frame)) {
@@ -726,38 +737,42 @@ DWORD WINAPI PlayerThread(LPVOID lpdata)
 				}
 
 				// Emulates Roll Image to Midi Siganl
-				g_hInstPlayer->SetFrameRate(nPrevFPS);
+				g_hInstPlayer->SetFrameRate((int)dPrevFPS);
 				g_hInstPlayer->Emulate(frame, g_hMidiOut);
 				cvhelper::cvtMat2HDC()(g_hdcImage, frame);
 			}
 
 			static RECT rcClipping = { 0, 0, VIDEO_WIDTH, VIDEO_HEIGHT };
 			InvalidateRect((HWND)lpdata, &rcClipping, FALSE);
-
 		}
 		::LeaveCriticalSection(&g_csExclusiveThread);
 
-
 		// Sleep for 6ms
 		Sleep(6);
+		//{
+		//	TCHAR strBuf[40];
+		//	wsprintf(strBuf, _T("dRequiredFps : %d \n"), (int)dRequiredFps);
+		//	OutputDebugString(strBuf);
+		//}
 
 		// Wait for Set FrameRate
 		double dPassTime = 0;
 		LARGE_INTEGER nEndTime;
-		do{
+		do {
 			QueryPerformanceCounter(&nEndTime);
-			dPassTime = (nEndTime.QuadPart - nStartTime.QuadPart) * 1000 / (double)nFreq.QuadPart;
-		} while ((double)1000 / g_dwVideoFrameRate > dPassTime);
+			dPassTime = (nEndTime.QuadPart - nStartTime.QuadPart) * 1000.0 / (double)nFreq.QuadPart;
+		} while (1000.0 / dRequiredFps > dPassTime);
+
 
 
 		// Show FrameRate to Status Bar
-		DWORD nCurFPS = g_bEngineStart ? (DWORD)round(1000 / dPassTime) : 0;
-		if (nPrevFPS != nCurFPS){
+		double dCurFPS = g_bEngineStart ? 1000.0 / dPassTime : 0;
+		if (dPrevFPS != dCurFPS){
+			dPrevFPS = dCurFPS;
 			TCHAR strBuf[20];
-			wsprintf(strBuf, _T("Frames : %d fps"), nCurFPS);
+			_stprintf_s(strBuf, 20, _T("%6.3f fps"), dCurFPS);
 			SendMessage(g_hStatusBar, SB_SETTEXT, 2, (LPARAM)strBuf);
 		}
-		nPrevFPS = nCurFPS;
 	}
 
 	timeEndPeriod(1);
