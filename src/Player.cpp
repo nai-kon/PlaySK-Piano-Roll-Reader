@@ -20,6 +20,7 @@ Player::Player()
 	m_uiStackSplitPoint = 43; 
 	m_bIsDarkHole = true;
 	m_iHoleOnth = 0;
+	m_dSpoolDiameter = 0.0;
 }
 
 Player::~Player()
@@ -43,6 +44,8 @@ int Player::LoadPlayerSettings(LPCTSTR config_path)
 	SetHoleRectFromJsonObj(obj["sustain"], m_rcSustainPedal);
 	SetHoleRectFromJsonObj(obj["soft"], m_rcSoftPedal);
 	SetHoleRectListFromJsonObj(obj["note"], m_rcNote, KeyNum);
+	obj = json["spool"];
+	m_dSpoolDiameter = obj["diameter"].number_value();
 	
 	if (err.size() > 0) return -1;
 	return 0;
@@ -61,10 +64,12 @@ int Player::Emulate(cv::Mat &frame, const HMIDIOUT &hm)
 	EmulateNote(frame);
 
 	// Draw tracker-bar frame
+	cv::line(frame, cv::Point(0, 222), cv::Point(639, 222), cv::Scalar(100, 100, 0), 1, 4);
+	cv::line(frame, cv::Point(0, 260), cv::Point(639, 260), cv::Scalar(100, 100, 0), 1, 4);
+
+	// tracker ears
 	cv::line(frame, cv::Point(4, 235), cv::Point(4, 245), cv::Scalar(200, 0, 200), 1, 4);
 	cv::line(frame, cv::Point(635, 235), cv::Point(635, 245), cv::Scalar(200, 0, 200), 1, 4);
-	cv::line(frame, cv::Point(0, 255), cv::Point(639, 255), cv::Scalar(100, 100, 0), 1, 4);
-	cv::line(frame, cv::Point(0, 212), cv::Point(639, 212), cv::Scalar(100, 100, 0), 1, 4);
 
 	return 0;
 }

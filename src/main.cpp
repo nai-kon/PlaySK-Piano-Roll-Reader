@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "main.h"
+#include <Shellapi.h>
 
 using namespace std;
 
@@ -16,17 +17,12 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	LoadString(hInstance, IDC_MYREADER, szWindowClass, MAX_LOADSTRING);
 	MyRegisterClass(hInstance);
 
-	// Start App with Shift key, tracking offset write mode is enabled
-	if (GetKeyState(VK_SHIFT) < 0) {
-		MessageBox(GetDesktopWindow(), _T("Tracking Offset WriteMode Enabled"), szTitle, MB_OK);
-		g_bIsTrackingSetMode = true;
-	}
-
 	if (!InitInstance(hInstance, nCmdShow)){
 		return FALSE;
 	}
 
 	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MYREADER));
+	hInst = hInstance;
 
 	// main message loop
 	MSG msg;
@@ -44,14 +40,14 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
 	WNDCLASSEX wcex = { sizeof(WNDCLASSEX) };
-	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.style = 0;
 	wcex.lpfnWndProc = WndProc;
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = hInstance;
 	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MYREADER));
 	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW);
 	wcex.lpszMenuName = MAKEINTRESOURCE(IDC_MYREADER);
 	wcex.lpszClassName = szWindowClass;
 	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
@@ -62,11 +58,8 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-	hInst = hInstance;
-
-	// Maxmize Window
 	HWND hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW^WS_MAXIMIZEBOX^WS_THICKFRAME,
-		CW_USEDEFAULT, 0, VIDEO_WIDTH+140, VIDEO_HEIGHT+85, NULL, NULL, hInstance, NULL);
+		CW_USEDEFAULT, CW_USEDEFAULT, VIDEO_WIDTH+140, VIDEO_HEIGHT+85, NULL, NULL, hInstance, NULL);
 
 	if (!hWnd) return FALSE;
 
@@ -76,7 +69,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 }
 
 
-int SelectPlayer(HWND &hWnd)
+static int SelectPlayer(HWND &hWnd)
 {
 	GetTrackerFiles();
 	::EnterCriticalSection(&g_csExclusiveThread);
@@ -120,6 +113,32 @@ int SelectPlayer(HWND &hWnd)
 	return 0;
 }
 
+
+static void EnTempoSlider()
+{
+	EnableWindow(g_hSlFps, FALSE);
+	ShowWindow(g_hSlFps, SW_HIDE);
+	EnableWindow(g_hSlTempo, TRUE);
+	ShowWindow(g_hSlTempo, SW_SHOW);
+
+	g_dwSpeed = 80;
+	SendMessage(g_hSlTempo, TBM_SETPOS, TRUE, g_dwSpeed);
+	SetWindowText(g_hStSpeed, _T("Tempo 80"));
+}
+
+static void EnFpsSlider()
+{
+	EnableWindow(g_hSlTempo, FALSE);
+	ShowWindow(g_hSlTempo, SW_HIDE);
+	EnableWindow(g_hSlFps, TRUE);
+	ShowWindow(g_hSlFps, SW_SHOW);
+
+	g_dwSpeed = 60;
+	SendMessage(g_hSlFps, TBM_SETPOS, TRUE, g_dwSpeed);
+	SetWindowText(g_hStSpeed, _T("60 FPS"));
+}
+
+
 // Main Windows Proc
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -140,11 +159,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 
-		if(g_bIsTrackingSetMode){
-			string strTrackingFile = g_strVideoPath.substr(0, g_strVideoPath.find_last_of(".")) + "_Tracking.txt";
-			fopen_s(&fpAutoTracking, strTrackingFile.c_str(), "w");
-		}
-
 		g_hdcImage = cvhelper::DoubleBuffer_Create(hWnd, VIDEO_WIDTH, VIDEO_HEIGHT);
 
 		if (SelectPlayer(hWnd) == -1){
@@ -160,15 +174,34 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		WORD wmId = LOWORD(wParam);
 		WORD wmEvent = HIWORD(wParam);
 
-		switch (wmId)
+
+		switch (wmId){
+		case IDM_OPEN_VIDEO:
 		{
-		case IDM_FILE:
 			::EnterCriticalSection(&g_csExclusiveThread);
-			delete g_hVideoSrc;
-			g_hVideoSrc = new InputScanImg();
-			g_hVideoSrc->SelSrcFile(hWnd);
+			InputVideo* tmp = new InputVideo(hWnd);
+			if (tmp->SelFile()) {
+				delete g_hVideoSrc;
+				tmp->LoadFile();
+				g_hVideoSrc = tmp;
+				EnFpsSlider();
+			}
 			::LeaveCriticalSection(&g_csExclusiveThread);
-			break;
+		}
+		break;
+		case IDM_OPEN_SCANIMAGE:
+		{
+			::EnterCriticalSection(&g_csExclusiveThread);
+			InputVideo* tmp = new InputScanImg(hWnd);
+			if (tmp->SelFile()) {
+				delete g_hVideoSrc;
+ 				tmp->LoadFile();
+				g_hVideoSrc = tmp;
+				EnTempoSlider();
+			}
+			::LeaveCriticalSection(&g_csExclusiveThread);
+		}
+		break;
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 			break;
@@ -176,12 +209,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			DlgState = SettingDlgState::DLG1ONLY;
 			if (DialogBox(hInst, MAKEINTRESOURCE(IDD_OPTBOX), hWnd, SettingDlgProc) == IDOK) {
 				SelectPlayer(hWnd);
-			}
-			break;
-		case IDM_OPTION2:
-			DlgState = SettingDlgState::DLG2ONLY;
-			if (DialogBox(hInst, MAKEINTRESOURCE(IDD_OPTBOX), hWnd, SettingDlgProc) == IDOK) {
-				g_hInstPlayer->NoteAllOff(g_hMidiOut);
 			}
 			break;
 		case IDC_BTN_START_ENGINE:
@@ -204,8 +231,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			// Set MenuItems 
 			SetMenuItemInfo(GetMenu(hWnd), IDM_OPTION, FALSE, &menuInfo);
-			SetMenuItemInfo(GetMenu(hWnd), IDM_OPTION2, FALSE, &menuInfo);
-			SetMenuItemInfo(GetMenu(hWnd), IDM_FILE, FALSE, &menuInfo);
+			SetMenuItemInfo(GetMenu(hWnd), IDM_OPEN_VIDEO, FALSE, &menuInfo);
+			SetMenuItemInfo(GetMenu(hWnd), IDM_OPEN_SCANIMAGE, FALSE, &menuInfo);
 
 			::LeaveCriticalSection(&g_csExclusiveThread);
 
@@ -219,29 +246,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			static bool bMidiOn = false;
 			::EnterCriticalSection(&g_csExclusiveThread);
 
-			if (!bMidiOn) {
-				bMidiOn = true;
-				g_hInstPlayer->SetEmulateOn();
-				SetWindowText(g_hBtnMidiOn, _T("Midi Off"));
-				menuInfo.fState = MFS_GRAYED; //disable the menuitem "OPTION"
-			}
-			else {
+			if (bMidiOn) {
 				bMidiOn = false;
 				g_hInstPlayer->SetEmulateOff();
 				g_hInstPlayer->NoteAllOff(g_hMidiOut);
 				SetWindowText(g_hBtnMidiOn, _T("Midi On"));
 				menuInfo.fState = MFS_ENABLED; //enable the menuitem "OPTION"
 			}
+			else {
+				bMidiOn = true;
+				g_hInstPlayer->SetEmulateOn();
+				SetWindowText(g_hBtnMidiOn, _T("Midi Off"));
+				menuInfo.fState = MFS_GRAYED; //disable the menuitem "OPTION"
+			}
 
 			// Set MenuItems 
 			SetMenuItemInfo(GetMenu(hWnd), IDM_OPTION, FALSE, &menuInfo);
-			SetMenuItemInfo(GetMenu(hWnd), IDM_OPTION2, FALSE, &menuInfo);
-			SetMenuItemInfo(GetMenu(hWnd), IDM_FILE, FALSE, &menuInfo);
+			SetMenuItemInfo(GetMenu(hWnd), IDM_OPEN_VIDEO, FALSE, &menuInfo);
+			SetMenuItemInfo(GetMenu(hWnd), IDM_OPEN_SCANIMAGE, FALSE, &menuInfo);
 
 			::LeaveCriticalSection(&g_csExclusiveThread);
 
 		}
 		break;
+		case IDC_CB_AUTOTRACK:
+			g_bAutoTracking = SendMessage(g_hbAutoTrack, BM_GETCHECK, 0, 0);
+			break;
+
 		case IDM_EXIT:
 			SendMessage(hWnd, WM_CLOSE, NULL, NULL);
 			break;
@@ -252,12 +283,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	case WM_HSCROLL:
-
-		if (GetDlgItem(hWnd, IDC_SLIDER1) == (HWND)lParam){
-			g_dwVideoFrameRate = SendMessage(g_hSlFrameRate, TBM_GETPOS, NULL, NULL);
+	{
+		static TCHAR szbuf[10];
+		if (GetDlgItem(hWnd, IDC_SL_FPS) == (HWND)lParam) {
+			g_dwSpeed = SendMessage(g_hSlFps, TBM_GETPOS, NULL, NULL);
+			wsprintf(szbuf, TEXT("%2d FPS"), g_dwSpeed);
+			SetWindowText(g_hStSpeed, szbuf);
 		}
-		break;
+		else if (GetDlgItem(hWnd, IDC_SL_TEMPO) == (HWND)lParam) {
+			g_dwSpeed = SendMessage(g_hSlTempo, TBM_GETPOS, NULL, NULL);
+			wsprintf(szbuf, TEXT("Tempo %2d"), g_dwSpeed);
+			SetWindowText(g_hStSpeed, szbuf);
+		}
 
+		break;
+	}
 	case WM_NOTIFY:
 	{
 		static TCHAR strBuf[MAX_LOADSTRING] = { 0 };
@@ -275,13 +315,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					iTrackinfOff--;
 				}
 				g_hInstPlayer->SetRollOffset(iTrackinfOff);
-				wsprintf(strBuf, _T("%d"), iTrackinfOff);
+				wsprintf(strBuf, _T("%s%d"), iTrackinfOff >= 0 ? "+" : "",iTrackinfOff);
 				SetWindowText(g_stRollOffset, strBuf);
 
-				// Write Tracking Offset to File
-				//if (g_bIsTrackingSetMode && fpAutoTracking) {
-				//	fprintf_s(fpAutoTracking, "%u : %d\n", (UINT)g_CvCap.get(CV_CAP_PROP_POS_FRAMES), iTrackinfOff);
-				//}
 			}
 			break;
 
@@ -373,7 +409,18 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			return (INT_PTR)TRUE;
 		}
 		break;
+	case WM_NOTIFY:
+		switch (((LPNMHDR)lParam)->code) {
+
+		case NM_CLICK:
+		case NM_RETURN:
+			// open github link
+			ShellExecute(NULL, _T("open"), ((PNMLINK)lParam)->item.szUrl, NULL, NULL, SW_SHOW);
+			break;
+		}
+		break;
 	}
+
 	return (INT_PTR)FALSE;
 }
 
@@ -463,18 +510,6 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			ShowWindow(GetDlgItem(hDlg, IDC_VIDEOFILE), SW_HIDE);
 			ShowWindow(GetDlgItem(hDlg, IDC_SCAN), SW_HIDE);
 			break;
-
-		case SettingDlgState::DLG2ONLY:
-			EnableWindow(GetDlgItem(hDlg, IDOKDLG), TRUE);
-			ShowWindow(GetDlgItem(hDlg, IDC_DLGNEXT), SW_HIDE);
-			ShowWindow(GetDlgItem(hDlg, IDC_COMBO_MIDIOUT), SW_HIDE);
-			ShowWindow(GetDlgItem(hDlg, IDC_COMBO_PLAYER), SW_HIDE);
-			ShowWindow(GetDlgItem(hDlg, IDC_STATIC1), SW_HIDE);
-			ShowWindow(GetDlgItem(hDlg, IDC_STATIC2), SW_HIDE);
-			ShowWindow(GetDlgItem(hDlg, IDC_WEBCAM), SW_SHOW);
-			ShowWindow(GetDlgItem(hDlg, IDC_VIDEOFILE), SW_SHOW);
-			ShowWindow(GetDlgItem(hDlg, IDC_SCAN), SW_SHOW);
-			break;
 		}
 
 	}
@@ -504,19 +539,22 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			wsprintf(strBuf, _T("Midi Out : %s"), cap.szPname);
 			SendMessage(g_hStatusBar, SB_SETTEXT, 0, (LPARAM)strBuf);
 
+			TCHAR szBuf[MAX_PATH];
+			ComboBox_GetText(hCmbPlayer, szBuf, sizeof(szBuf));
+			g_strTrackerName = szBuf;
+
 			// Show Player Name to Status Bar
 			SendMessage(g_hStatusBar, SB_SETTEXT, 1, (LPARAM)g_strTrackerName.c_str());
 
 			// select video src file
-			bool bSelOK = true;
-			if (DlgState != SettingDlgState::DLG1ONLY){
-				bSelOK = g_hVideoSrc->SelSrcFile(hDlg);
+			if (DlgState == SettingDlgState::DLG1ONLY){
+				EndDialog(hDlg, IDOK);
+			}
+			else if (g_hVideoSrc && g_hVideoSrc->SelFile() && g_hVideoSrc->LoadFile()){
+				EndDialog(hDlg, IDOK);
 			}
 
-			if (bSelOK) EndDialog(hDlg, IDOK);
-
 			::LeaveCriticalSection(&g_csExclusiveThread);
-
 			return TRUE;
 		}
 
@@ -563,24 +601,22 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 
 		case IDC_WEBCAM:
 			delete g_hVideoSrc;
-			g_hVideoSrc = new InputWebcam();
+			g_hVideoSrc = new InputWebcam(hDlg);
+			EnFpsSlider();
 			return TRUE;
 
 		case IDC_VIDEOFILE:
 			delete g_hVideoSrc;
-			g_hVideoSrc = new InputVideo();
+			g_hVideoSrc = new InputVideo(hDlg);
+			EnFpsSlider();
 			return TRUE;
 
 		case IDC_SCAN:
 			delete g_hVideoSrc;
-			g_hVideoSrc = new InputScanImg();
+			g_hVideoSrc = new InputScanImg(hDlg);
+			EnTempoSlider();
 			return TRUE;
 
-		case IDC_COMBO_PLAYER:
-			TCHAR szBuf[MAX_PATH];
-			ComboBox_GetText(hCmbPlayer, szBuf, sizeof(szBuf));
-			g_strTrackerName = szBuf;
-			return TRUE;
 		}
 
 	}
@@ -590,14 +626,13 @@ BOOL CALLBACK SettingDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 
 HWND CreateStatusBar(const HWND &hWnd)
 {
-	int sb_pos[3] = { 300, 500, -1 };
-	HWND status = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | SBARS_SIZEGRIP | CCS_BOTTOM | WS_VISIBLE,
+	int sb_pos[3] = { 300, -1 };
+	HWND status = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | CCS_BOTTOM | WS_VISIBLE,
 		0, 0, 0, 0, hWnd, (HMENU)MY_STATUS, hInst, NULL);
 
-	SendMessage(status, SB_SETPARTS, 3, (LPARAM)sb_pos);
+	SendMessage(status, SB_SETPARTS, 2, (LPARAM)sb_pos);
 	SendMessage(status, SB_SETTEXT, 0, (LPARAM)_T("Midi Out"));
 	SendMessage(status, SB_SETTEXT, 1, (LPARAM)_T("Player "));
-	SendMessage(status, SB_SETTEXT, 2, (LPARAM)_T("Frames : 0 fps"));
 
 	return status;
 }
@@ -606,67 +641,72 @@ HWND CreateStatusBar(const HWND &hWnd)
 int CreateButton(const HWND &hWnd)
 {	
 	// Play/Stop Button
-	g_hBtnStartEngine = CreateWindow(_T("BUTTON"),		
-		_T("Play"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON ,
-		645,15, 110, 40, hWnd, (HMENU)IDC_BTN_START_ENGINE, hInst, NULL);
+	g_hBtnStartEngine = CreateWindow(_T("BUTTON"),_T("Play"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 645,15, 110, 40, hWnd, (HMENU)IDC_BTN_START_ENGINE, hInst, NULL);
 	SendMessage(g_hBtnStartEngine, WM_SETFONT, (WPARAM)CreateFont(22, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, 
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,_T("Arial")),MAKELPARAM(TRUE,0));
 
 	// Midi On/Off Button
-	g_hBtnMidiOn = CreateWindow(_T("BUTTON"),
-		_T("Midi On"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-		645, 65, 110, 40, hWnd, (HMENU)IDC_BTN_MIDION, hInst, NULL);
+	g_hBtnMidiOn = CreateWindow(_T("BUTTON"), _T("Midi On"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 645, 65, 110, 40, hWnd, (HMENU)IDC_BTN_MIDION, hInst, NULL);
 	SendMessage(g_hBtnMidiOn, WM_SETFONT, (WPARAM)CreateFont(22, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Arial")), MAKELPARAM(TRUE, 0));
 
-	// Video Frame Rate Slider
-	HWND staticTxt1 = CreateWindow(_T("STATIC"), _T(" Frame Rate"), WS_CHILD | WS_VISIBLE, 645, 115, 110, 15, hWnd, NULL, hInst, NULL);
-	SendMessage(staticTxt1, WM_SETFONT, (WPARAM)CreateFont(16, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
+	// Tempo/FPS disp
+	g_hStSpeed = CreateWindow(_T("STATIC"), _T(""), WS_CHILD | WS_VISIBLE, 645, 115, 110, 15, hWnd, NULL, hInst, NULL);
+	SendMessage(g_hStSpeed, WM_SETFONT, (WPARAM)CreateFont(16, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Arial")), MAKELPARAM(TRUE, 0));
-	g_hSlFrameRate = CreateWindowEx(0, TRACKBAR_CLASS, NULL, WS_CHILD | WS_VISIBLE | TBS_AUTOTICKS, 645, 130, 110, 45, hWnd, (HMENU)IDC_SLIDER1, hInst, NULL);
-	SendMessage(g_hSlFrameRate, TBM_SETRANGE, TRUE, MAKELPARAM(10, MAX_g_dwVideoFrameRate));
-	SendMessage(g_hSlFrameRate, TBM_SETTICFREQ, 10, 0);
-	SendMessage(g_hSlFrameRate, TBM_SETPAGESIZE, 0, 5);
-	SendMessage(g_hSlFrameRate, TBM_SETPOS, TRUE, g_dwVideoFrameRate);
+	
+	// FPS slider
+	g_hSlFps = CreateWindowEx(0, TRACKBAR_CLASS, NULL, WS_CHILD | TBS_AUTOTICKS, 645, 135, 110, 35, hWnd, (HMENU)IDC_SL_FPS, hInst, NULL);
+	SendMessage(g_hSlFps, TBM_SETRANGE, TRUE, MAKELPARAM(20, 120));
+	SendMessage(g_hSlFps, TBM_SETTICFREQ, 10, 0);
+	SendMessage(g_hSlFps, TBM_SETPAGESIZE, 0, 5);
+	SendMessage(g_hSlFps, TBM_SETPOS, TRUE, 60);
+
+	// Tempo slider
+	g_hSlTempo = CreateWindowEx(0, TRACKBAR_CLASS, NULL, WS_CHILD | TBS_AUTOTICKS, 645, 135, 110, 35, hWnd, (HMENU)IDC_SL_TEMPO, hInst, NULL);
+	SendMessage(g_hSlTempo, TBM_SETRANGE, TRUE, MAKELPARAM(50, 140));
+	SendMessage(g_hSlTempo, TBM_SETTICFREQ, 10, 0);
+	SendMessage(g_hSlTempo, TBM_SETPAGESIZE, 0, 5);
+	SendMessage(g_hSlTempo, TBM_SETPOS, TRUE, 80);
 
 	// Max Velocity text
-	HWND staticTxt2 = CreateWindow(_T("STATIC"), _T("Max Velocity"), WS_CHILD | WS_VISIBLE, 645, 175, 110, 15, hWnd, NULL, hInst, NULL);
-	SendMessage(staticTxt2, WM_SETFONT, (WPARAM)CreateFont(16, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
+	HWND hTmp = CreateWindow(_T("STATIC"), _T("Max Velocity"), WS_CHILD | WS_VISIBLE, 645, 175, 110, 15, hWnd, NULL, hInst, NULL);
+	SendMessage(hTmp, WM_SETFONT, (WPARAM)CreateFont(16, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Arial")), MAKELPARAM(TRUE, 0));
 	g_hStMaxVelo = CreateWindow(_T("STATIC"), _T("90"), WS_CHILD | WS_VISIBLE, 645, 190, 110, 20, hWnd, NULL, hInst, NULL);
 	SendMessage(g_hStMaxVelo, WM_SETFONT, (WPARAM)CreateFont(16, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE, ANSI_CHARSET,
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Arial")), MAKELPARAM(TRUE, 0));
 
 	// Min Velocity text
-	HWND staticTxt3 = CreateWindow(_T("STATIC"), _T("Min Velocity"), WS_CHILD | WS_VISIBLE, 645, 210, 110, 15, hWnd, NULL, hInst, NULL);
-	SendMessage(staticTxt3, WM_SETFONT, (WPARAM)CreateFont(16, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
+	hTmp = CreateWindow(_T("STATIC"), _T("Min Velocity"), WS_CHILD | WS_VISIBLE, 645, 210, 110, 15, hWnd, NULL, hInst, NULL);
+	SendMessage(hTmp, WM_SETFONT, (WPARAM)CreateFont(16, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Arial")), MAKELPARAM(TRUE, 0));
 	g_hStMinVelo = CreateWindow(_T("STATIC"), _T("90"), WS_CHILD | WS_VISIBLE, 645, 225, 110, 25, hWnd, NULL, hInst, NULL);
 	SendMessage(g_hStMinVelo, WM_SETFONT, (WPARAM)CreateFont(16, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE, ANSI_CHARSET,
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Arial")), MAKELPARAM(TRUE, 0));
 
 	// Bass Velocity text
-	HWND staticTxt4 = CreateWindow(_T("STATIC"), _T("Bass Velocity"), WS_CHILD | WS_VISIBLE, 645, 250, 110, 15, hWnd, NULL, hInst, NULL);
-	SendMessage(staticTxt4, WM_SETFONT, (WPARAM)CreateFont(16, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
+	hTmp = CreateWindow(_T("STATIC"), _T("Bass Velocity"), WS_CHILD | WS_VISIBLE, 645, 250, 110, 15, hWnd, NULL, hInst, NULL);
+	SendMessage(hTmp, WM_SETFONT, (WPARAM)CreateFont(16, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Arial")), MAKELPARAM(TRUE, 0));
 	g_hStBassVelo = CreateWindow(_T("STATIC"), _T("0"), WS_CHILD | WS_VISIBLE, 645, 265, 110, 20, hWnd, NULL, hInst, NULL);
 	SendMessage(g_hStBassVelo, WM_SETFONT, (WPARAM)CreateFont(20, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET,
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Arial")), MAKELPARAM(TRUE, 0));
 
 	// Treble Velocity text
-	HWND staticTxt5 = CreateWindow(_T("STATIC"), _T("Treble Velocity"), WS_CHILD | WS_VISIBLE, 645, 285, 110, 15, hWnd, NULL, hInst, NULL);
-	SendMessage(staticTxt5, WM_SETFONT, (WPARAM)CreateFont(16, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
+	hTmp = CreateWindow(_T("STATIC"), _T("Treble Velocity"), WS_CHILD | WS_VISIBLE, 645, 285, 110, 15, hWnd, NULL, hInst, NULL);
+	SendMessage(hTmp, WM_SETFONT, (WPARAM)CreateFont(16, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Arial")), MAKELPARAM(TRUE, 0));
 	g_hStTrebleVelo = CreateWindow(_T("STATIC"), _T("0"), WS_CHILD | WS_VISIBLE, 645, 300, 110, 25, hWnd, NULL, hInst, NULL);
 	SendMessage(g_hStTrebleVelo, WM_SETFONT, (WPARAM)CreateFont(20, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET,
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Arial")), MAKELPARAM(TRUE, 0));
 
 	// Tracking Offset text
-	HWND staticTxt6 = CreateWindow(_T("STATIC"), _T("Tracker Offset"), WS_CHILD | WS_VISIBLE, 645, 325, 110, 20, hWnd, NULL, hInst, NULL);
-	SendMessage(staticTxt6, WM_SETFONT, (WPARAM)CreateFont(16, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
+	hTmp = CreateWindow(_T("STATIC"), _T("Tracker-Bar Offset"), WS_CHILD | WS_VISIBLE, 645, 325, 110, 20, hWnd, NULL, hInst, NULL);
+	SendMessage(hTmp, WM_SETFONT, (WPARAM)CreateFont(16, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Arial")), MAKELPARAM(TRUE, 0));
 
-	g_stRollOffset = CreateWindow(_T("STATIC"), _T("0"), WS_CHILD | WS_VISIBLE, 645, 345, 110, 25, hWnd, NULL, hInst, NULL);
+	g_stRollOffset = CreateWindow(_T("STATIC"), _T("+0"), WS_CHILD | WS_VISIBLE, 645, 345, 40, 25, hWnd, NULL, hInst, NULL);
 	SendMessage(g_stRollOffset, WM_SETFONT, (WPARAM)CreateFont(20, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET,
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Arial")), MAKELPARAM(TRUE, 0));
 
@@ -674,105 +714,109 @@ int CreateButton(const HWND &hWnd)
 	CreateWindow(UPDOWN_CLASS, _T("SP_RED"), WS_CHILD | WS_VISIBLE | WS_TABSTOP | UDS_WRAP | UDS_ARROWKEYS | UDS_ALIGNRIGHT | UDS_HORZ
 		| UDS_SETBUDDYINT ,685, 345, 60, 25,hWnd, (HMENU)(IDC_SPIN_TRACKING_OFFSET),hInst, NULL);
 
+	// Auto Tracking CheckBox
+	g_hbAutoTrack = CreateWindow(TEXT("BUTTON"), TEXT("Auto Tracking"), WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 645, 370, 100, 20, hWnd, (HMENU)IDC_CB_AUTOTRACK, hInst, NULL);
+	SendMessage(g_hbAutoTrack, WM_SETFONT, (WPARAM)CreateFont(16, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
+		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Arial")), MAKELPARAM(TRUE, 0));
+	SendMessage(g_hbAutoTrack, BM_SETCHECK, BST_CHECKED, 0);
+
 	// Note-On Frame text
-	HWND staticTxt7 = CreateWindow(_T("STATIC"), _T("Note-On Frames"), WS_CHILD | WS_VISIBLE, 645, 370, 110, 20, hWnd, NULL, hInst, NULL);
-	SendMessage(staticTxt7, WM_SETFONT, (WPARAM)CreateFont(16, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
+	hTmp = CreateWindow(_T("STATIC"), _T("Note-On Frames"), WS_CHILD | WS_VISIBLE, 645, 400, 110, 20, hWnd, NULL, hInst, NULL);
+	SendMessage(hTmp, WM_SETFONT, (WPARAM)CreateFont(16, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Arial")), MAKELPARAM(TRUE, 0));
 	
-	g_stNoteOnFrame = CreateWindow(_T("STATIC"), _T("1"), WS_CHILD | WS_VISIBLE, 645, 390, 110, 25, hWnd, NULL, hInst, NULL);
+	g_stNoteOnFrame = CreateWindow(_T("STATIC"), _T("1"), WS_CHILD | WS_VISIBLE, 645, 420, 40, 25, hWnd, NULL, hInst, NULL);
 	SendMessage(g_stNoteOnFrame, WM_SETFONT, (WPARAM)CreateFont(20, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET,
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Arial")), MAKELPARAM(TRUE, 0));
 
 	// Note-on Frame Slider
 	CreateWindow(UPDOWN_CLASS, _T("SP_RED"), WS_CHILD | WS_VISIBLE | WS_TABSTOP | UDS_WRAP | UDS_ARROWKEYS | UDS_ALIGNRIGHT | UDS_HORZ
-		| UDS_SETBUDDYINT, 685, 390, 60, 25, hWnd, (HMENU)(IDC_SPIN_NOTEONFRAMES), hInst, NULL);
+		| UDS_SETBUDDYINT, 685, 420, 60, 25, hWnd, (HMENU)(IDC_SPIN_NOTEONFRAMES), hInst, NULL);
 
 
 	return 0;
 }
 
 
+static void WaitForNextFrame(double fps)
+{
+
+	LARGE_INTEGER nCurFrameTime;
+	static LARGE_INTEGER nLastFrameTime = { 0 };
+
+	static LARGE_INTEGER nFreq = {0};
+	if (nFreq.LowPart == 0 && nFreq.HighPart == 0)
+		QueryPerformanceFrequency(&nFreq);
+	
+	double dPassTime = 0;
+	double msecPerFrame = 1000.0 / fps;
+	do {
+		// high precision wait
+		QueryPerformanceCounter(&nCurFrameTime);
+		dPassTime = (nCurFrameTime.QuadPart - nLastFrameTime.QuadPart) * 1000.0 / (double)nFreq.QuadPart;
+	} while (msecPerFrame > dPassTime);
+
+	nLastFrameTime = nCurFrameTime;
+
+	TCHAR strBuf[20];
+	_stprintf_s(strBuf, 20, _T("%6.3f fps\n"), 1000.0 / dPassTime);
+	OutputDebugString(strBuf);
+
+	return;
+}
+
+
 DWORD WINAPI PlayerThread(LPVOID lpdata)
 {
 	timeBeginPeriod(1);
-	double dPrevFPS = 0;
-	LARGE_INTEGER nFreq;
-	QueryPerformanceFrequency(&nFreq);
 
 	while (!g_bAppEndFlag){
 
-		static double dRequiredFps = 80.0;  // 80 as initial value
-		LARGE_INTEGER nStartTime;
-		QueryPerformanceCounter(&nStartTime);
 		::EnterCriticalSection(&g_csExclusiveThread);
 
-		static int pre_tempo = 0;
-		if (g_dwVideoFrameRate != pre_tempo || g_hVideoSrc->isBegin()) {
-			pre_tempo = g_dwVideoFrameRate;
-			g_hVideoSrc->SetTempo(pre_tempo);
-			TCHAR strBuf[20];
-			wsprintf(strBuf, _T("temp : %d \n"), pre_tempo);
-			OutputDebugString(strBuf);
+		if (g_hVideoSrc->isBegin()) {
+			g_hVideoSrc->SetSpoolDiameter(g_hInstPlayer->GetSpoolDiameter());
 		}
 
+		static int pre_tempo = 0;
+		if (g_dwSpeed != pre_tempo || g_hVideoSrc->isBegin()) {
+			pre_tempo = g_dwSpeed;
+			g_hVideoSrc->SetTempo(pre_tempo);
+		}
 
 		// show beginning frame
+		double dRequiredFps = 60;
 		if (g_bEngineStart || g_hVideoSrc->isBegin()){
 			// roll acceleration by increse frame rate
-			//dRequiredFps = g_hVideoSrc->GetNextFPS(dRequiredFps)
-			dRequiredFps = g_hVideoSrc->GetNextFPS(g_dwVideoFrameRate);
+			dRequiredFps = g_hVideoSrc->GetNextFPS();
 
 			cv::Mat frame;
 			if (g_hVideoSrc->GetNextFrame(frame)) {
 				// AutoTracking 
 				static int pre_offset = 0;
-				//int cur_offset = g_hVideoSrc->GetTrackingOffset();
 				int cur_offset = g_hInstPlayer->GetTrackerOffset(frame);
-				if (pre_offset != cur_offset) {
+				if (g_bAutoTracking && pre_offset != cur_offset) {
 					pre_offset = cur_offset;
 					g_hInstPlayer->SetRollOffset(cur_offset);
 					TCHAR bufStr[MAX_LOADSTRING] = { 0 };
-					wsprintf(bufStr, TEXT("%d"), cur_offset);
+					wsprintf(bufStr, _T("%s%d"), cur_offset >= 0 ? "+" : "", cur_offset);
 					SetWindowText(g_stRollOffset, bufStr);
 				}
 
+				WaitForNextFrame(dRequiredFps);
+
 				// Emulates Roll Image to Midi Siganl
-				g_hInstPlayer->SetFrameRate((int)dPrevFPS);
+				g_hInstPlayer->SetFrameRate((int)dRequiredFps);
 				g_hInstPlayer->Emulate(frame, g_hMidiOut);
 				cvhelper::cvtMat2HDC()(g_hdcImage, frame);
 			}
 
 			static RECT rcClipping = { 0, 0, VIDEO_WIDTH, VIDEO_HEIGHT };
 			InvalidateRect((HWND)lpdata, &rcClipping, FALSE);
+		
 		}
 		::LeaveCriticalSection(&g_csExclusiveThread);
-
-		// Sleep for 6ms
-		Sleep(6);
-		//{
-		//	TCHAR strBuf[40];
-		//	wsprintf(strBuf, _T("dRequiredFps : %d \n"), (int)dRequiredFps);
-		//	OutputDebugString(strBuf);
-		//}
-
-		// Wait for Set FrameRate
-		double dPassTime = 0;
-		LARGE_INTEGER nEndTime;
-		do {
-			QueryPerformanceCounter(&nEndTime);
-			dPassTime = (nEndTime.QuadPart - nStartTime.QuadPart) * 1000.0 / (double)nFreq.QuadPart;
-		} while (1000.0 / dRequiredFps > dPassTime);
-
-
-
-		// Show FrameRate to Status Bar
-		double dCurFPS = g_bEngineStart ? 1000.0 / dPassTime : 0;
-		if (dPrevFPS != dCurFPS){
-			dPrevFPS = dCurFPS;
-			TCHAR strBuf[20];
-			_stprintf_s(strBuf, 20, _T("%6.3f fps"), dCurFPS);
-			SendMessage(g_hStatusBar, SB_SETTEXT, 2, (LPARAM)strBuf);
-		}
+		Sleep(3);
 	}
 
 	timeEndPeriod(1);

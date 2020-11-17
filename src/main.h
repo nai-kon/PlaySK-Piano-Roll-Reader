@@ -26,7 +26,6 @@ typedef basic_string<_TCHAR> tstring;
 
 
 #define MAX_LOADSTRING			100
-#define MAX_g_dwVideoFrameRate	100
 
 // Global Func
 ATOM MyRegisterClass(HINSTANCE hInstance);
@@ -39,7 +38,7 @@ int CreateButton(const HWND &hWnd);
 vector<tstring> GetTrackerFiles();
 DWORD WINAPI PlayerThread(LPVOID);
 
-enum SettingDlgState{ DLG1, DLG2, DLG1ONLY, DLG2ONLY };	// Kind of Setting DLG
+enum SettingDlgState{ DLG1, DLG2, DLG1ONLY};
 
 // Global Variable
 HINSTANCE hInst;
@@ -51,18 +50,18 @@ static bool g_bAppEndFlag = false;
 static SettingDlgState DlgState = SettingDlgState::DLG1;
 
 // Control Handles
-HWND g_hBtnStartEngine, g_hBtnMidiOn, g_hSlFrameRate;
-HWND g_hStMaxVelo, g_hStMinVelo, g_hStBassVelo, g_hStTrebleVelo, g_stRollOffset, g_stNoteOnFrame;
+HWND g_hBtnStartEngine, g_hBtnMidiOn, g_hSlFps, g_hSlTempo, g_hbAutoTrack;
+HWND g_hStMaxVelo, g_hStMinVelo, g_hStBassVelo, g_hStTrebleVelo, g_stRollOffset, g_stNoteOnFrame, g_hStSpeed;
 HDC g_hdcImage;									// Image from Video Frame
 Player *g_hInstPlayer = NULL;					// Player Instance
 InputVideo *g_hVideoSrc = NULL;					// Input Video Src
 HWND g_hStatusBar;								// Status Bar Handle
 HMIDIOUT g_hMidiOut;							// Midiout Handle
 cv::VideoCapture g_CvCap;						// OpenCV Video Capture Class
-bool g_bIsTrackingSetMode = false;				// Tracking Offset Set Mode
+BOOL g_bAutoTracking = true;
 CRITICAL_SECTION g_csExclusiveThread;			// Player Thread Exclusive by Cretical Section
-bool g_bEngineStart = false;						// State of Emulates Start/Stop
-DWORD g_dwVideoFrameRate = 60;					// Video FrameRate
+bool g_bEngineStart = false;					// State of Emulates Start/Stop
+DWORD g_dwSpeed = 60;							// Video FrameRate
 std::string g_strVideoPath;						// Video File Path
 
 
@@ -76,5 +75,4 @@ public:
 	~CriticalSectionMng(){
 		::DeleteCriticalSection(&g_csExclusiveThread);
 	}
-
 };

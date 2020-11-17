@@ -8,9 +8,10 @@ using namespace std;
 class InputVideo{
 
 public:
-	InputVideo() {};
+	InputVideo(HWND hParentWnd): m_hParentWnd(hParentWnd){};
 	virtual ~InputVideo();
-	virtual bool SelSrcFile(const HWND &hParentWnd);
+	virtual bool SelFile();
+	virtual bool LoadFile();
 	virtual bool GetNextFrame(cv::Mat &frame);
 	virtual bool isBegin() {
 		// first 5 frames as begin
@@ -20,20 +21,23 @@ public:
 	int GetTrackingOffset() {
 		return m_iTrackingOffset;
 	};
-
-	virtual void SetTempo(int tempo) {
+	virtual void SetSpoolDiameter(double dia) {
 		// do nothing
 	};
-	virtual double GetNextFPS(double curFPS) {
-		return curFPS;
+	virtual void SetTempo(int tempo) {
+		m_dFps = tempo;
+	};
+	virtual double GetNextFPS() {
+		return m_dFps;
 	};
 
 protected:
 	int m_iTrackingOffset = 0;
+	double m_dFps = 0.0;
+	const HWND m_hParentWnd;
 
 private:
 	cv::VideoCapture m_cap;
 	map<UINT, INT> m_mapTrackingOffset;
-
-	void LoadTrackingOffset(map<UINT, INT> &mapVal);
+	string m_strVideoPath;
 };

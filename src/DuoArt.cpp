@@ -45,6 +45,8 @@ int DuoArt::LoadPlayerSettings(LPCTSTR config_path)
 	SetHoleRectListFromJsonObj(obj["accomp"], m_rcAccomp, 4);
 	SetHoleRectListFromJsonObj(obj["theme"], m_rcTheme, 4);
 	SetHoleRectListFromJsonObj(obj["note"], m_rcNote, KeyNum);
+	obj = json["spool"];
+	m_dSpoolDiameter = obj["diameter"].number_value();
 
 	// set default velocity
 	m_iBassStackVelo = m_iTrebleStackVelo = m_iAccompMinVelo;

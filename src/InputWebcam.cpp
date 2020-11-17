@@ -3,17 +3,13 @@
 #include "InputWebcam.h"
 #include "json11.hpp"
 
-InputWebcam::InputWebcam()
-{
-	m_iTrackingOffset = 0;
-}
 
 InputWebcam::~InputWebcam()
 {
 }
 
 
-bool InputWebcam::SelSrcFile(const HWND &hParentWnd)
+bool InputWebcam::SelFile()
 {
 	// Load Webcam Device Number
 	std::ifstream ifs(SETTING_JSON_NAME);
@@ -23,13 +19,18 @@ bool InputWebcam::SelSrcFile(const HWND &hParentWnd)
 	
 	// Open Webcam
 	if (!m_cap.open(iWebcam_Devno)) {
-		MessageBox(hParentWnd, _T("Failed to Open Webcam"), _T("Error"), MB_OK | MB_ICONWARNING);
+		MessageBox(m_hParentWnd, _T("Failed to Open Webcam"), _T("Error"), MB_OK | MB_ICONWARNING);
 		return false;
 	}
 	
 	return true;
 }
 
+bool InputWebcam::LoadFile()
+{
+	// nothing to do
+	return true;
+}
 
 
 bool InputWebcam::GetNextFrame(cv::Mat &frame)

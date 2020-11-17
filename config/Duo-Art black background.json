@@ -15,37 +15,37 @@
     "diameter": 1.9
   },
   "tracker_holes": {
+    "is_dark_hole": true,
+    "on_brightness": 160,
     "sustain": {
       "x": 26,
-      "y": 237,
-      "w": 5,
+      "y": 240,
+      "w": 7,
       "h": 10,
-      "th_on": 230,
-      "th_off": 240
+      "on_apature": 0.1,
+      "off_apature": 0.05
     },
     "soft": {
-      "x": 620,
-      "y": 237,
-      "w": 5,
+      "x": 619,
+      "y": 240,
+      "w": 7,
       "h": 10,
-      "th_on": 230,
-      "th_off": 240
+      "on_apature": 0.1,
+      "off_apature": 0.05
     },
     "bass_snakebite": {
       "x": 35,
-      "y": 240,
-      "w": 9,
+      "y": 242,
+      "w": 10,
       "h": 5,
-      "th_on": 242,
-      "th_off": 242
+      "on_apature": 0.1
     },
     "treble_snakebite": {
       "x": 596,
-      "y": 240,
-      "w": 9,
+      "y": 242,
+      "w": 10,
       "h": 5,
-      "th_on": 242,
-      "th_off": 242
+      "on_apature": 0.1
     },
     "accomp": {
       "x": [
@@ -54,11 +54,11 @@
         57,
         63
       ],
-      "y": 223,
+      "y": 228,
       "w": 5,
-      "h": 11,
-      "th_on": 235,
-      "th_off": 235
+      "h": 12,
+      "on_apature": 0.1,
+      "off_apature": 0.05
     },
     "theme": {
       "x": [
@@ -67,11 +67,11 @@
         577,
         571
       ],
-      "y": 223,
+      "y": 228,
       "w": 5,
-      "h": 11,
-      "th_on": 235,
-      "th_off": 235
+      "h": 12,
+      "on_apature": 0.1,
+      "off_apature": 0.05
     },
     "note": {
       "x": [
@@ -164,11 +164,11 @@
         0,
         0
       ],
-      "y": 240,
+      "y": 242,
       "w": 5,
       "h": 5,
-      "th_on": 220,
-      "th_off": 232
+      "on_apature": 0.25,
+      "off_apature": 0.1
     }
   }
 }

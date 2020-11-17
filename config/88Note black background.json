@@ -9,8 +9,8 @@
     "diameter": 1.9
   },
   "tracker_holes": {
-    "is_dark_hole": false,
-    "on_brightness": 200,
+    "is_dark_hole": true,
+    "on_brightness": 160,
     "note": {
       "x": [
         48,
@@ -105,8 +105,8 @@
       "y": 240,
       "w": 5,
       "h": 5,
-      "on_apature": 0.5,
-      "off_apature": 0.2
+      "on_apature": 0.25,
+      "off_apature": 0.1
     },
     "soft": {
       "x": 618,

@@ -20,7 +20,7 @@
 #define MY_STATUS                       206
 #define IDC_BTN_START_ENGINE            207
 #define IDC_BTN_MIDION                  208
-#define IDC_SLIDER1                     209
+#define IDC_SL_FPS                      209
 #define IDC_DLGNEXT                     210
 #define IDC_STATIC1                     211
 #define IDC_STATIC2                     212
@@ -30,8 +30,13 @@
 #define IDM_FILE                        216
 #define IDC_SPIN_TRACKING_OFFSET        217
 #define IDC_SPIN_NOTEONFRAMES           218
+#define IDC_SL_TEMPO                    219
+#define IDC_CB_AUTOTRACK                220
 #define IDC_SCAN                        1000
 #define IDC_SYSLINK1                    1001
+#define IDM_OPEN_VIDEO                  32771
+#define ID_FILE_OPENSCANIMAGE           32772
+#define IDM_OPEN_SCANIMAGE              32773
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -40,7 +45,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        129
-#define _APS_NEXT_COMMAND_VALUE         32771
+#define _APS_NEXT_COMMAND_VALUE         32774
 #define _APS_NEXT_CONTROL_VALUE         1002
 #define _APS_NEXT_SYMED_VALUE           110
 #endif

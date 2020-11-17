@@ -10,14 +10,12 @@ InputVideo::~InputVideo()
 }
 
 
-
-
-bool InputVideo::SelSrcFile(const HWND &hParentWnd)
+bool InputVideo::SelFile()
 {	
 	// open video 
 	TCHAR szFilePath[MAX_PATH] = { 0 };
 	OPENFILENAME ofn = { sizeof(ofn) };
-	ofn.hwndOwner = hParentWnd;
+	ofn.hwndOwner = m_hParentWnd;
 	ofn.lpstrFilter = _T("Video File(mp4, AVI)\0*.mp4;*.avi\0");
 	ofn.lpstrFile = szFilePath;
 	ofn.nMaxFile = MAX_PATH;
@@ -28,25 +26,32 @@ bool InputVideo::SelSrcFile(const HWND &hParentWnd)
 		return false;
 	}
 
-	string strVideoPath;
 	size_t size(0);
 	char buffer[2 * MAX_PATH + 2] = { 0 };
 	setlocale(LC_CTYPE, "Japanese_Japan.932");
 	wcstombs_s(&size, buffer, MAX_PATH, szFilePath, MAX_PATH);
-	strVideoPath.assign(buffer);
-	m_cap.open(strVideoPath);
+	m_strVideoPath.assign(buffer);
 
 	// check video resolution
-	if ((m_cap.get(CV_CAP_PROP_FRAME_WIDTH) != VIDEO_WIDTH) || (m_cap.get(CV_CAP_PROP_FRAME_HEIGHT) != VIDEO_HEIGHT)) {
-		MessageBox(hParentWnd, _T("Video Resultion is not 640x480"), _T("Error"), MB_OK | MB_ICONWARNING);
+	cv::VideoCapture cap(m_strVideoPath);
+	if ((cap.get(CV_CAP_PROP_FRAME_WIDTH) != VIDEO_WIDTH) || (cap.get(CV_CAP_PROP_FRAME_HEIGHT) != VIDEO_HEIGHT)) {
+		MessageBox(m_hParentWnd, _T("Video Resultion is not 640x480"), _T("Error"), MB_OK | MB_ICONWARNING);
+		m_strVideoPath.clear();
 		return false;
 	}
 
+	return true;
+}
+
+
+bool InputVideo::LoadFile()
+{
+	m_cap.open(m_strVideoPath);
 
 	// load auto tracking file
 	m_iTrackingOffset = 0;
 	m_mapTrackingOffset.clear();
-	string strTrackingPath = strVideoPath.substr(0, strVideoPath.find_last_of(".")) + "_Tracking.txt";
+	string strTrackingPath = m_strVideoPath.substr(0, m_strVideoPath.find_last_of(".")) + "_Tracking.txt";
 	FILE *fp = NULL;
 	fopen_s(&fp, strTrackingPath.c_str(), "r");
 	if (fp) {
@@ -60,7 +65,6 @@ bool InputVideo::SelSrcFile(const HWND &hParentWnd)
 
 	return true;
 }
-
 
 
 bool InputVideo::GetNextFrame(cv::Mat &frame)

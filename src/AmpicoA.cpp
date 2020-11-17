@@ -50,6 +50,7 @@ int AmpicoA::LoadPlayerSettings(LPCTSTR config_path)
 	for (UINT i = 0; i < 7; i++) {
 		m_dBassIntensity[i] = vec[i].int_value();
 	}
+
 	vec = obj["treble_intensity"].array_items();
 	for (UINT i = 0; i < 7; i++) {
 		m_dTrebleIntensity[i] = vec[i].int_value();
@@ -74,6 +75,8 @@ int AmpicoA::LoadPlayerSettings(LPCTSTR config_path)
 	SetHoleRectFromJsonObj(obj["treble_cancel"], m_rcTrebleCancel);
 	SetHoleRectListFromJsonObj(obj["note"], m_rcNote, KeyNum);
 	SetHoleRectFromJsonObj(obj["re-roll"], m_rcReRoll);
+	obj = json["spool"];
+	m_dSpoolDiameter = obj["diameter"].number_value();
 
 	m_dBassMinVelo = m_dBassIntensity[0];
 	m_dBassMaxVelo = m_dBassIntensity[6];

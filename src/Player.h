@@ -38,6 +38,7 @@ public:
 	int GetNoteOnFrames()				{ return m_iNoteOnFrames; }
 	void SetFrameRate(double dfps)		{ m_dFrameRate = dfps; }
 	int GetTrackerOffset(const cv::Mat &frame);
+	double GetSpoolDiameter()			{ return m_dSpoolDiameter; }
 
 protected:
 	// tracker hole status  // -2:on->off -1:off 1:off->on 2:on 
@@ -69,6 +70,8 @@ protected:
 
 	bool m_bIsDarkHole;
 	int m_iHoleOnth;	// hole on pix threshold
+
+	double m_dSpoolDiameter;
 	
 	virtual void EmulateVelocity(cv::Mat &frame);
 	void EmulatePedal(cv::Mat &frame);

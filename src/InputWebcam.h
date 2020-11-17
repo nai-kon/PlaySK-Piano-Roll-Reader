@@ -9,18 +9,13 @@ using namespace std;
 class InputWebcam : public InputVideo{
 
 public:
-	InputWebcam();
+	InputWebcam(HWND hParentWnd) : InputVideo(hParentWnd) {};
 	virtual ~InputWebcam();
-	virtual bool SelSrcFile(const HWND &hParentWnd);
+	virtual bool SelFile();
+	virtual bool LoadFile();
 	virtual bool GetNextFrame(cv::Mat &frame);
 	virtual bool isBegin() {
 		return false; // always false
-	};
-	virtual void SetTempo(int tempo) {
-		// do nothing
-	};
-	virtual double GetNextFPS(double curFPS) {
-		return curFPS;
 	};
 private:
 	cv::VideoCapture m_cap;
