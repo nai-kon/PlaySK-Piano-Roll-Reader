@@ -40,7 +40,7 @@ int Player::LoadPlayerSettings(LPCTSTR config_path)
 	m_iBassStackVelo = m_iTrebleStackVelo = obj["velocity"].int_value();
 	obj = json["tracker_holes"];
 	m_bIsDarkHole = obj["is_dark_hole"].bool_value();
-	m_iHoleOnth = obj["on_brightness"].bool_value();
+	m_iHoleOnth = obj["on_brightness"].int_value();
 	SetHoleRectFromJsonObj(obj["sustain"], m_rcSustainPedal);
 	SetHoleRectFromJsonObj(obj["soft"], m_rcSoftPedal);
 	SetHoleRectListFromJsonObj(obj["note"], m_rcNote, KeyNum);

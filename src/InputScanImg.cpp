@@ -56,7 +56,12 @@ bool InputScanImg::SelFile()
 bool InputScanImg::LoadFile()
 {
 	HCURSOR pre = SetCursor(LoadCursor(NULL, IDC_WAIT));  // wait cursor
-	m_img = cv::imread(m_strImgPath);
+	try{
+		m_img = cv::imread(m_strImgPath);
+	}
+	catch (const cv::Exception& e) {
+		m_img.release();
+	}
 	SetCursor(pre);
 	if (!m_img.data) {
 		MessageBox(m_hParentWnd, _T("Failed to Load Image"), _T("Error"), MB_OK | MB_ICONWARNING);
