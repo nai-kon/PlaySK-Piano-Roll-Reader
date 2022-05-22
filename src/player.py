@@ -164,10 +164,10 @@ class Player():
         # hammer rail lift emulation
         soft = self.holes["soft"]
         if soft["to_open"]:
-            self.midiobj.hammerlift_on()
+            self.midiobj.hammer_lift_on()
 
         elif soft["to_close"]:
-            self.midiobj.hammerlift_off()
+            self.midiobj.hammer_lift_off()
 
     def emulate_notes(self, frame):
 

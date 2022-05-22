@@ -39,7 +39,7 @@ class MidiWrap():
             # some device not support all note off message
             self.sustain_off()
             self.soft_off()
-            self.hammerlift_off()
+            self.hammer_lift_off()
             [self.note_off(k) for k in range(128)]
 
             self.output.reset()
@@ -70,10 +70,10 @@ class MidiWrap():
         if self.enable:
             self.output.send(Message('control_change', control=67, value=0))
 
-    def hammerlift_on(self):
+    def hammer_lift_on(self):
         self.hammer_lift = True
 
-    def hammerlift_off(self):
+    def hammer_lift_off(self):
         self.hammer_lift = False
 
 

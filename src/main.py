@@ -129,8 +129,8 @@ class MainFrame(wx.Frame):
         self.conf.last_tracker = name
         tmp = self.player_mng.get_player_obj(name, self.midiobj)
         if tmp is not None:
-            tmp.set_tracker_offset(self.tracking.getoffset())
-            tmp.set_auto_tracking(self.tracking.is_auto_enabled())
+            tmp.set_tracker_offset(self.tracking.offset)
+            tmp.set_auto_tracking(self.tracking.is_auto_tracking)
 
             # set spool diameter
             self.obj.player = tmp

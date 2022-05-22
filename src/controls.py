@@ -86,8 +86,8 @@ class TrackerCtrl(wx.Panel):
         checkbox.Bind(wx.EVT_CHECKBOX, self._oncheck)
 
         # init
-        self.auto_track = True
-        checkbox.SetValue(self.auto_track)
+        self.is_auto_tracking = True
+        checkbox.SetValue(self.is_auto_tracking)
         self.right.Disable()
         self.left.Disable()
 
@@ -104,12 +104,6 @@ class TrackerCtrl(wx.Panel):
             self.offset = val
             self.disptxt.SetLabel(f"{self.offset:+}")
 
-    def getoffset(self):
-        return self.offset
-
-    def is_auto_enabled(self):
-        return self.auto_track
-
     def _onleft(self, event):
         self.offset -= 1
         self._value_changed()
@@ -119,8 +113,8 @@ class TrackerCtrl(wx.Panel):
         self._value_changed()
 
     def _oncheck(self, event):
-        self.auto_track = event.GetEventObject().IsChecked()
-        if self.auto_track:
+        self.is_auto_tracking = event.GetEventObject().IsChecked()
+        if self.is_auto_tracking:
             self.right.Disable()
             self.left.Disable()
         else:
@@ -132,7 +126,7 @@ class TrackerCtrl(wx.Panel):
     def _value_changed(self):
         self.disptxt.SetLabel(f"{self.offset:+}")
         if self.callback is not None:
-            self.callback(self.auto_track, self.offset)
+            self.callback(self.is_auto_tracking, self.offset)
 
 
 if __name__ == "__main__":
