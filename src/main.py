@@ -26,9 +26,9 @@ class CallBack():
     def call_back(self, frame, curtime):
         if self.player is not None:
             self.player.emulate(frame, curtime)
-            self.bass_vac_meter.set_vacuum(self.player.bass_vacuum)
-            self.treble_vac_meter.set_vacuum(self.player.treble_vacuum)
-            self.offset.setdispval(self.player.get_tracker_offset())
+            self.bass_vac_meter.vacuum = self.player.bass_vacuum
+            self.treble_vac_meter.vacuum = self.player.treble_vacuum
+            self.offset.label = self.player.tracker_offset
 
 
 class MainFrame(wx.Frame):
@@ -47,9 +47,9 @@ class MainFrame(wx.Frame):
         self.midi_btn.Disable()
 
         self.file_btn = wx.Button(self, wx.ID_ANY, size=(90, 50), label='File')
-        self.file_btn.Bind(wx.EVT_BUTTON, self.filesel)
+        self.file_btn.Bind(wx.EVT_BUTTON, self.open_file)
 
-        self.speedslider = SpeedSlider(self, callback=self.speed_change)
+        self.speed = SpeedSlider(self, callback=self.speed_change)
         self.tracking = TrackerCtrl(self, callback=self.tracking_change)
 
         self.bass_vacuum_lv = VacuumMeter(self, caption="Bass Vacuum (W.G.)")
@@ -67,7 +67,7 @@ class MainFrame(wx.Frame):
 
         self.sizer2 = wx.BoxSizer(wx.VERTICAL)
         self.sizer2.Add(self.sizer1, flag=wx.EXPAND)
-        self.sizer2.Add(self.speedslider, flag=wx.EXPAND | wx.ALL, border=5)
+        self.sizer2.Add(self.speed, flag=wx.EXPAND | wx.ALL, border=5)
         self.sizer2.Add(self.tracking, flag=wx.EXPAND | wx.ALL, border=5)
         self.sizer2.Add(self.bass_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=5)
         self.sizer2.Add(self.treble_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=5)
@@ -127,13 +127,13 @@ class MainFrame(wx.Frame):
         idx = self.player_sel.GetSelection()
         name = self.player_sel.GetString(idx)
         self.conf.last_tracker = name
-        tmp = self.player_mng.get_player_obj(name, self.midiobj)
-        if tmp is not None:
-            tmp.set_tracker_offset(self.tracking.offset)
-            tmp.set_auto_tracking(self.tracking.is_auto_tracking)
+        player_tmp = self.player_mng.get_player_obj(name, self.midiobj)
+        if player_tmp is not None:
+            player_tmp.tracker_offset = self.tracking.offset
+            player_tmp.auto_tracking = self.tracking.is_auto_tracking
 
             # set spool diameter
-            self.obj.player = tmp
+            self.obj.player = player_tmp
 
     def midi_onoff(self, event):
         obj = event.GetEventObject()
@@ -144,7 +144,7 @@ class MainFrame(wx.Frame):
             self.obj.player.emulate_off()
             obj.SetLabel("Midi On")
 
-    def filesel(self, event):
+    def open_file(self, event):
         filters = "image files (*.jpg;*.png;*.bmp) | *.jpg;*.png;*.bmp"
         with wx.FileDialog(self, "Select File", style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST, wildcard=filters) as dlg:
             if dlg.ShowModal() != wx.ID_OK:
@@ -165,24 +165,19 @@ class MainFrame(wx.Frame):
 
             # reset speed (tempo)
             tempo = self.get_tempo(self.Title)
-            self.speedslider.set("Tempo", (50, 140), tempo)
+            self.speed.set("Tempo", (50, 140), tempo)
 
     def get_tempo(self, fname):
-        tempo = 80  # default
-
-        tmp = re.findall(r"tempo:?\s*(\d{2,3})", fname)
-        if tmp:
-            tempo = int(tmp[0])
-
-        return tempo
+        val = re.findall(r"tempo:?\s*(\d{2,3})", fname)
+        return 80 if val is None else int(val[0])
 
     def speed_change(self, val):
         if hasattr(self.spool, "set_tempo"):
             self.spool.set_tempo(val)
 
     def tracking_change(self, autotrack, pos):
-        self.obj.player.set_auto_tracking(autotrack)
-        self.obj.player.set_tracker_offset(pos)
+        self.obj.player.auto_tracking = autotrack
+        self.obj.player.tracker_offset = pos
 
 
 if __name__ == "__main__":

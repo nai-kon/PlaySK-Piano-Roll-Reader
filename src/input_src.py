@@ -11,14 +11,14 @@ class FPScounter():
     def __init__(self, name="fps"):
         self.name = name
         self.start = time.perf_counter()
-        self.fpscnt = 0
+        self.fps = 0
 
     def __call__(self):
         cur = time.perf_counter()
-        self.fpscnt += 1
+        self.fps += 1
         if cur - self.start > 1:
-            print(self.name, self.fpscnt)
-            self.fpscnt = 0
+            print(self.name, self.fps)
+            self.fps = 0
             self.start = cur
 
 
@@ -34,9 +34,9 @@ class InputVideo(wx.Panel):
         self._load_next_frame()
         self.load_fps = 60
         self.last_disp = 0
-        self.thread_fpscnt = FPScounter("thread fps")
-        self.disp_fpscnt = FPScounter("disp fps")
-        self.tlock = threading.Lock()
+        self.thread_fps = FPScounter("thread fps")
+        self.disp_fps = FPScounter("disp fps")
+        self.thlock = threading.Lock()
 
         self.Bind(wx.EVT_PAINT, self.on_paint)
         self.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
@@ -61,7 +61,7 @@ class InputVideo(wx.Panel):
 
     def on_paint(self, event):
         dc = wx.BufferedPaintDC(self)
-        with self.tlock:
+        with self.thlock:
             dc.DrawBitmap(self.bmp, 0, 0)
 
         # draw play button
@@ -90,9 +90,6 @@ class InputVideo(wx.Panel):
         self.start = not self.start
         event.Skip()
 
-    def set_loadfps(self, fps):
-        self.loadfps = fps
-
     def _load_next_frame(self):
         ret, frame = self.cap.read()
         if ret:
@@ -117,8 +114,8 @@ class InputVideo(wx.Panel):
             if self.fn is not None:
                 self.fn(self.frame, time.perf_counter())
 
-            if not self.tlock.locked():
-                with self.tlock:
+            if not self.thlock.locked():
+                with self.thlock:
                     self.bmp.CopyFromBuffer(self.frame)
 
                 wx.CallAfter(self.Refresh)  # refresh from thread need call after
@@ -133,7 +130,7 @@ class InputVideo(wx.Panel):
                 time.sleep(sleep)
                 elapsed_time = time.perf_counter() - t1
 
-            self.thread_fpscnt()
+            self.thread_fps()
         print("end thread")
 
 
@@ -144,14 +141,14 @@ class InputWebcam(InputVideo):
 
     @staticmethod
     def list_camera():
-        camera_devs = []
+        camera_list = []
         for i in range(10):
             cap = cv2.VideoCapture(i, cv2.CAP_DSHOW)
             if cap.isOpened():
-                camera_devs.append(i)
+                camera_list.append(i)
             cap.release()
 
-        return camera_devs
+        return camera_list
 
 
 class InputScanImg(InputVideo):
@@ -168,21 +165,21 @@ class InputScanImg(InputVideo):
         self.cur_spool_pos = 0
         self.cur_fps = 60
         self.last_disp = 0
-        cursur = wx.BusyCursor()
+        cursor = wx.BusyCursor()
         self.cap = cv2.imread(path)
         self.cap = cv2.cvtColor(self.cap, cv2.COLOR_BGR2RGB)
-        del cursur
+        del cursor
         self.cur_y = self.cap.shape[0] - 1
-        self.leftedge, self.rightedge = self.__find_roll_edge()
-        self.roll_dpi = (self.rightedge - self.leftedge + 1) / 11.25  # roll width is 11.25inch
-        self.margin = int(7 * (self.rightedge - self.leftedge + 1) / (self.disp_w - 7 * 2))  # 7px on both edge @800x600
+        self.left_side, self.right_side = self.__find_roll_edge()
+        self.roll_dpi = (self.right_side - self.left_side + 1) / 11.25  # roll width is 11.25inch
+        self.margin = int(7 * (self.right_side - self.left_side + 1) / (self.disp_w - 7 * 2))  # 7px on both edge @800x600
         self.roll_thick = 0.00334646  # in inch
         self._load_next_frame()
         self.set_tempo(tempo)
-        self.tlock = threading.Lock()
+        self.thlock = threading.Lock()
 
-        self.thread_fpscnt = FPScounter("thread fps")
-        self.disp_fpscnt = FPScounter("disp fps")
+        self.thread_fps = FPScounter("thread fps")
+        self.disp_fps = FPScounter("disp fps")
         self.Bind(wx.EVT_PAINT, self.on_paint)
         self.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
         self.Bind(wx.EVT_LEFT_DOWN, self.on_start)
@@ -210,29 +207,29 @@ class InputScanImg(InputVideo):
         edge_th = 220
         for y in np.linspace(0, roll_h - 1, 20, dtype=int):
             # find left edge
-            leftedge = 0
+            left_side = 0
             for x in range(0, int(roll_w / 2)):
                 if self.cap[y, x][0] < edge_th:
-                    leftedge = x
+                    left_side = x
                     break
 
             # find right edge
-            rightedge = roll_w - 1
+            right_side = roll_w - 1
             for x in range(roll_w - 1, int(roll_w / 2), -1):
                 if self.cap[y, x][0] < edge_th:
-                    rightedge = x
+                    right_side = x
                     break
 
-            edges.append((leftedge, rightedge))
+            edges.append((left_side, right_side))
 
-            #  sort by width, and get a middle point
-        mididx = int(len(edges) / 2)
+        #  sort by width, and get a middle point
+        middle = int(len(edges) / 2)
         edges.sort(key=lambda x: x[1] - x[0])
-        return edges[mididx]
+        return edges[middle]
 
     def _load_next_frame(self):
-        cropx1 = self.leftedge - self.margin
-        cropx2 = self.rightedge + self.margin
+        cropx1 = self.left_side - self.margin
+        cropx2 = self.right_side + self.margin
         cropy2 = self.cur_y
         ratio = self.disp_h / self.disp_w
         cropy1 = cropy2 - int((cropx2 - cropx1) * ratio)
@@ -282,7 +279,7 @@ if __name__ == "__main__":
         obj = event.GetEventObject()
         panel1.set_tempo(obj.GetValue())
     slider = wx.Slider(frame, value=80, minValue=10, maxValue=140, pos=(0, 600), size=(200, 100), style=wx.SL_HORIZONTAL | wx.SL_LABELS)
-    slider.SetPageSize(5)  # クリック時の移動量
+    slider.SetPageSize(5)
     slider.Bind(wx.EVT_SLIDER, slider_value_change)
 
     frame.Show()

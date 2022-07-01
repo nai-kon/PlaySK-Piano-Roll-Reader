@@ -7,7 +7,7 @@ class AmpicoB(Player):
         super().__init__(confpath, midiobj)
 
         self.amp_lock_pos = 0
-        self.cres_pos = 0
+        self.amp_cres_pos = 0
         self.slow_cres_sec = 4
         self.fast_cres_sec = 0.9
         self.pre_time = None
@@ -47,11 +47,11 @@ class AmpicoB(Player):
         self.bass_sub_intensity_lock = False
         self.treble_sub_intensity_lock = False
         self.amp_lock_pos = 0
-        self.cres_pos = 0
+        self.amp_cres_pos = 0
         self.bass_vacuum = self.intensity_range["none"][0]
         self.treble_vacuum = self.intensity_range["none"][0]
 
-    def emulate_expression(self, frame, curtime):
+    def emulate_expression(self, curtime):
         bass_cancel = self.holes["bass_cancel"]
         treble_cancel = self.holes["treble_cancel"]
         bass_intensities = self.holes["bass_intensity"]  # [2, 4, 6]
@@ -74,7 +74,7 @@ class AmpicoB(Player):
             self.treble_sub_intensity_lock = True
             self.bass_sub_intensity_lock = True
 
-        # triger intensity holes
+        # trigger intensity holes
         if bass_intensities["is_open"][0]:  # bass lv 2
             self.bass_intensity_lock[0] = True
         if bass_intensities["is_open"][1]:  # bass lv 4
@@ -90,8 +90,7 @@ class AmpicoB(Player):
             self.treble_intensity_lock[2] = True
 
         self.calc_crescendo(curtime)
-        self.calc_bass_expression()
-        self.calc_treble_expression()
+        self.calc_expression()
 
     def calc_crescendo(self, curtime):
         if self.pre_time is None:
@@ -118,60 +117,45 @@ class AmpicoB(Player):
         if slow_cres["is_open"]:
             if fast_cres["is_open"] or amplifier["is_open"]:
                 # fast crescendo
-                self.cres_pos += (curtime - self.pre_time) * (1 / self.fast_cres_sec)
+                self.amp_cres_pos += (curtime - self.pre_time) * (1 / self.fast_cres_sec)
             else:
                 # slow crescendo
-                self.cres_pos += (curtime - self.pre_time) * (1 / self.slow_cres_sec)
+                self.amp_cres_pos += (curtime - self.pre_time) * (1 / self.slow_cres_sec)
 
         else:
             if fast_cres["is_open"] or amplifier["is_open"]:
                 # fast decrescendo
-                self.cres_pos -= (curtime - self.pre_time) * (1 / self.fast_cres_sec)
-                self.cres_pos = max(self.cres_pos, self.amp_lock_pos)  # amplifire lock
+                self.amp_cres_pos -= (curtime - self.pre_time) * (1 / self.fast_cres_sec)
+                self.amp_cres_pos = max(self.amp_cres_pos, self.amp_lock_pos)  # amplifier lock
             else:
                 # slow decrescendo
-                self.cres_pos -= (curtime - self.pre_time) * (1 / self.slow_cres_sec)
-                self.cres_pos = max(self.cres_pos, self.amp_lock_pos)  # amplifire lock
+                self.amp_cres_pos -= (curtime - self.pre_time) * (1 / self.slow_cres_sec)
+                self.amp_cres_pos = max(self.amp_cres_pos, self.amp_lock_pos)  # amplifier lock
 
-        self.cres_pos = max(self.cres_pos, 0)
-        self.cres_pos = min(self.cres_pos, 1)
+        self.amp_cres_pos = max(self.amp_cres_pos, 0)
+        self.amp_cres_pos = min(self.amp_cres_pos, 1)
 
         self.pre_time = curtime
 
-    def calc_bass_expression(self):
+    def calc_expression(self):
+        def calc_vacuum(intensity_lock, sub_intensity_lock):
+            opcode = ""
+            if not any(intensity_lock):
+                opcode = "none"
+            if intensity_lock[0]:
+                opcode += "2"
+            if intensity_lock[1]:
+                opcode += "4"
+            if intensity_lock[2]:
+                opcode += "6"
+            if sub_intensity_lock:
+                opcode += "-sub"
 
-        opcode = ""
-        if not any(self.bass_intensity_lock):
-            opcode = "none"
-        if self.bass_intensity_lock[0]:
-            opcode += "2"
-        if self.bass_intensity_lock[1]:
-            opcode += "4"
-        if self.bass_intensity_lock[2]:
-            opcode += "6"
-        if self.bass_sub_intensity_lock:
-            opcode += "-sub"
+            min, max = self.intensity_range.get(opcode, [10, 20])
+            return min + self.amp_cres_pos * (max - min)
 
-        min, max = self.intensity_range.get(opcode, [10, 20])
-        self.bass_vacuum = min + self.cres_pos * (max - min)
-
-    def calc_treble_expression(self):
-
-        opcode = ""
-        if not any(self.treble_intensity_lock):
-            opcode = "none"
-        if self.treble_intensity_lock[0]:
-            opcode += "2"
-        if self.treble_intensity_lock[1]:
-            opcode += "4"
-        if self.treble_intensity_lock[2]:
-            opcode += "6"
-        if self.treble_sub_intensity_lock:
-            opcode += "-sub"
-
-        min, max = self.intensity_range.get(opcode, [10, 20])
-
-        self.treble_vacuum = min + self.cres_pos * (max - min)
+        self.bass_vacuum = calc_vacuum(self.bass_intensity_lock, self.bass_sub_intensity_lock)
+        self.treble_vacuum = calc_vacuum(self.treble_intensity_lock, self.treble_sub_intensity_lock)
 
     def draw_tracker(self, frame):
         # need override for drawing intensity lock
