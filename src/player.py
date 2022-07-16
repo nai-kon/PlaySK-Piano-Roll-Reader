@@ -1,7 +1,7 @@
+from operator import index
 import cv2
 import json
 import numpy as np
-from abc import ABCMeta, abstractmethod
 
 
 class TrackerHoles():
@@ -43,7 +43,7 @@ class TrackerHoles():
         self.xoffset = xoffset
 
         # calc hole open ratio
-        for size, v in self.holes_by_size.items():
+        for v in self.holes_by_size.values():
             hole_list = np.array([frame[p[1]: p[3], p[0] + xoffset: p[2] + xoffset] for p in v["pos"]])
 
             if self.is_dark_hole:
@@ -79,7 +79,7 @@ class TrackerHoles():
         return ret
 
 
-class Player(metaclass=ABCMeta):
+class Player():
     def __init__(self, confpath, midiobj):
         self.midi = midiobj
 
@@ -141,7 +141,6 @@ class Player(metaclass=ABCMeta):
 
         self.draw_tracker(frame)
 
-    @abstractmethod
     def emulate_expression(self, curtime):
         pass
 
@@ -162,23 +161,26 @@ class Player(metaclass=ABCMeta):
         elif soft["to_close"]:
             self.midi.hammer_lift_off()
 
+
     def emulate_notes(self):
-        bass_velo, treble_velo = self.calc_velocity()
         note = self.holes["note"]
         offset = self.holes.lowest_note + 21
 
-        for key, (to_open, to_close) in enumerate(zip(note["to_open"], note["to_close"])):
-            velo = bass_velo if key < self.stack_split else treble_velo
-            if to_open:
+        on_notes = note["to_open"].nonzero()[0]
+        if on_notes.size > 0:
+            bass_velo, treble_velo = self.calc_velocity()
+            for key in on_notes:
+                velo = bass_velo if key < self.stack_split else treble_velo
                 self.midi.note_on(key + offset, velo)
-            elif to_close:
-                self.midi.note_off(key + offset)
+
+        for key in note["to_close"].nonzero()[0]:
+            self.midi.note_off(key + offset)
+
 
     def draw_tracker(self, frame):
 
         # tracker frame
-        cv2.line(frame, (0, 275), (799, 275), (0, 100, 100), 1, cv2.LINE_4)
-        cv2.line(frame, (0, 325), (799, 325), (0, 100, 100), 1, cv2.LINE_4)
+        cv2.rectangle(frame,(-1, 275), (800, 325), (0, 100, 100), 1, cv2.LINE_4)
 
         # tracker ear
         cv2.line(frame, (6, 290), (6, 310), (200, 0, 0), 1, cv2.LINE_4)

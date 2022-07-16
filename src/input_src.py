@@ -208,14 +208,14 @@ class InputScanImg(InputVideo):
         for y in np.linspace(0, roll_h - 1, 20, dtype=int):
             # find left edge
             left_side = 0
-            for x in range(0, int(roll_w / 2)):
+            for x in range(0, roll_w // 2):
                 if self.cap[y, x][0] < edge_th:
                     left_side = x
                     break
 
             # find right edge
             right_side = roll_w - 1
-            for x in range(roll_w - 1, int(roll_w / 2), -1):
+            for x in range(roll_w - 1, roll_w // 2, -1):
                 if self.cap[y, x][0] < edge_th:
                     right_side = x
                     break
@@ -223,7 +223,7 @@ class InputScanImg(InputVideo):
             edges.append((left_side, right_side))
 
         #  sort by width, and get a middle point
-        middle = int(len(edges) / 2)
+        middle = len(edges) // 2
         edges.sort(key=lambda x: x[1] - x[0])
         return edges[middle]
 
@@ -251,7 +251,7 @@ class InputScanImg(InputVideo):
             self.cur_spool_pos -= 1  # don't reset to 0.
             self.cur_spool_diameter += self.roll_thick
 
-            # pixels take-up per on one second
+        # pixels take-up per on one second
         takeup_px = self.spool_rps * self.cur_spool_diameter * math.pi * self.roll_dpi
 
         # how many fps needed for take up

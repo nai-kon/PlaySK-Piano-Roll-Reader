@@ -87,7 +87,7 @@ class MainFrame(wx.Frame):
     def create_status_bar(self, scale):
         sbar = self.CreateStatusBar(4)  # midi-port, tracker-bar
         w, h = sbar.Size[:2]
-        sbar.SetStatusWidths([int(w / 3), int(w / 3), int(w / 6), -1])
+        sbar.SetStatusWidths([w // 3, w // 3, w // 6, -1])
         sbar.SetBackgroundColour(wx.Colour(225, 225, 225, 255))
 
         # midi port

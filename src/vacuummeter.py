@@ -45,7 +45,7 @@ class OscilloGraph(wx.Panel):
         self.Bind(wx.EVT_PAINT, self.on_paint)
         self.Bind(wx.EVT_TIMER, self.on_timer)
 
-        interval = int(1000 / 65)
+        interval = 1000 // 65
         self.timer = wx.Timer(self)
         self.timer.Start(interval)
 
