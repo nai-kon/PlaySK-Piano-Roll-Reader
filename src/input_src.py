@@ -157,6 +157,7 @@ class InputScanImg(InputVideo):
         wx.Panel.__init__(self, parent, size=(disp_size[0] * self.scale, disp_size[1] * self.scale))
         self.SetDoubleBuffered(True)
         self.disp_w, self.disp_h = disp_size
+        self.disp_ratio = self.disp_h / self.disp_w
         self.bmp = wx.Bitmap(self.disp_w, self.disp_h, depth=24)
         self.fn = fn
         self.skip_px = 1
@@ -171,8 +172,12 @@ class InputScanImg(InputVideo):
         del cursor
         self.cur_y = self.cap.shape[0] - 1
         self.left_side, self.right_side = self.__find_roll_edge()
-        self.roll_dpi = (self.right_side - self.left_side + 1) / 11.25  # roll width is 11.25inch
+        self.roll_dpi = (self.right_side - self.left_side + 1) / 11.25  # standard roll width is 11.25inch
         self.margin = int(7 * (self.right_side - self.left_side + 1) / (self.disp_w - 7 * 2))  # 7px on both edge @800x600
+        self.crop_x1 = self.left_side - self.margin
+        self.crop_x2 = self.right_side + self.margin
+        self.crop_w = self.crop_x2 - self.crop_x1
+
         self.roll_thick = 0.00334646  # in inch
         self._load_next_frame()
         self.set_tempo(tempo)
@@ -196,7 +201,7 @@ class InputScanImg(InputVideo):
         # calc skip px
         px_per_sec = (tempo * 1.2 * self.roll_dpi) / 60
         for i in range(1, 10):
-            # skip px is adjusted under 200fps
+            # calc skip pixels to be less than 200fps
             if (px_per_sec / i) < 200:
                 self.skip_px = i
                 break
@@ -228,16 +233,13 @@ class InputScanImg(InputVideo):
         return edges[middle]
 
     def _load_next_frame(self):
-        cropx1 = self.left_side - self.margin
-        cropx2 = self.right_side + self.margin
         cropy2 = self.cur_y
-        ratio = self.disp_h / self.disp_w
-        cropy1 = cropy2 - int((cropx2 - cropx1) * ratio)
+        cropy1 = cropy2 - int(self.crop_w * self.disp_ratio)
         if cropy1 < 0:
             return
 
-        frame = self.cap[cropy1:cropy2 + 1, cropx1:cropx2 + 1]
-        self.frame = cv2.resize(frame, dsize=(self.disp_w, self.disp_h), interpolation=cv2.INTER_NEAREST)
+        frame = self.cap[cropy1:cropy2 + 1, self.crop_x1:self.crop_x2 + 1]
+        self.frame = cv2.resize(frame, (self.disp_w, self.disp_h), interpolation=cv2.INTER_NEAREST)
         self.cur_y -= self.skip_px
 
         # update take-up spool round
@@ -251,7 +253,7 @@ class InputScanImg(InputVideo):
             self.cur_spool_pos -= 1  # don't reset to 0.
             self.cur_spool_diameter += self.roll_thick
 
-        # pixels take-up per on one second
+        # take-up pixels per one second
         takeup_px = self.spool_rps * self.cur_spool_diameter * math.pi * self.roll_dpi
 
         # how many fps needed for take up
