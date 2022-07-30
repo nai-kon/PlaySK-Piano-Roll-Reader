@@ -3,6 +3,7 @@ import os
 import json
 from player import Player
 from AmpicoB import AmpicoB
+from WelteT100 import WelteT100
 
 
 class PlayerMng():
@@ -35,6 +36,9 @@ class PlayerMng():
 
             elif cls_name == "Player":
                 return Player(confpath, midiobj)
+
+            elif cls_name == "WelteT100":
+                return WelteT100(confpath, midiobj)
 
         return None
 

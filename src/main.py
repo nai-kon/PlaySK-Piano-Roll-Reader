@@ -168,8 +168,8 @@ class MainFrame(wx.Frame):
             self.speed.set("Tempo", (50, 140), tempo)
 
     def get_tempo(self, fname):
-        val = re.findall(r"tempo:?\s*(\d{2,3})", fname)
-        return 80 if val is None else int(val[0])
+        val = re.search(r"tempo:?\s*(\d{2,3})", fname)
+        return 98 if val is None else int(val.group(1))
 
     def speed_change(self, val):
         if hasattr(self.spool, "set_tempo"):

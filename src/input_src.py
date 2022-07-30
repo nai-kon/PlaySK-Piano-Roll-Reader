@@ -172,7 +172,8 @@ class InputScanImg(InputVideo):
         del cursor
         self.cur_y = self.cap.shape[0] - 1
         self.left_side, self.right_side = self.__find_roll_edge()
-        self.roll_dpi = (self.right_side - self.left_side + 1) / 11.25  # standard roll width is 11.25inch
+        # self.roll_dpi = (self.right_side - self.left_side + 1) / 11.25  # standard roll width is 11.25inch
+        self.roll_dpi = (self.right_side - self.left_side + 1) / 12.90  # welte red roll width is 12.90inch
         self.margin = int(7 * (self.right_side - self.left_side + 1) / (self.disp_w - 7 * 2))  # 7px on both edge @800x600
         self.crop_x1 = self.left_side - self.margin
         self.crop_x2 = self.right_side + self.margin

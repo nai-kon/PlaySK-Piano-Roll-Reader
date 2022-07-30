@@ -161,7 +161,6 @@ class Player():
         elif soft["to_close"]:
             self.midi.hammer_lift_off()
 
-
     def emulate_notes(self):
         note = self.holes["note"]
         offset = self.holes.lowest_note + 21
@@ -176,11 +175,10 @@ class Player():
         for key in note["to_close"].nonzero()[0]:
             self.midi.note_off(key + offset)
 
-
     def draw_tracker(self, frame):
 
         # tracker frame
-        cv2.rectangle(frame,(-1, 275), (800, 325), (0, 100, 100), 1, cv2.LINE_4)
+        cv2.rectangle(frame, (-1, 275), (800, 325), (0, 100, 100), 1, cv2.LINE_4)
 
         # tracker ear
         cv2.line(frame, (6, 290), (6, 310), (200, 0, 0), 1, cv2.LINE_4)

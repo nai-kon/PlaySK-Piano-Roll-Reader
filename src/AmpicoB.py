@@ -17,7 +17,7 @@ class AmpicoB(Player):
         self.bass_sub_intensity_lock = False
         self.treble_sub_intensity_lock = False
 
-        # vacuum range of no-amplifier to 2nd amplifier
+        # vacuum range (W.G) of no amplifier to 2nd amplifier
         self.intensity_range = {
             "none-sub": [5.0, 10.0],
             "none": [5.6, 11.35],
