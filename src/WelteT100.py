@@ -9,16 +9,16 @@ class WelteT100(Player):
         self.bass_cres_pos = 0
         self.bass_cres_state = "slow_decres"
         self.bass_mf_hook = False
-        self.bass_slow_cres_sec = 3.97   # min to max. min to MF(60%) will 2.38
-        self.bass_slow_decres_sec = 3.97  # min to max. min to MF(60%) will 2.38
+        self.bass_slow_cres_sec = 4.76   # min to max
+        self.bass_slow_decres_sec = 4.76  # max to min
         self.bass_fast_cres_sec = 0.7
         self.bass_fast_decres_sec = 0.3
 
         self.treble_cres_pos = 0
         self.treble_cres_state = "slow_decres"
         self.treble_mf_hook = False
-        self.treble_slow_cres_sec = 3.97   # min to max. min to MF(60%) will 2.38
-        self.treble_slow_decres_sec = 3.97  # min to max. min to MF(60%) will 2.38
+        self.treble_slow_cres_sec = 4.76   # min to max
+        self.treble_slow_decres_sec = 4.76  # max to min
         self.treble_fast_cres_sec = 0.7
         self.treble_fast_decres_sec = 0.3
 
@@ -87,9 +87,9 @@ class WelteT100(Player):
         cres_pos_max = 1
         if self.bass_mf_hook:
             if self.bass_cres_pos <= self.mf_hook_pos:
-                cres_pos_max = self.mf_hook_pos
+                cres_pos_max = self.mf_hook_pos - 0.01
             else:
-                cres_pos_min = self.mf_hook_pos
+                cres_pos_min = self.mf_hook_pos + 0.01
 
         if self.bass_cres_state == "slow_cres":
             self.bass_cres_pos += (curtime - self.pre_time) * (1 / self.bass_slow_cres_sec)
@@ -107,10 +107,10 @@ class WelteT100(Player):
         cres_pos_min = 0
         cres_pos_max = 1
         if self.treble_mf_hook:
-            if self.treble_cres_pos <= self.mf_hook_pos:
-                cres_pos_max = self.mf_hook_pos
+            if self.treble_cres_pos < self.mf_hook_pos:
+                cres_pos_max = self.mf_hook_pos - 0.01
             else:
-                cres_pos_min = self.mf_hook_pos
+                cres_pos_min = self.mf_hook_pos + 0.01
 
         if self.treble_cres_state == "slow_cres":
             self.treble_cres_pos += (curtime - self.pre_time) * (1 / self.treble_slow_cres_sec)
