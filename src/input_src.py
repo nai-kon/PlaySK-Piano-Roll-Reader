@@ -33,7 +33,6 @@ class InputVideo(wx.Panel):
         self.cap = cv2.VideoCapture(path)
         self._load_next_frame()
         self.load_fps = 60
-        self.last_disp = 0
         self.thread_fps = FPScounter("thread fps")
         self.disp_fps = FPScounter("disp fps")
         self.thlock = threading.Lock()
@@ -96,7 +95,7 @@ class InputVideo(wx.Panel):
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             src_h, src_w = frame.shape[:2]
             new_w = self.disp_w
-            new_h = int(src_h * (new_w / src_w))
+            new_h = src_h * new_w // src_w
             resized = cv2.resize(frame, dsize=(new_w, new_h), interpolation=cv2.INTER_NEAREST)
             vert_margin = self.disp_h - new_h
             self.frame = cv2.copyMakeBorder(resized, top=math.floor(vert_margin / 2), bottom=math.ceil(vert_margin / 2), left=0, right=0, borderType=cv2.BORDER_CONSTANT)
@@ -152,12 +151,11 @@ class InputWebcam(InputVideo):
 
 
 class InputScanImg(InputVideo):
-    def __init__(self, parent, path, spool_diameter=2.72, tempo=80, disp_size=(800, 600), fn=None):
+    def __init__(self, parent, path, spool_diameter=2.72, roll_width=11.25, tempo=80, disp_size=(800, 600), fn=None):
         self.scale = wx.Display().GetScaleFactor()
         wx.Panel.__init__(self, parent, size=(disp_size[0] * self.scale, disp_size[1] * self.scale))
         self.SetDoubleBuffered(True)
         self.disp_w, self.disp_h = disp_size
-        self.disp_ratio = self.disp_h / self.disp_w
         self.bmp = wx.Bitmap(self.disp_w, self.disp_h, depth=24)
         self.fn = fn
         self.skip_px = 1
@@ -165,23 +163,22 @@ class InputScanImg(InputVideo):
         self.cur_spool_diameter = self.org_spool_diameter = spool_diameter
         self.cur_spool_pos = 0
         self.cur_fps = 60
-        self.last_disp = 0
-        cursor = wx.BusyCursor()
-        self.cap = cv2.imread(path)
-        self.cap = cv2.cvtColor(self.cap, cv2.COLOR_BGR2RGB)
-        del cursor
+
+        with wx.BusyCursor():
+            self.cap = cv2.imread(path)
+            self.cap = cv2.cvtColor(self.cap, cv2.COLOR_BGR2RGB)
+
         self.cur_y = self.cap.shape[0] - 1
         self.left_side, self.right_side = self.__find_roll_edge()
-        # self.roll_dpi = (self.right_side - self.left_side + 1) / 11.25  # standard roll width is 11.25inch
-        self.roll_dpi = (self.right_side - self.left_side + 1) / 12.90  # welte red roll width is 12.90inch
-        self.margin = int(7 * (self.right_side - self.left_side + 1) / (self.disp_w - 7 * 2))  # 7px on both edge @800x600
-        self.crop_x1 = self.left_side - self.margin
-        self.crop_x2 = self.right_side + self.margin
-        self.crop_w = self.crop_x2 - self.crop_x1
-
+        margin = 7 * (self.right_side - self.left_side + 1) // (self.disp_w - 7 * 2)  # 7px on both edge @800x600
+        self.crop_x1 = self.left_side - margin
+        self.crop_x2 = self.right_side + margin
+        self.crop_h = (self.crop_x2 - self.crop_x1) * self.disp_h // self.disp_w
         self.roll_thick = 0.00334646  # in inch
-        self._load_next_frame()
+
+        self.set_roll_width(roll_width)
         self.set_tempo(tempo)
+        self._load_next_frame()  # load initial frame
         self.thlock = threading.Lock()
 
         self.thread_fps = FPScounter("thread fps")
@@ -207,6 +204,9 @@ class InputScanImg(InputVideo):
                 self.skip_px = i
                 break
 
+    def set_roll_width(self, width):
+        self.roll_dpi = (self.right_side - self.left_side + 1) / width
+
     def __find_roll_edge(self):
         roll_h, roll_w = self.cap.shape[:2]
         edges = []
@@ -229,13 +229,13 @@ class InputScanImg(InputVideo):
             edges.append((left_side, right_side))
 
         #  sort by width, and get a middle point
-        middle = len(edges) // 2
         edges.sort(key=lambda x: x[1] - x[0])
+        middle = len(edges) // 2
         return edges[middle]
 
     def _load_next_frame(self):
         cropy2 = self.cur_y
-        cropy1 = cropy2 - int(self.crop_w * self.disp_ratio)
+        cropy1 = cropy2 - self.crop_h
         if cropy1 < 0:
             return
 

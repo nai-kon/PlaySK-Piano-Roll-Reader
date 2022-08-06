@@ -12,7 +12,7 @@ class WelteT100(Player):
         self.bass_slow_cres_sec = 4.76   # min to max
         self.bass_slow_decres_sec = 4.76  # max to min
         self.bass_fast_cres_sec = 0.7
-        self.bass_fast_decres_sec = 0.3
+        self.bass_fast_decres_sec = 0.150
 
         self.treble_cres_pos = 0
         self.treble_cres_state = "slow_decres"
@@ -20,7 +20,7 @@ class WelteT100(Player):
         self.treble_slow_cres_sec = 4.76   # min to max
         self.treble_slow_decres_sec = 4.76  # max to min
         self.treble_fast_cres_sec = 0.7
-        self.treble_fast_decres_sec = 0.3
+        self.treble_fast_decres_sec = 0.156
 
         self.mf_hook_pos = 0.5
         self.pre_time = None
@@ -43,7 +43,7 @@ class WelteT100(Player):
 
     def emulate_expression(self, curtime):
 
-        # Check bass expresion holes
+        # Check bass expression holes
         if self.holes["bass_mf_on"]["to_open"]:
             self.bass_mf_hook = True
         elif self.holes["bass_mf_off"]["to_open"]:
@@ -51,15 +51,11 @@ class WelteT100(Player):
 
         if self.holes["bass_cresc_forte"]["to_open"]:
             self.bass_cres_state = "slow_cres"
-        if self.holes["bass_cresc_piano"]["to_open"]:
+        elif self.holes["bass_cresc_piano"]["to_open"]:
             self.bass_cres_state = "slow_decres"
 
-        if self.holes["bass_forz_forte"]["to_open"]:
-            self.bass_cres_state = "fast_cres"
-        if self.holes["bass_forz_piano"]["to_open"]:
-            self.bass_cres_state = "fast_decres"
 
-        # Check treble expresion holes
+        # Check treble expression holes
         if self.holes["treble_mf_on"]["to_open"]:
             self.treble_mf_hook = True
         elif self.holes["treble_mf_off"]["to_open"]:
@@ -67,13 +63,8 @@ class WelteT100(Player):
 
         if self.holes["treble_cresc_forte"]["to_open"]:
             self.treble_cres_state = "slow_cres"
-        if self.holes["treble_cresc_piano"]["to_open"]:
+        elif self.holes["treble_cresc_piano"]["to_open"]:
             self.treble_cres_state = "slow_decres"
-
-        if self.holes["treble_forz_forte"]["to_open"]:
-            self.treble_cres_state = "fast_cres"
-        if self.holes["treble_forz_piano"]["to_open"]:
-            self.treble_cres_state = "fast_decres"
 
         self.calc_crescendo(curtime)
         self.calc_expression()
@@ -86,18 +77,19 @@ class WelteT100(Player):
         cres_pos_min = 0
         cres_pos_max = 1
         if self.bass_mf_hook:
-            if self.bass_cres_pos <= self.mf_hook_pos:
+            if self.bass_cres_pos < self.mf_hook_pos:
                 cres_pos_max = self.mf_hook_pos - 0.01
             else:
                 cres_pos_min = self.mf_hook_pos + 0.01
 
         if self.bass_cres_state == "slow_cres":
             self.bass_cres_pos += (curtime - self.pre_time) * (1 / self.bass_slow_cres_sec)
-        elif self.bass_cres_state == "fast_cres":
-            self.bass_cres_pos += (curtime - self.pre_time) * (1 / self.bass_fast_cres_sec)
         elif self.bass_cres_state == "slow_decres":
             self.bass_cres_pos -= (curtime - self.pre_time) * (1 / self.bass_slow_decres_sec)
-        elif self.bass_cres_state == "fast_decres":
+        
+        if self.holes["bass_forz_forte"]["is_open"]:
+            self.bass_cres_pos += (curtime - self.pre_time) * (1 / self.bass_fast_cres_sec)
+        elif self.holes["bass_forz_piano"]["is_open"]:
             self.bass_cres_pos -= (curtime - self.pre_time) * (1 / self.bass_fast_decres_sec)
 
         self.bass_cres_pos = max(self.bass_cres_pos, cres_pos_min)
@@ -114,11 +106,12 @@ class WelteT100(Player):
 
         if self.treble_cres_state == "slow_cres":
             self.treble_cres_pos += (curtime - self.pre_time) * (1 / self.treble_slow_cres_sec)
-        elif self.treble_cres_state == "fast_cres":
-            self.treble_cres_pos += (curtime - self.pre_time) * (1 / self.treble_fast_cres_sec)
         elif self.treble_cres_state == "slow_decres":
             self.treble_cres_pos -= (curtime - self.pre_time) * (1 / self.treble_slow_decres_sec)
-        elif self.treble_cres_state == "fast_decres":
+        
+        if self.holes["treble_forz_forte"]["is_open"]:
+            self.treble_cres_pos += (curtime - self.pre_time) * (1 / self.treble_fast_cres_sec)
+        elif self.holes["treble_forz_piano"]["is_open"]:
             self.treble_cres_pos -= (curtime - self.pre_time) * (1 / self.treble_fast_decres_sec)
 
         self.treble_cres_pos = max(self.treble_cres_pos, cres_pos_min)
@@ -149,7 +142,8 @@ class WelteT100(Player):
             self.midi.hammer_lift_off()
 
     def draw_tracker(self, frame):
-        # # need override for drawing intensity lock
+        # need override for drawing lock hole
+        # self.holes["bass_mf_on"]["is_open"] = self.bass_mf_hook
         # self.holes["bass_intensity"]["is_open"][:] = self.bass_intensity_lock[:]
         # self.holes["treble_intensity"]["is_open"][:] = self.treble_intensity_lock[::-1]
         # self.holes["subintensity"]["is_open"][0] = self.bass_sub_intensity_lock or self.treble_sub_intensity_lock

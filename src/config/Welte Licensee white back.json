@@ -1,12 +1,12 @@
 {
   "note": "Welte Mignon Licensee of white background scan",
   "base_class": "WelteLicensee",
+  "roll_width": 11.25,
+  "spool_diameter": 1.90,
+  "default_tempo": 80,
   "expression": {
     "vacuum": 15,
     "stack_split_point": 46
-  },
-  "spool": {
-    "diameter": 1.9
   },
   "tracker_holes": {
     "is_dark_hole": false,
@@ -170,7 +170,7 @@
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
+      "on_apature": 0.25,
       "off_apature": 0.15
     },
     "bass_forz_forte": {
@@ -178,7 +178,7 @@
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
+      "on_apature": 0.25,
       "off_apature": 0.15
     },
     "treble_mf_on": {
@@ -218,7 +218,7 @@
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
+      "on_apature": 0.25,
       "off_apature": 0.15
     },
     "treble_forz_forte": {
@@ -226,7 +226,7 @@
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
+      "on_apature": 0.25,
       "off_apature": 0.15
     }
   }

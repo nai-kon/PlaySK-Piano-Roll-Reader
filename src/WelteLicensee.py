@@ -6,15 +6,15 @@ class WelteLicensee(WelteT100):
     def __init__(self, confpath, midiobj):
         super().__init__(confpath, midiobj)
 
-        self.bass_slow_cres_sec = 4.9   # min to max
+        self.bass_slow_cres_sec = 4.92   # min to max
         self.bass_slow_decres_sec = 5.6  # max to min
-        self.bass_fast_cres_sec = 0.57
-        self.bass_fast_decres_sec = 0.25
+        self.bass_fast_cres_sec = 0.56
+        self.bass_fast_decres_sec = 0.15
 
-        self.treble_slow_cres_sec = 4.9   # min to max
+        self.treble_slow_cres_sec = 4.92   # min to max
         self.treble_slow_decres_sec = 5.6  # max to min
-        self.treble_fast_cres_sec = 0.57
-        self.treble_fast_decres_sec = 0.25
+        self.treble_fast_cres_sec = 0.56
+        self.treble_fast_decres_sec = 0.15
 
         self.mf_hook_pos = 0.5
         self.pre_time = None

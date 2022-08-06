@@ -1,12 +1,11 @@
 {
   "note": "Ampico B setting for white background roll image",
   "base_class": "AmpicoB",
+  "roll_width": 11.25,
+  "spool_diameter": 2.72,
   "expression": {
     "vacuum": 15,
     "stack_split_point": 44
-  },
-  "spool": {
-    "diameter": 2.72
   },
   "tracker_holes": {
     "is_dark_hole": false,

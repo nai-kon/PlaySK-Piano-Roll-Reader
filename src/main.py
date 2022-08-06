@@ -131,8 +131,6 @@ class MainFrame(wx.Frame):
         if player_tmp is not None:
             player_tmp.tracker_offset = self.tracking.offset
             player_tmp.auto_tracking = self.tracking.is_auto_tracking
-
-            # set spool diameter
             self.obj.player = player_tmp
 
     def midi_onoff(self, event):
@@ -155,7 +153,7 @@ class MainFrame(wx.Frame):
             self.obj.player.emulate_off()
             self.spool.release_src()
             tmp = self.spool
-            self.spool = InputScanImg(self, path, fn=self.obj.call_back)
+            self.spool = InputScanImg(self, path, self.obj.player.spool_diameter, self.obj.player.roll_width, fn=self.obj.call_back)
             self.Title = os.path.basename(path)
             self.sizer3.Replace(tmp, self.spool)
             tmp.Destroy()
@@ -163,13 +161,12 @@ class MainFrame(wx.Frame):
             self.midi_btn.SetLabel("Midi On")
             self.midi_btn.Enable()
 
-            # reset speed (tempo)
-            tempo = self.get_tempo(self.Title)
+            # Set tempo
+            tempo = self.obj.player.default_tempo
+            val = re.search(r"tempo:?\s*(\d{2,3})", self.Title)
+            if val is not None:
+                tempo = int(val.group(1))
             self.speed.set("Tempo", (50, 140), tempo)
-
-    def get_tempo(self, fname):
-        val = re.search(r"tempo:?\s*(\d{2,3})", fname)
-        return 98 if val is None else int(val.group(1))
 
     def speed_change(self, val):
         if hasattr(self.spool, "set_tempo"):

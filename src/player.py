@@ -89,7 +89,9 @@ class Player():
 
         self.stack_split = conf["expression"]["stack_split_point"] - conf["tracker_holes"]["lowest_note"]
         self.treble_vacuum = self.bass_vacuum = conf["expression"]["vacuum"]
-        self.spool_diameter = conf["spool"]["diameter"]
+        self.spool_diameter = conf["spool_diameter"]
+        self.roll_width = conf["roll_width"]
+        self.default_tempo = conf["default_tempo"]
         self.is_dark_hole = conf["tracker_holes"]["is_dark_hole"]
         self.on_bright = conf["tracker_holes"]["on_brightness"]
 

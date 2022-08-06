@@ -1,12 +1,12 @@
 {
   "note": "88-note setting for white background roll image",
   "base_class": "Player",
+  "roll_width": 11.25,
+  "spool_diameter": 1.90,
+  "default_tempo": 80,
   "expression": {
     "vacuum": 15,
     "stack_split_point": 43
-  },
-  "spool": {
-    "diameter": 1.9
   },
   "tracker_holes": {
     "is_dark_hole": false,
