@@ -90,7 +90,7 @@ class OscilloGraph(wx.Panel):
 
 if __name__ == "__main__":
     app = wx.App()
-    frame = wx.Frame(None, wx.ID_ANY, 'vacuum meter')
+    frame = wx.Frame(None, wx.ID_ANY, "vacuum meter")
     panel1 = VacuumMeter(frame, (0, 0), "Treble Vacuum")
 
     def slider_value_change(event):

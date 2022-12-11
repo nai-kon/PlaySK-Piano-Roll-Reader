@@ -40,7 +40,7 @@ class SpeedSlider(wx.Panel):
         wx.Panel.__init__(self, parent, wx.ID_ANY, pos)
         self.callback = callback
         self.label = label
-        self.caption = wx.StaticText(self, wx.ID_ANY, f"{self.label}: {val}")
+        self.caption = wx.StaticText(self, wx.ID_ANY, f"{self.label} {val}")
         self.slider = wx.Slider(self, wx.ID_ANY, val, range[0], range[1], style=wx.SL_HORIZONTAL)
         self.slider.SetPageSize(5)
         self.slider.Bind(wx.EVT_SLIDER, self._slider_changed)
@@ -52,7 +52,7 @@ class SpeedSlider(wx.Panel):
         self.Fit()
 
     def _value_changed(self, val):
-        self.caption.SetLabel(f"{self.label}: {val}")
+        self.caption.SetLabel(f"{self.label} {val}")
         if self.callback is not None:
             self.callback(val)
 

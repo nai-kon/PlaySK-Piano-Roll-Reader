@@ -2,10 +2,9 @@
   "note": "Welte Mignon T100 (Red) of white background scan",
   "base_class": "WelteT100",
   "roll_width": 12.90,
-  "spool_diameter": 1.90,
+  "spool_diameter": 2.69,
   "default_tempo": 98,
   "expression": {
-    "vacuum": 15,
     "stack_split_point": 46
   },
   "tracker_holes": {
@@ -170,16 +169,16 @@
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.25,
-      "off_apature": 0.15
+      "on_apature": 0.05,
+      "off_apature": 0.05
     },
     "bass_forz_forte": {
       "x": 57,
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.25,
-      "off_apature": 0.15
+      "on_apature": 0.05,
+      "off_apature": 0.05
     },
     "treble_mf_on": {
       "x": 767,
@@ -218,16 +217,16 @@
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.25,
-      "off_apature": 0.15
+      "on_apature": 0.05,
+      "off_apature": 0.05
     },
     "treble_forz_forte": {
       "x": 737,
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.25,
-      "off_apature": 0.15
+      "on_apature": 0.05,
+      "off_apature": 0.05
     }
   }
 }

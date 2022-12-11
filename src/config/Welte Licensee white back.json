@@ -5,7 +5,6 @@
   "spool_diameter": 1.90,
   "default_tempo": 80,
   "expression": {
-    "vacuum": 15,
     "stack_split_point": 46
   },
   "tracker_holes": {

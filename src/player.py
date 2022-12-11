@@ -88,7 +88,7 @@ class Player():
             conf = json.load(f)
 
         self.stack_split = conf["expression"]["stack_split_point"] - conf["tracker_holes"]["lowest_note"]
-        self.treble_vacuum = self.bass_vacuum = conf["expression"]["vacuum"]
+        self.treble_vacuum = self.bass_vacuum = conf["expression"].get("vacuum", 15)
         self.spool_diameter = conf["spool_diameter"]
         self.roll_width = conf["roll_width"]
         self.default_tempo = conf["default_tempo"]

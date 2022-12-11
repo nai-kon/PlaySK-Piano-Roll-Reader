@@ -267,7 +267,7 @@ if __name__ == "__main__":
     from midi_controller import MidiWrap
 
     app = wx.App()
-    frame = wx.Frame(None, wx.ID_ANY, 'テストフレーム', size=(1280, 720))
+    frame = wx.Frame(None, wx.ID_ANY, "テストフレーム", size=(1280, 720))
 
     midobj = MidiWrap()
     midobj.open_port(None)

@@ -42,18 +42,18 @@ class MainFrame(wx.Frame):
 
         self.spool = WelcomeMsg(self, size=(800, 600))
 
-        self.midi_btn = wx.Button(self, wx.ID_ANY, size=(90, 50), label='Midi On')
+        self.midi_btn = wx.Button(self, wx.ID_ANY, size=(90, 50), label="MIDI On")
         self.midi_btn.Bind(wx.EVT_BUTTON, self.midi_onoff)
         self.midi_btn.Disable()
 
-        self.file_btn = wx.Button(self, wx.ID_ANY, size=(90, 50), label='File')
+        self.file_btn = wx.Button(self, wx.ID_ANY, size=(90, 50), label="File")
         self.file_btn.Bind(wx.EVT_BUTTON, self.open_file)
 
         self.speed = SpeedSlider(self, callback=self.speed_change)
         self.tracking = TrackerCtrl(self, callback=self.tracking_change)
 
-        self.bass_vacuum_lv = VacuumMeter(self, caption="Bass Vacuum (W.G.)")
-        self.treble_vacuum_lv = VacuumMeter(self, caption="Treble Vacuum (W.G.)")
+        self.bass_vacuum_lv = VacuumMeter(self, caption="Bass Vacuum (inches of water)")
+        self.treble_vacuum_lv = VacuumMeter(self, caption="Treble Vacuum (inches of water)")
 
         self.obj = CallBack(None, self.tracking, self.bass_vacuum_lv, self.treble_vacuum_lv)
         self.midiobj = MidiWrap()
@@ -91,7 +91,7 @@ class MainFrame(wx.Frame):
         sbar.SetBackgroundColour(wx.Colour(225, 225, 225, 255))
 
         # midi port
-        sbar.SetStatusText("midi output :", 0)
+        sbar.SetStatusText("MIDI Output :", 0)
         ports = self.midiobj.port_list
         self.port_sel = wx.Choice(sbar, wx.ID_ANY, choices=ports)
         self.port_sel.Bind(wx.EVT_CHOICE, self.change_midi_port)
@@ -101,7 +101,7 @@ class MainFrame(wx.Frame):
         self.change_midi_port()  # call manually for init
 
         # tracker bar
-        sbar.SetStatusText("tracker bar :", 1)
+        sbar.SetStatusText("Tracker Bar :", 1)
         players = self.player_mng.player_list
         self.player_sel = wx.Choice(sbar, wx.ID_ANY, choices=players)
         self.player_sel.Bind(wx.EVT_CHOICE, self.change_player)
@@ -135,12 +135,12 @@ class MainFrame(wx.Frame):
 
     def midi_onoff(self, event):
         obj = event.GetEventObject()
-        if obj.GetLabel() == "Midi On":
+        if obj.GetLabel() == "MIDI On":
             self.obj.player.emulate_on()
-            obj.SetLabel("Midi Off")
+            obj.SetLabel("MIDI Off")
         else:
             self.obj.player.emulate_off()
-            obj.SetLabel("Midi On")
+            obj.SetLabel("MIDI On")
 
     def open_file(self, event):
         filters = "image files (*.jpg;*.png;*.bmp) | *.jpg;*.png;*.bmp"
@@ -158,7 +158,7 @@ class MainFrame(wx.Frame):
             self.sizer3.Replace(tmp, self.spool)
             tmp.Destroy()
 
-            self.midi_btn.SetLabel("Midi On")
+            self.midi_btn.SetLabel("MIDI On")
             self.midi_btn.Enable()
 
             # Set tempo
@@ -180,7 +180,7 @@ class MainFrame(wx.Frame):
 if __name__ == "__main__":
     import platform
     pf = platform.system()
-    if pf == 'Windows':
+    if pf == "Windows":
         from ctypes import windll
         windll.winmm.timeBeginPeriod(1)
 
@@ -189,6 +189,6 @@ if __name__ == "__main__":
     app.MainLoop()
     print("main loop end")
 
-    if pf == 'Windows':
+    if pf == "Windows":
         from ctypes import windll
         windll.winmm.timeEndPeriod(1)

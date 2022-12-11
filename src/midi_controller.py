@@ -48,27 +48,27 @@ class MidiWrap():
         if self.enable:
             if self.hammer_lift:
                 velo = int(velo * 0.9)
-            self.output.send(Message('note_on', note=key, velocity=velo))
+            self.output.send(Message("note_on", note=key, velocity=velo))
 
     def note_off(self, key, velo=90):
         if self.enable:
-            self.output.send(Message('note_off', note=key, velocity=velo))
+            self.output.send(Message("note_off", note=key, velocity=velo))
 
     def sustain_on(self):
         if self.enable:
-            self.output.send(Message('control_change', control=64, value=127))
+            self.output.send(Message("control_change", control=64, value=127))
 
     def sustain_off(self):
         if self.enable:
-            self.output.send(Message('control_change', control=64, value=0))
+            self.output.send(Message("control_change", control=64, value=0))
 
     def soft_on(self):
         if self.enable:
-            self.output.send(Message('control_change', control=67, value=127))
+            self.output.send(Message("control_change", control=67, value=127))
 
     def soft_off(self):
         if self.enable:
-            self.output.send(Message('control_change', control=67, value=0))
+            self.output.send(Message("control_change", control=67, value=0))
 
     def hammer_lift_on(self):
         self.hammer_lift = True
