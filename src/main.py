@@ -3,10 +3,10 @@ import os
 from vacuummeter import VacuumMeter
 from midi_controller import MidiWrap
 from config import ConfigMng
-from input_src import InputScanImg, InputWebcam
+from input_src import InputScanImg
 from player_mng import PlayerMng
 from controls import SpeedSlider, TrackerCtrl, WelcomeMsg
-from version import APP_TILTE
+from version import APP_TITLE
 import re
 
 # import ctypes
@@ -34,7 +34,7 @@ class CallBack():
 class MainFrame(wx.Frame):
 
     def __init__(self):
-        super().__init__(parent=None, title=APP_TILTE, style=wx.CAPTION | wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.CLIP_CHILDREN)
+        super().__init__(parent=None, title=APP_TITLE, style=wx.CAPTION | wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.CLIP_CHILDREN)
         self.SetIcon(wx.Icon(os.path.join("config", "PlaySK_icon.ico"), wx.BITMAP_TYPE_ICO))
         self.SetBackgroundColour("#AAAAAA")
 
@@ -114,7 +114,6 @@ class MainFrame(wx.Frame):
         print("on_close called")
         self.conf.save_config()
         self.spool.release_src()
-
         self.Destroy()
 
     def change_midi_port(self, event=None):
@@ -162,10 +161,8 @@ class MainFrame(wx.Frame):
             self.midi_btn.Enable()
 
             # Set tempo
-            tempo = self.obj.player.default_tempo
             val = re.search(r"tempo:?\s*(\d{2,3})", self.Title)
-            if val is not None:
-                tempo = int(val.group(1))
+            tempo = int(val.group(1)) if val is not None else self.obj.player.default_tempo
             self.speed.set("Tempo", (50, 140), tempo)
 
     def speed_change(self, val):

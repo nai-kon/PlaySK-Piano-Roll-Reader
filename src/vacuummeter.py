@@ -85,7 +85,7 @@ class OscilloGraph(wx.Panel):
         self.Refresh()
 
     def on_paint(self, event):
-        dc = wx.BufferedPaintDC(self, self.graph)
+        wx.BufferedPaintDC(self, self.graph)
 
 
 if __name__ == "__main__":

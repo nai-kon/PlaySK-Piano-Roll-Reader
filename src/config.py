@@ -3,7 +3,6 @@ import json
 
 
 class ConfigMng():
-
     _path = os.path.join("config", "config.json")
 
     def __init__(self):

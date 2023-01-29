@@ -1,4 +1,3 @@
-from operator import index
 import cv2
 import json
 import numpy as np
@@ -6,7 +5,6 @@ import numpy as np
 
 class TrackerHoles():
     def __init__(self, conf):
-
         holes = conf["tracker_holes"]
         self.is_dark_hole = holes["is_dark_hole"]
         self.th_bright = holes["on_brightness"]
@@ -133,7 +131,6 @@ class Player():
         self.tracker_offset = int(left_end - right_end) + 1
 
     def emulate(self, frame, curtime):
-
         if self.emulate_enable:
             self.auto_track(frame)
             self.holes.set_frame(frame, self.tracker_offset)
@@ -179,14 +176,14 @@ class Player():
 
     def draw_tracker(self, frame):
 
-        # tracker frame
+        # draw tracker frame
         cv2.rectangle(frame, (-1, 275), (800, 325), (0, 100, 100), 1, cv2.LINE_4)
 
-        # tracker ear
+        # draw tracker ear
         cv2.line(frame, (6, 290), (6, 310), (200, 0, 0), 1, cv2.LINE_4)
         cv2.line(frame, (793, 290), (793, 310), (200, 0, 0), 1, cv2.LINE_4)
 
-        # holes
+        # draw holes
         self.holes.draw(frame)
 
 

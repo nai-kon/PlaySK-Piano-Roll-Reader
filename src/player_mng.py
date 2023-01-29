@@ -44,8 +44,6 @@ class PlayerMng():
             elif cls_name == "WelteLicensee":
                 return WelteLicensee(confpath, midiobj)
 
-
-
         return None
 
 

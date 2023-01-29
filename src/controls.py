@@ -1,6 +1,6 @@
 import wx
 from wx.lib.agw.hyperlink import HyperLinkCtrl
-from version import APP_TILTE, APP_VERSION, COPY_RIGHT
+from version import APP_TITLE, APP_VERSION, COPY_RIGHT
 
 
 class WelcomeMsg(wx.Panel):
@@ -13,7 +13,7 @@ class WelcomeMsg(wx.Panel):
         msg1 = wx.StaticText(self, wx.ID_ANY, "SELECT FILE and START PLAYING!")
         msg1.SetFont(wx.Font(30, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
 
-        msg2 = wx.StaticText(self, wx.ID_ANY, APP_TILTE)
+        msg2 = wx.StaticText(self, wx.ID_ANY, APP_TITLE)
         msg3 = wx.StaticText(self, wx.ID_ANY, f"Version {APP_VERSION}")
         lnk = HyperLinkCtrl(self, wx.ID_ANY, "Project page on GitHub", URL="https://github.com/nai-kon/PlaySK-Piano-Roll-Reader")
         msg4 = wx.StaticText(self, wx.ID_ANY, COPY_RIGHT)
