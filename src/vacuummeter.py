@@ -1,5 +1,6 @@
 
 import wx
+import numpy as np
 
 
 class VacuumMeter(wx.Panel):
@@ -35,7 +36,8 @@ class OscilloGraph(wx.Panel):
         self.SetDoubleBuffered(True)
 
         self.val = 0
-        self.buf_val = [0] * self.w
+        self.xs = np.arange(self.w, dtype=np.intc)
+        self.ys = np.full(self.w, self.h - 1, dtype=np.intc)
 
         self.graph = wx.Bitmap(self.w, self.h)
         self.grid = wx.Bitmap(self.w, self.h)
@@ -45,7 +47,7 @@ class OscilloGraph(wx.Panel):
         self.Bind(wx.EVT_PAINT, self.on_paint)
         self.Bind(wx.EVT_TIMER, self.on_timer)
 
-        fps = 65
+        fps = 70
         self.timer = wx.Timer(self)
         self.timer.Start(1000 // fps)
 
@@ -71,18 +73,17 @@ class OscilloGraph(wx.Panel):
         dc.DrawTextList(["40", "30", "20", "10"], [(2, int(v * self.scale - txt_h // 2)) for v in [10, 20, 30, 40]])
 
     def on_timer(self, event):
-
         dc = wx.BufferedDC(wx.ClientDC(self), self.graph)
         dc.DrawBitmap(self.grid, 0, 0)
         dc = wx.GCDC(dc)  # for anti-aliasing
 
         # graph
         dc.SetPen(wx.Pen("yellow", 2, wx.SOLID))
-        self.buf_val = self.buf_val[1:] + [self.val * self.scale]
-        plots = [wx.Point(x, self.h - y - 1) for x, y in enumerate(self.buf_val)]
-        dc.DrawLines(plots)
-
-        self.Refresh()
+        self.ys[0:-1] = self.ys[1:]
+        self.ys[-1] = np.array(self.h - self.val * self.scale - 1, dtype=np.intc)
+        plots = np.dstack((self.xs, self.ys))
+        dc.DrawLinesFromBuffer(plots)
+        self.Refresh(eraseBackground=False)
 
     def on_paint(self, event):
         wx.BufferedPaintDC(self, self.graph)
