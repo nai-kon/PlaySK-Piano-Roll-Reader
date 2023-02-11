@@ -23,7 +23,7 @@ class CallBack():
         self.treble_vac_meter = treble_vac_lv
         self.offset = offset
 
-    def call_back(self, frame, curtime):
+    def emulate(self, frame, curtime):
         if self.player is not None:
             self.player.emulate(frame, curtime)
             self.bass_vac_meter.vacuum = self.player.bass_vacuum
@@ -41,6 +41,7 @@ class MainFrame(wx.Frame):
         scale = wx.Display().GetScaleFactor()
 
         self.spool = WelcomeMsg(self, size=(800, 600))
+        self.spool.start_worker()
 
         self.midi_btn = wx.Button(self, wx.ID_ANY, size=(90, 50), label="MIDI On")
         self.midi_btn.Bind(wx.EVT_BUTTON, self.midi_onoff)
@@ -114,6 +115,7 @@ class MainFrame(wx.Frame):
         print("on_close called")
         self.conf.save_config()
         self.spool.release_src()
+        self.midiobj.all_off()
         self.Destroy()
 
     def change_midi_port(self, event=None):
@@ -152,7 +154,8 @@ class MainFrame(wx.Frame):
             self.obj.player.emulate_off()
             self.spool.release_src()
             tmp = self.spool
-            self.spool = InputScanImg(self, path, self.obj.player.spool_diameter, self.obj.player.roll_width, fn=self.obj.call_back)
+            self.spool = InputScanImg(self, path, self.obj.player.spool_diameter, self.obj.player.roll_width, callback=self.obj)
+            self.spool.start_worker()
             self.Title = os.path.basename(path)
             self.sizer3.Replace(tmp, self.spool)
             tmp.Destroy()

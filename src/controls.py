@@ -30,6 +30,10 @@ class WelcomeMsg(wx.Panel):
         lnk.SetBackgroundColour("#555555")
         self.Layout()
 
+    def start_worker(self):
+        # compatible with InputVideo classes
+        pass
+
     def release_src(self):
         # compatible with InputVideo classes
         pass

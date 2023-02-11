@@ -45,9 +45,9 @@ class OscilloGraph(wx.Panel):
         self.Bind(wx.EVT_PAINT, self.on_paint)
         self.Bind(wx.EVT_TIMER, self.on_timer)
 
-        interval = 1000 // 65
+        fps = 65
         self.timer = wx.Timer(self)
-        self.timer.Start(interval)
+        self.timer.Start(1000 // fps)
 
     def on_destroy(self, event):
         self.timer.Stop()

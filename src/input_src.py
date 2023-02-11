@@ -10,11 +10,13 @@ import gc
 class FPScounter():
     def __init__(self, name="fps"):
         self.name = name
-        self.start = time.perf_counter()
+        self.start = None
         self.fps = 0
 
     def __call__(self):
         cur = time.perf_counter()
+        if self.start is None:
+            self.start = cur
         self.fps += 1
         if cur - self.start > 1:
             print(self.name, self.fps)
@@ -23,49 +25,54 @@ class FPScounter():
 
 
 class InputVideo(wx.Panel):
-    def __init__(self, parent, path, disp_size=(800, 600), fn=None):
+    def __init__(self, parent, path, disp_size=(800, 600), callback=None):
         self.scale = wx.Display().GetScaleFactor()
         wx.Panel.__init__(self, parent, size=(disp_size[0] * self.scale, disp_size[1] * self.scale))
         self.SetDoubleBuffered(True)
         self.disp_w, self.disp_h = disp_size
         self.bmp = wx.Bitmap(self.disp_w, self.disp_h, depth=24)
-        self.fn = fn
-        self.cap = cv2.VideoCapture(path)
-        self._load_next_frame()
-        self.load_fps = 60
-        self.thread_fps = FPScounter("thread fps")
-        self.disp_fps = FPScounter("disp fps")
-        self.thlock = threading.Lock()
+        self.callback = callback
+        self.src = None
+        self.src_path = path
+
+        self.start_play = False
+        self.worker_thread_quit = False
+        self.thread_worker = threading.Thread(target=self.load_thread)
+        self.worker_fps = 60
+        self.cnt_worker_fps = FPScounter("worker fps")
+        self.thread_lock = threading.Lock()
 
         self.Bind(wx.EVT_PAINT, self.on_paint)
         self.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
         self.Bind(wx.EVT_LEFT_DOWN, self.on_start)
 
-        self.start = False
-        self.thread_quit = False
-        self.th1 = threading.Thread(target=self.load_thread)
-        self.th1.start()
+    def start_worker(self):
+        self.src = cv2.VideoCapture(self.src_path)
+        self._load_next_frame()
+        self.thread_worker.start()
 
     def release_src(self):
-        self.thread_quit = True
-        self.th1.join(timeout=3)
-        if self.cap is not None:
-            self.cap = None
+        self.worker_thread_quit = True
+        self.thread_worker.join(timeout=3)
+        if self.src is not None:
+            self.src = None
             gc.collect()
 
     def on_destroy(self, event):
-        self.thread_quit = True
-        self.th1.join(timeout=3)
+        self.worker_thread_quit = True
+        self.thread_worker.join(timeout=3)
         wx.GetApp().Yield(onlyIfNeeded=True)
 
     def on_paint(self, event):
         # no need for BufferedPaintDC since SetDoubleBuffered(True)
         dc = wx.PaintDC(self)
-        with self.thlock:
-            dc.DrawBitmap(self.bmp, 0, 0)
+
+        if not self.thread_lock.locked():
+            with self.thread_lock:
+                dc.DrawBitmap(self.bmp, 0, 0)
 
         # draw play button
-        if not self.start:
+        if not self.start_play:
             self.draw_play_button(dc)
 
     def draw_play_button(self, dc):
@@ -87,11 +94,11 @@ class InputVideo(wx.Panel):
                         (center_x + rad, center_y)])
 
     def on_start(self, event):
-        self.start = not self.start
+        self.start_play = not self.start_play
         event.Skip()
 
     def _load_next_frame(self):
-        ret, frame = self.cap.read()
+        ret, frame = self.src.read()
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             src_h, src_w = frame.shape[:2]
@@ -102,20 +109,20 @@ class InputVideo(wx.Panel):
             self.frame = cv2.copyMakeBorder(resized, top=math.floor(vert_margin / 2), bottom=math.ceil(vert_margin / 2), left=0, right=0, borderType=cv2.BORDER_CONSTANT)
 
     def _get_one_frame_time(self):
-        return 1 / self.load_fps
+        return 1 / self.worker_fps
 
     def load_thread(self):
-        while not self.thread_quit:
+        while not self.worker_thread_quit:
             t1 = time.perf_counter()
 
-            if self.start:
+            if self.start_play:
                 self._load_next_frame()
 
-            if self.fn is not None:
-                self.fn(self.frame, time.perf_counter())
+            if self.callback is not None:
+                self.callback.emulate(self.frame, time.perf_counter())
 
-            if not self.thlock.locked():
-                with self.thlock:
+            if not self.thread_lock.locked():
+                with self.thread_lock:
                     self.bmp.CopyFromBuffer(self.frame)
 
                 wx.CallAfter(self.Refresh)  # refresh from thread need call after
@@ -130,13 +137,13 @@ class InputVideo(wx.Panel):
                 time.sleep(sleep)
                 elapsed_time = time.perf_counter() - t1
 
-            self.thread_fps()
+            self.cnt_worker_fps()
         print("end thread")
 
 
 class InputWebcam(InputVideo):
-    def __init__(self, parent, webcam_no=0, disp_size=(800, 600), fn=None):
-        super().__init__(parent, webcam_no, disp_size, fn)
+    def __init__(self, parent, webcam_no=0, disp_size=(800, 600), callback=None):
+        super().__init__(parent, webcam_no, disp_size, callback)
         self.start = True
 
     @staticmethod
@@ -152,46 +159,31 @@ class InputWebcam(InputVideo):
 
 
 class InputScanImg(InputVideo):
-    def __init__(self, parent, path, spool_diameter=2.72, roll_width=11.25, tempo=80, disp_size=(800, 600), fn=None):
-        self.scale = wx.Display().GetScaleFactor()
-        wx.Panel.__init__(self, parent, size=(disp_size[0] * self.scale, disp_size[1] * self.scale))
-        self.SetDoubleBuffered(True)
-        self.disp_w, self.disp_h = disp_size
-        self.bmp = wx.Bitmap(self.disp_w, self.disp_h, depth=24)
-        self.fn = fn
+    def __init__(self, parent, path, spool_diameter=2.72, roll_width=11.25, tempo=80, disp_size=(800, 600), callback=None):
+        super().__init__(parent, path, disp_size, callback)
         self.skip_px = 1
         self.spool_rps = 0
         self.cur_spool_diameter = self.org_spool_diameter = spool_diameter
         self.cur_spool_pos = 0
-        self.cur_fps = 60
+        self.roll_thick = 0.00334646  # in inch
+        self.roll_width = roll_width
+        self.tempo = tempo
 
+    def start_worker(self):
         with wx.BusyCursor():
-            self.cap = cv2.imread(path)
-            self.cap = cv2.cvtColor(self.cap, cv2.COLOR_BGR2RGB)
-
-        self.cur_y = self.cap.shape[0] - 1
+            self.src = cv2.imread(self.src_path)
+            self.src = cv2.cvtColor(self.src, cv2.COLOR_BGR2RGB)
+        # load initial frame
+        self.cur_y = self.src.shape[0] - 1
         self.left_side, self.right_side = self.__find_roll_edge()
         margin = 7 * (self.right_side - self.left_side + 1) // (self.disp_w - 7 * 2)  # 7px on both edge @800x600
         self.crop_x1 = self.left_side - margin
         self.crop_x2 = self.right_side + margin
         self.crop_h = (self.crop_x2 - self.crop_x1) * self.disp_h // self.disp_w
-        self.roll_thick = 0.00334646  # in inch
-
-        self.set_roll_width(roll_width)
-        self.set_tempo(tempo)
-        self._load_next_frame()  # load initial frame
-        self.thlock = threading.Lock()
-
-        self.thread_fps = FPScounter("thread fps")
-        self.disp_fps = FPScounter("disp fps")
-        self.Bind(wx.EVT_PAINT, self.on_paint)
-        self.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
-        self.Bind(wx.EVT_LEFT_DOWN, self.on_start)
-
-        self.start = False
-        self.thread_quit = False
-        self.th1 = threading.Thread(target=self.load_thread)
-        self.th1.start()
+        self.roll_dpi = (self.right_side - self.left_side + 1) / self.roll_width
+        self.set_tempo(self.tempo)
+        self._load_next_frame()
+        self.thread_worker.start()
 
     def set_tempo(self, tempo):
         # calc take-up spool rps
@@ -205,25 +197,22 @@ class InputScanImg(InputVideo):
                 self.skip_px = i
                 break
 
-    def set_roll_width(self, width):
-        self.roll_dpi = (self.right_side - self.left_side + 1) / width
-
     def __find_roll_edge(self):
-        roll_h, roll_w = self.cap.shape[:2]
+        roll_h, roll_w = self.src.shape[:2]
         edges = []
         edge_th = 220
         for y in np.linspace(0, roll_h - 1, 20, dtype=int):
             # find left edge
             left_side = 0
             for x in range(0, roll_w // 2):
-                if self.cap[y, x][0] < edge_th:
+                if self.src[y, x][0] < edge_th:
                     left_side = x
                     break
 
             # find right edge
             right_side = roll_w - 1
             for x in range(roll_w - 1, roll_w // 2, -1):
-                if self.cap[y, x][0] < edge_th:
+                if self.src[y, x][0] < edge_th:
                     right_side = x
                     break
 
@@ -240,12 +229,12 @@ class InputScanImg(InputVideo):
         if cropy1 < 0:
             return
 
-        frame = self.cap[cropy1:cropy2 + 1, self.crop_x1:self.crop_x2 + 1]
+        frame = self.src[cropy1:cropy2 + 1, self.crop_x1:self.crop_x2 + 1]
         self.frame = cv2.resize(frame, (self.disp_w, self.disp_h), interpolation=cv2.INTER_NEAREST)
         self.cur_y -= self.skip_px
 
         # update take-up spool round
-        spool_rpf = self.spool_rps / self.cur_fps
+        spool_rpf = self.spool_rps / self.worker_fps
         self.cur_spool_pos += spool_rpf
 
     def _get_one_frame_time(self):
@@ -259,9 +248,9 @@ class InputScanImg(InputVideo):
         takeup_px = self.spool_rps * self.cur_spool_diameter * math.pi * self.roll_dpi
 
         # how many fps needed for take up
-        self.cur_fps = takeup_px / self.skip_px
+        self.worker_fps = takeup_px / self.skip_px
 
-        return 1 / self.cur_fps
+        return 1 / self.worker_fps
 
 
 if __name__ == "__main__":
@@ -273,9 +262,9 @@ if __name__ == "__main__":
     midobj = MidiWrap()
     midobj.open_port(None)
 
-    # panel1 = InputVideo(frame, path="C:\\Users\\SASAKI\\Desktop\\AGDRec_20201217_200957.mp4", fn=obj.call_back)
+    # panel1 = InputVideo(frame, path="C:\\Users\\SASAKI\\Desktop\\AGDRec_20201217_200957.mp4", callback=obj.call_back)
     panel1 = InputScanImg(frame, path="C:\\Users\\SASAKI\\source\\repos\\nai-kon\\cis-roll-converter\\output\\Popular Hits of the Day 71383A_tempo75.png")
-
+    panel1.start_worker()
     # print(InputWebcam.list_camera())
     # panel1 = InputWebcam(frame, webcam_no=0)
 
