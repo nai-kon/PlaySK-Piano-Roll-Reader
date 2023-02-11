@@ -67,9 +67,8 @@ class InputVideo(wx.Panel):
         # no need for BufferedPaintDC since SetDoubleBuffered(True)
         dc = wx.PaintDC(self)
 
-        if not self.thread_lock.locked():
-            with self.thread_lock:
-                dc.DrawBitmap(self.bmp, 0, 0)
+        with self.thread_lock:
+            dc.DrawBitmap(self.bmp, 0, 0)
 
         # draw play button
         if not self.start_play:
@@ -125,7 +124,7 @@ class InputVideo(wx.Panel):
                 with self.thread_lock:
                     self.bmp.CopyFromBuffer(self.frame)
 
-                wx.CallAfter(self.Refresh)  # refresh from thread need call after
+                wx.CallAfter(self.Refresh, eraseBackground=False)  # refresh from thread need call after
 
             # wait for next frame
             desired_time = self._get_one_frame_time()

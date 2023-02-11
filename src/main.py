@@ -86,27 +86,32 @@ class MainFrame(wx.Frame):
         self.Show()
 
     def create_status_bar(self, scale):
-        sbar = self.CreateStatusBar(4)  # midi-port, tracker-bar
+        sbar = self.CreateStatusBar(5)  # midi-port, tracker-bar
         w, h = sbar.Size[:2]
-        sbar.SetStatusWidths([w // 3, w // 3, w // 6, -1])
+        sbar.SetStatusWidths([w // 14, w // 5, w // 10, w // 14, w // 5])
         sbar.SetBackgroundColour(wx.Colour(225, 225, 225, 255))
+
+        for i in range(4):
+            print(sbar.GetFieldRect(i))
 
         # midi port
         sbar.SetStatusText("MIDI Output :", 0)
         ports = self.midiobj.port_list
-        self.port_sel = wx.Choice(sbar, wx.ID_ANY, choices=ports)
+        rect = sbar.GetFieldRect(1)
+        self.port_sel = wx.Choice(sbar, wx.ID_ANY, choices=ports, size=(rect.width, h))
         self.port_sel.Bind(wx.EVT_CHOICE, self.change_midi_port)
-        self.port_sel.SetPosition((int(80 * scale), 0))
+        self.port_sel.SetPosition((rect.x, 0))
         last_sel = ports.index(self.conf.last_midi_port) if self.conf.last_midi_port in ports else 0
         self.port_sel.SetSelection(last_sel)
         self.change_midi_port()  # call manually for init
 
         # tracker bar
-        sbar.SetStatusText("Tracker Bar :", 1)
+        sbar.SetStatusText("Tracker Bar :", 3)
         players = self.player_mng.player_list
-        self.player_sel = wx.Choice(sbar, wx.ID_ANY, choices=players)
+        rect = sbar.GetFieldRect(4)
+        self.player_sel = wx.Choice(sbar, wx.ID_ANY, choices=players, size=(rect.width, h))
         self.player_sel.Bind(wx.EVT_CHOICE, self.change_player)
-        self.player_sel.SetPosition((int(430 * scale), 0))
+        self.player_sel.SetPosition((rect.x, 0))
         last_sel = players.index(self.conf.last_tracker) if self.conf.last_tracker in players else 0
         self.player_sel.SetSelection(last_sel)
         self.change_player()  # call manually for init
