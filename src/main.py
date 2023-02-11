@@ -91,9 +91,6 @@ class MainFrame(wx.Frame):
         sbar.SetStatusWidths([w // 14, w // 5, w // 10, w // 14, w // 5])
         sbar.SetBackgroundColour(wx.Colour(225, 225, 225, 255))
 
-        for i in range(4):
-            print(sbar.GetFieldRect(i))
-
         # midi port
         sbar.SetStatusText("MIDI Output :", 0)
         ports = self.midiobj.port_list
