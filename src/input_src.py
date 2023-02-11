@@ -59,7 +59,8 @@ class InputVideo(wx.Panel):
         wx.GetApp().Yield(onlyIfNeeded=True)
 
     def on_paint(self, event):
-        dc = wx.BufferedPaintDC(self)
+        # no need for BufferedPaintDC since SetDoubleBuffered(True)
+        dc = wx.PaintDC(self)
         with self.thlock:
             dc.DrawBitmap(self.bmp, 0, 0)
 
