@@ -26,7 +26,7 @@ class FPScounter():
 
 class InputVideo(wx.Panel):
     def __init__(self, parent, path, disp_size=(800, 600), callback=None):
-        self.scale = wx.Display().GetScaleFactor()
+        self.scale = self.scale = 1
         wx.Panel.__init__(self, parent, size=(disp_size[0] * self.scale, disp_size[1] * self.scale))
         self.SetDoubleBuffered(True)
         self.disp_w, self.disp_h = disp_size

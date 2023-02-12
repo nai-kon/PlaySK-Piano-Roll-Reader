@@ -38,7 +38,7 @@ class MainFrame(wx.Frame):
         self.SetIcon(wx.Icon(os.path.join("config", "PlaySK_icon.ico"), wx.BITMAP_TYPE_ICO))
         self.SetBackgroundColour("#AAAAAA")
 
-        scale = wx.Display().GetScaleFactor()
+        scale = self.scale = 1
 
         self.spool = WelcomeMsg(self, size=(800, 600))
         self.spool.start_worker()
