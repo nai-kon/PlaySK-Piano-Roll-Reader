@@ -54,6 +54,7 @@ class OscilloGraph(wx.Panel):
         self.fps = 65
 
         self.worker_thread_quit = False
+        self.thread_lock = threading.Lock()
         self.thread_worker = threading.Thread(target=self.load_thread)
         self.thread_worker.start()
 
@@ -100,10 +101,14 @@ class OscilloGraph(wx.Panel):
 
             self.ys[0:-1] = self.ys[1:]
             self.ys[-1] = np.array(self.h - self.val * self.scale - 1, dtype=np.intc)
-            self.plots = np.dstack((self.xs, self.ys))
-            wx.CallAfter(self.Refresh, eraseBackground=False)  # refresh from thread need call after
+
+            if not self.thread_lock.locked():
+                with self.thread_lock:
+                    self.plots = np.dstack((self.xs, self.ys))
+                wx.CallAfter(self.Refresh, eraseBackground=False)
+
             elapsed_time = time.perf_counter() - t1
-            sleep_time = (1/self.fps) - elapsed_time
+            sleep_time = (1 / self.fps) - elapsed_time
             if sleep_time < 0:
                 sleep_time = 0
             time.sleep(sleep_time)
@@ -111,16 +116,22 @@ class OscilloGraph(wx.Panel):
 
         print("end thread")
 
-
     def on_paint(self, event):
         dc = wx.PaintDC(self)
         dc.DrawBitmap(self.grid, 0, 0)
         dc = wx.GCDC(dc)  # for anti-aliasing
         dc.SetPen(wx.Pen("yellow", 2, wx.SOLID))
-        dc.DrawLinesFromBuffer(self.plots)
+        with self.thread_lock:
+            dc.DrawLinesFromBuffer(self.plots)
 
 
 if __name__ == "__main__":
+    import platform
+    pf = platform.system()
+    if pf == "Windows":
+        from ctypes import windll
+        windll.winmm.timeBeginPeriod(1)
+
     app = wx.App()
     frame = wx.Frame(None, wx.ID_ANY, "vacuum meter")
     panel1 = VacuumMeter(frame, (0, 0), "Treble Vacuum")
@@ -134,3 +145,7 @@ if __name__ == "__main__":
     frame.Fit()
     frame.Show()
     app.MainLoop()
+
+    if pf == "Windows":
+        from ctypes import windll
+        windll.winmm.timeEndPeriod(1)
