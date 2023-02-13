@@ -146,7 +146,7 @@ class MainFrame(wx.Frame):
             obj.SetLabel("MIDI On")
 
     def open_file(self, event):
-        filters = "image files (*.jpg;*.png;*.bmp) | *.jpg;*.png;*.bmp"
+        filters = "image files (*.jpg;*.png;*.bmp)|*.jpg;*.png;*.bmp"
         with wx.FileDialog(self, "Select File", style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST, wildcard=filters) as dlg:
             if dlg.ShowModal() != wx.ID_OK:
                 return
