@@ -86,13 +86,13 @@ class MainFrame(wx.Frame):
         self.Show()
 
     def create_status_bar(self, scale):
-        sbar = self.CreateStatusBar(5)  # midi-port, tracker-bar
+        sbar = self.CreateStatusBar(6)  # midi-port, tracker-bar
         w, h = sbar.Size[:2]
-        sbar.SetStatusWidths([w // 14, w // 5, w // 10, w // 14, w // 5])
+        sbar.SetStatusWidths([-1, -2, -1, -1, -2, -1])
         sbar.SetBackgroundColour(wx.Colour(225, 225, 225, 255))
 
         # midi port
-        sbar.SetStatusText("MIDI Output :", 0)
+        sbar.SetStatusText("\t\tMIDI Output :", 0)
         ports = self.midiobj.port_list
         rect = sbar.GetFieldRect(1)
         self.port_sel = wx.Choice(sbar, wx.ID_ANY, choices=ports, size=(rect.width, h))
@@ -103,7 +103,7 @@ class MainFrame(wx.Frame):
         self.change_midi_port()  # call manually for init
 
         # tracker bar
-        sbar.SetStatusText("Tracker Bar :", 3)
+        sbar.SetStatusText("\t\tTracker Bar :", 3)
         players = self.player_mng.player_list
         rect = sbar.GetFieldRect(4)
         self.player_sel = wx.Choice(sbar, wx.ID_ANY, choices=players, size=(rect.width, h))
@@ -150,25 +150,23 @@ class MainFrame(wx.Frame):
         with wx.FileDialog(self, "Select File", style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST, wildcard=filters) as dlg:
             if dlg.ShowModal() != wx.ID_OK:
                 return
-
             path = dlg.GetPath()
+        self.obj.player.emulate_off()
+        self.spool.release_src()
+        tmp = self.spool
+        self.spool = InputScanImg(self, path, self.obj.player.spool_diameter, self.obj.player.roll_width, callback=self.obj)
+        self.spool.start_worker()
+        self.Title = os.path.basename(path)
+        self.sizer3.Replace(tmp, self.spool)
+        tmp.Destroy()
 
-            self.obj.player.emulate_off()
-            self.spool.release_src()
-            tmp = self.spool
-            self.spool = InputScanImg(self, path, self.obj.player.spool_diameter, self.obj.player.roll_width, callback=self.obj)
-            self.spool.start_worker()
-            self.Title = os.path.basename(path)
-            self.sizer3.Replace(tmp, self.spool)
-            tmp.Destroy()
+        self.midi_btn.SetLabel("MIDI On")
+        self.midi_btn.Enable()
 
-            self.midi_btn.SetLabel("MIDI On")
-            self.midi_btn.Enable()
-
-            # Set tempo
-            val = re.search(r"tempo:?\s*(\d{2,3})", self.Title)
-            tempo = int(val.group(1)) if val is not None else self.obj.player.default_tempo
-            self.speed.set("Tempo", (50, 140), tempo)
+        # Set tempo
+        val = re.search(r"tempo:?\s*(\d{2,3})", self.Title)
+        tempo = int(val.group(1)) if val is not None else self.obj.player.default_tempo
+        self.speed.set("Tempo", (50, 140), tempo)
 
     def speed_change(self, val):
         if hasattr(self.spool, "set_tempo"):

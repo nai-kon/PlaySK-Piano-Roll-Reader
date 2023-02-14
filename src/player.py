@@ -66,13 +66,12 @@ class TrackerHoles():
                 cv2.rectangle(frame, (pos[0] + self.xoffset, pos[1]), (pos[2] + self.xoffset, pos[3]), color, 1)
 
     def __getitem__(self, key):
-        holesize, idx = self.holes_by_name[key]
-
+        hole_size, idx = self.holes_by_name[key]
         ret = {
-            "pos": self.holes_by_size[holesize]["pos"][idx],
-            "is_open": self.holes_by_size[holesize]["is_open"][idx],
-            "to_open": self.holes_by_size[holesize]["to_open"][idx],
-            "to_close": self.holes_by_size[holesize]["to_close"][idx],
+            "pos": self.holes_by_size[hole_size]["pos"][idx],
+            "is_open": self.holes_by_size[hole_size]["is_open"][idx],
+            "to_open": self.holes_by_size[hole_size]["to_open"][idx],
+            "to_close": self.holes_by_size[hole_size]["to_close"][idx],
         }
         return ret
 

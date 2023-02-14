@@ -223,12 +223,12 @@ class InputScanImg(InputVideo):
         return edges[middle]
 
     def _load_next_frame(self):
-        cropy2 = self.cur_y
-        cropy1 = cropy2 - self.crop_h
-        if cropy1 < 0:
+        crop_y2 = self.cur_y
+        crop_y1 = crop_y2 - self.crop_h
+        if crop_y1 < 0:
             return
 
-        frame = self.src[cropy1:cropy2 + 1, self.crop_x1:self.crop_x2 + 1]
+        frame = self.src[crop_y1:crop_y2 + 1, self.crop_x1:self.crop_x2 + 1]
         self.frame = cv2.resize(frame, (self.disp_w, self.disp_h), interpolation=cv2.INTER_NEAREST)
         self.cur_y -= self.skip_px
 
