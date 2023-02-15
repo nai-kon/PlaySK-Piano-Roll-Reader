@@ -1,10 +1,12 @@
-import cv2
-import time
-import threading
-import wx
-import math
-import numpy as np
 import gc
+import math
+import platform
+import threading
+import time
+
+import cv2
+import numpy as np
+import wx
 
 
 class FPScounter():
@@ -33,7 +35,7 @@ class InputVideo(wx.Panel):
         self.callback = callback
         self.src = None
         self.src_path = path
-        self.scale = self.GetDPIScaleFactor()
+        self.scale = self.GetDPIScaleFactor() if platform.system() == "Windows" else 1
 
         self.start_play = False
         self.worker_thread_quit = False

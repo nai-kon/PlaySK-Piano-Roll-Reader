@@ -1,5 +1,6 @@
 import wx
 from wx.lib.agw.hyperlink import HyperLinkCtrl
+
 from version import APP_TITLE, APP_VERSION, COPY_RIGHT
 
 

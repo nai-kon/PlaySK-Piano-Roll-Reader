@@ -1,10 +1,11 @@
 import glob
-import os
 import json
-from player import Player
+import os
+
 from AmpicoB import AmpicoB
-from WelteT100 import WelteT100
+from player import Player
 from WelteLicensee import WelteLicensee
+from WelteT100 import WelteT100
 
 
 class PlayerMng():

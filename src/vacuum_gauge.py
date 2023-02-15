@@ -1,8 +1,10 @@
-
-import wx
-import numpy as np
-import time
+import platform
 import threading
+import time
+
+import numpy as np
+import wx
+
 from input_src import FPScounter
 
 
@@ -34,7 +36,7 @@ class OscilloGraph(wx.Panel):
         self.w = size[0]
         self.h = size[1]
         self.max = max
-        self.scale = self.GetDPIScaleFactor()
+        self.scale = self.GetDPIScaleFactor() if platform.system() == "Windows" else 1
         self.plot_scale = self.h / self.max
         self.SetDoubleBuffered(True)
 

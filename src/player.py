@@ -1,5 +1,6 @@
-import cv2
 import json
+
+import cv2
 import numpy as np
 
 
@@ -187,8 +188,9 @@ class Player():
 
 
 if __name__ == "__main__":
-    import time
     import os
+    import time
+
     from midi_controller import MidiWrap
     midiobj = MidiWrap()
     player = Player(os.path.join("config", "88Note white background.json"), midiobj)

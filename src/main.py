@@ -1,14 +1,16 @@
-import wx
 import os
 import platform
-from vacuum_gauge import VacuumGauge
-from midi_controller import MidiWrap
-from config import ConfigMng
-from input_src import InputScanImg
-from player_mng import PlayerMng
-from controls import SpeedSlider, TrackerCtrl, WelcomeMsg
-from version import APP_TITLE
 import re
+
+import wx
+
+from config import ConfigMng
+from controls import SpeedSlider, TrackerCtrl, WelcomeMsg
+from input_src import InputScanImg
+from midi_controller import MidiWrap
+from player_mng import PlayerMng
+from vacuum_gauge import VacuumGauge
+from version import APP_TITLE
 
 
 class CallBack():
