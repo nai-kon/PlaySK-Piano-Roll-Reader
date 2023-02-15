@@ -1,4 +1,3 @@
-import numpy as np
 from player import Player
 
 
@@ -11,18 +10,18 @@ class WelteT100(Player):
         self.bass_mf_hook = False
         self.bass_slow_cres_sec = 4.76   # min to max
         self.bass_slow_decres_sec = 4.76  # max to min
-        self.bass_fast_cres_sec = 0.7
-        self.bass_fast_decres_sec = 0.150
+        self.bass_fast_cres_sec = 0.65
+        self.bass_fast_decres_sec = 0.15
 
         self.treble_cres_pos = 0
         self.treble_cres_state = "slow_decres"
         self.treble_mf_hook = False
         self.treble_slow_cres_sec = 4.76   # min to max
         self.treble_slow_decres_sec = 4.76  # max to min
-        self.treble_fast_cres_sec = 0.7
-        self.treble_fast_decres_sec = 0.156
+        self.treble_fast_cres_sec = 0.65
+        self.treble_fast_decres_sec = 0.15
 
-        self.mf_hook_pos = 0.5
+        self.mf_hook_pos = 0.47
         self.pre_time = None
         self.min_vacuum = 6     # in W.G
         self.max_vacuum = 35    # in W.G
@@ -53,7 +52,6 @@ class WelteT100(Player):
             self.bass_cres_state = "slow_cres"
         elif self.holes["bass_cresc_piano"]["to_open"]:
             self.bass_cres_state = "slow_decres"
-
 
         # Check treble expression holes
         if self.holes["treble_mf_on"]["to_open"]:
@@ -86,7 +84,7 @@ class WelteT100(Player):
             self.bass_cres_pos += (curtime - self.pre_time) * (1 / self.bass_slow_cres_sec)
         elif self.bass_cres_state == "slow_decres":
             self.bass_cres_pos -= (curtime - self.pre_time) * (1 / self.bass_slow_decres_sec)
-        
+
         if self.holes["bass_forz_forte"]["is_open"]:
             self.bass_cres_pos += (curtime - self.pre_time) * (1 / self.bass_fast_cres_sec)
         elif self.holes["bass_forz_piano"]["is_open"]:
@@ -108,7 +106,7 @@ class WelteT100(Player):
             self.treble_cres_pos += (curtime - self.pre_time) * (1 / self.treble_slow_cres_sec)
         elif self.treble_cres_state == "slow_decres":
             self.treble_cres_pos -= (curtime - self.pre_time) * (1 / self.treble_slow_decres_sec)
-        
+
         if self.holes["treble_forz_forte"]["is_open"]:
             self.treble_cres_pos += (curtime - self.pre_time) * (1 / self.treble_fast_cres_sec)
         elif self.holes["treble_forz_piano"]["is_open"]:
@@ -151,6 +149,7 @@ class WelteT100(Player):
 
 
 if __name__ == "__main__":
+    import numpy as np
     import time
     import os
     from midi_controller import MidiWrap

@@ -1,6 +1,7 @@
 import wx
 import os
-from vacuummeter import VacuumMeter
+import platform
+from vacuum_gauge import VacuumGauge
 from midi_controller import MidiWrap
 from config import ConfigMng
 from input_src import InputScanImg
@@ -36,7 +37,7 @@ class MainFrame(wx.Frame):
     def __init__(self):
         super().__init__(parent=None, title=APP_TITLE, style=wx.CAPTION | wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.CLIP_CHILDREN)
         self.SetIcon(wx.Icon(os.path.join("config", "PlaySK_icon.ico"), wx.BITMAP_TYPE_ICO))
-        if os.name == "nt":
+        if platform.system() == "Windows":
             # wxpython on Windows not support Darkmode
             self.SetBackgroundColour("#AAAAAA")
 
@@ -55,8 +56,8 @@ class MainFrame(wx.Frame):
         self.speed = SpeedSlider(self, callback=self.speed_change)
         self.tracking = TrackerCtrl(self, callback=self.tracking_change)
 
-        self.bass_vacuum_lv = VacuumMeter(self, caption="Bass Vacuum (inches of water)")
-        self.treble_vacuum_lv = VacuumMeter(self, caption="Treble Vacuum (inches of water)")
+        self.bass_vacuum_lv = VacuumGauge(self, caption="Bass Vacuum (inches of water)")
+        self.treble_vacuum_lv = VacuumGauge(self, caption="Treble Vacuum (inches of water)")
 
         self.obj = CallBack(None, self.tracking, self.bass_vacuum_lv, self.treble_vacuum_lv)
         self.midiobj = MidiWrap()
@@ -88,12 +89,12 @@ class MainFrame(wx.Frame):
         self.Show()
 
     def create_status_bar(self, scale):
-        sbar = self.CreateStatusBar(6)  # midi-port, tracker-bar
+        sbar = self.CreateStatusBar(5)  # midi-port, tracker-bar
         w, h = sbar.Size[:2]
-        sbar.SetStatusWidths([-1, -2, -1, -1, -2, -1])
+        sbar.SetStatusWidths([-1, -3, -1, -3, -3])
 
         # midi port
-        sbar.SetStatusText("\t\tMIDI Output :", 0)
+        sbar.SetStatusText("\tMIDI Out :", 0)
         ports = self.midiobj.port_list
         rect = sbar.GetFieldRect(1)
         self.port_sel = wx.Choice(sbar, wx.ID_ANY, choices=ports, size=(rect.width, h))
@@ -104,9 +105,9 @@ class MainFrame(wx.Frame):
         self.change_midi_port()  # call manually for init
 
         # tracker bar
-        sbar.SetStatusText("\t\tTracker Bar :", 3)
+        sbar.SetStatusText("\tTracker Bar :", 2)
         players = self.player_mng.player_list
-        rect = sbar.GetFieldRect(4)
+        rect = sbar.GetFieldRect(3)
         self.player_sel = wx.Choice(sbar, wx.ID_ANY, choices=players, size=(rect.width, h))
         self.player_sel.Bind(wx.EVT_CHOICE, self.change_player)
         self.player_sel.SetPosition((rect.x, 0))
@@ -179,7 +180,6 @@ class MainFrame(wx.Frame):
 
 
 if __name__ == "__main__":
-    import platform
     pf = platform.system()
     if pf == "Windows":
         from ctypes import windll

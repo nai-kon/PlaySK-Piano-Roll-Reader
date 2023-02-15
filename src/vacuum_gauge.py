@@ -6,7 +6,7 @@ import threading
 from input_src import FPScounter
 
 
-class VacuumMeter(wx.Panel):
+class VacuumGauge(wx.Panel):
     def __init__(self, parent, pos=(0, 0), caption=""):
         self.scale = self.scale = 1
         wx.Panel.__init__(self, parent, wx.ID_ANY, pos=(int(pos[0] * self.scale), int(pos[1] * self.scale)))
@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
     app = wx.App()
     frame = wx.Frame(None, wx.ID_ANY, "vacuum meter")
-    panel1 = VacuumMeter(frame, (0, 0), "Treble Vacuum")
+    panel1 = VacuumGauge(frame, (0, 0), "Treble Vacuum")
 
     def slider_value_change(event):
         obj = event.GetEventObject()
