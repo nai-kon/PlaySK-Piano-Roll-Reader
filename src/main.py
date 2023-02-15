@@ -36,7 +36,9 @@ class MainFrame(wx.Frame):
     def __init__(self):
         super().__init__(parent=None, title=APP_TITLE, style=wx.CAPTION | wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.CLIP_CHILDREN)
         self.SetIcon(wx.Icon(os.path.join("config", "PlaySK_icon.ico"), wx.BITMAP_TYPE_ICO))
-        self.SetBackgroundColour("#AAAAAA")
+        if os.name == "nt":
+            # wxpython on Windows not support Darkmode
+            self.SetBackgroundColour("#AAAAAA")
 
         scale = self.scale = 1
 
@@ -89,7 +91,6 @@ class MainFrame(wx.Frame):
         sbar = self.CreateStatusBar(6)  # midi-port, tracker-bar
         w, h = sbar.Size[:2]
         sbar.SetStatusWidths([-1, -2, -1, -1, -2, -1])
-        sbar.SetBackgroundColour(wx.Colour(225, 225, 225, 255))
 
         # midi port
         sbar.SetStatusText("\t\tMIDI Output :", 0)
@@ -172,8 +173,8 @@ class MainFrame(wx.Frame):
         if hasattr(self.spool, "set_tempo"):
             self.spool.set_tempo(val)
 
-    def tracking_change(self, autotrack, pos):
-        self.obj.player.auto_tracking = autotrack
+    def tracking_change(self, enable, pos):
+        self.obj.player.auto_tracking = enable
         self.obj.player.tracker_offset = pos
 
 
