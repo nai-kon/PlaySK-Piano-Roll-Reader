@@ -10,12 +10,6 @@ from controls import SpeedSlider, TrackerCtrl, WelcomeMsg
 from version import APP_TITLE
 import re
 
-# import ctypes
-# try:
-#     ctypes.windll.shcore.SetProcessDpiAwareness(True)
-# except:
-#     pass
-
 
 class CallBack():
     def __init__(self, player, offset, bass_vac_lv, treble_vac_lv):
@@ -41,16 +35,14 @@ class MainFrame(wx.Frame):
             # wxpython on Windows not support Darkmode
             self.SetBackgroundColour("#AAAAAA")
 
-        scale = self.scale = 1
-
         self.spool = WelcomeMsg(self, size=(800, 600))
         self.spool.start_worker()
 
-        self.midi_btn = wx.Button(self, wx.ID_ANY, size=(90, 50), label="MIDI On")
+        self.midi_btn = wx.Button(self, wx.ID_ANY, size=self.FromDIP(wx.Size((90, 50))), label="MIDI On")
         self.midi_btn.Bind(wx.EVT_BUTTON, self.midi_onoff)
         self.midi_btn.Disable()
 
-        self.file_btn = wx.Button(self, wx.ID_ANY, size=(90, 50), label="File")
+        self.file_btn = wx.Button(self, wx.ID_ANY, size=self.FromDIP(wx.Size((90, 50))), label="File")
         self.file_btn.Bind(wx.EVT_BUTTON, self.open_file)
 
         self.speed = SpeedSlider(self, callback=self.speed_change)
@@ -66,8 +58,8 @@ class MainFrame(wx.Frame):
 
         # sizer of controls
         self.sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        self.sizer1.Add(self.midi_btn, flag=wx.EXPAND | wx.ALL, border=5)
-        self.sizer1.Add(self.file_btn, flag=wx.EXPAND | wx.ALL, border=5)
+        self.sizer1.Add(self.midi_btn, flag=wx.EXPAND | wx.ALL, border=5, proportion=1)
+        self.sizer1.Add(self.file_btn, flag=wx.EXPAND | wx.ALL, border=5, proportion=1)
 
         self.sizer2 = wx.BoxSizer(wx.VERTICAL)
         self.sizer2.Add(self.sizer1, flag=wx.EXPAND)
@@ -82,13 +74,13 @@ class MainFrame(wx.Frame):
         self.SetSizer(self.sizer3)
 
         self.Fit()
-        self.create_status_bar(scale)
+        self.create_status_bar()
         self.Fit()
 
         self.Bind(wx.EVT_CLOSE, self.on_close)
         self.Show()
 
-    def create_status_bar(self, scale):
+    def create_status_bar(self):
         sbar = self.CreateStatusBar(5)  # midi-port, tracker-bar
         w, h = sbar.Size[:2]
         sbar.SetStatusWidths([-1, -3, -1, -3, -3])
@@ -180,10 +172,18 @@ class MainFrame(wx.Frame):
 
 
 if __name__ == "__main__":
+    # Set windows timer precision to 1ms
     pf = platform.system()
     if pf == "Windows":
         from ctypes import windll
         windll.winmm.timeBeginPeriod(1)
+
+    # high DPI awareness
+    try:
+        import ctypes
+        ctypes.windll.shcore.SetProcessDpiAwareness(True)
+    except Exception as e:
+        print(e)
 
     app = wx.App()
     MainFrame()

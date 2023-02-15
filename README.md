@@ -27,7 +27,7 @@ https://github.com/nai-kon/PlaySK-Piano-Roll-Reader/releases/tag/Ver3.0
 * Ver3.0 only supports the scanned image. WebCam and .mp4 are not supported.
 * Automatically set the tempo if the input filename has the tempo keyword (tempoXX)
     * e.g.) `Ampico 52305 Clair de Lune tempo90.jpg` -> set the tempo to 90 automatically.
-    * The tempo of Welte T-100 is fixed to 98.
+    * If no keyword is given, the default tempo will be used. 98 for the Welte T-100 and 80 for the others.
 
 
 # For developer
@@ -55,6 +55,3 @@ We recommend to install on venv.
 
 ## Notes
 * dark mode on Windows is not working due to the wxpython.
-* 
-
-## 

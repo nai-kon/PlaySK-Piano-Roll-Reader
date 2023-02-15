@@ -26,14 +26,14 @@ class FPScounter():
 
 class InputVideo(wx.Panel):
     def __init__(self, parent, path, disp_size=(800, 600), callback=None):
-        self.scale = self.scale = 1
-        wx.Panel.__init__(self, parent, size=(disp_size[0] * self.scale, disp_size[1] * self.scale))
+        wx.Panel.__init__(self, parent, size=parent.FromDIP(wx.Size(disp_size)))
         self.SetDoubleBuffered(True)
         self.disp_w, self.disp_h = disp_size
         self.bmp = wx.Bitmap(self.disp_w, self.disp_h, depth=24)
         self.callback = callback
         self.src = None
         self.src_path = path
+        self.scale = self.GetDPIScaleFactor()
 
         self.start_play = False
         self.worker_thread_quit = False
@@ -66,6 +66,7 @@ class InputVideo(wx.Panel):
     def on_paint(self, event):
         # no need for BufferedPaintDC since SetDoubleBuffered(True)
         dc = wx.PaintDC(self)
+        dc.SetUserScale(self.scale, self.scale)
 
         with self.thread_lock:
             dc.DrawBitmap(self.bmp, 0, 0)

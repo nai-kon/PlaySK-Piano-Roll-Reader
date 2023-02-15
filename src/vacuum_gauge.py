@@ -8,8 +8,7 @@ from input_src import FPScounter
 
 class VacuumGauge(wx.Panel):
     def __init__(self, parent, pos=(0, 0), caption=""):
-        self.scale = self.scale = 1
-        wx.Panel.__init__(self, parent, wx.ID_ANY, pos=(int(pos[0] * self.scale), int(pos[1] * self.scale)))
+        wx.Panel.__init__(self, parent, wx.ID_ANY, pos=pos)
         caption = wx.StaticText(self, wx.ID_ANY, caption)
         self.meter = OscilloGraph(self)
 
@@ -30,17 +29,18 @@ class VacuumGauge(wx.Panel):
 
 class OscilloGraph(wx.Panel):
     def __init__(self, parent, pos=(0, 0), max=50, size=(200, 150)):
-        self.scale = self.scale = 1
-        wx.Panel.__init__(self, parent, wx.ID_ANY, size=(int(size[0] * self.scale), int(size[1] * self.scale)))
+        size = parent.FromDIP(wx.Size(size))
+        wx.Panel.__init__(self, parent, wx.ID_ANY, size=size)
         self.w = size[0]
         self.h = size[1]
         self.max = max
-        self.scale = self.h / self.max
+        self.scale = self.GetDPIScaleFactor()
+        self.plot_scale = self.h / self.max
         self.SetDoubleBuffered(True)
 
         self.val = 0
-        self.xs = np.arange(self.w, dtype=np.intc)
-        self.ys = np.full(self.w, self.h - 1, dtype=np.intc)
+        self.xs = np.arange(self.w, step=self.scale).astype(np.intc)
+        self.ys = np.full(self.xs.size, self.h - 1, dtype=np.intc)
         self.plots = np.dstack((self.xs, self.ys))
 
         self.graph = wx.Bitmap(self.w, self.h)
@@ -71,28 +71,15 @@ class OscilloGraph(wx.Panel):
         dc.Clear()
 
         # grid line
-        dc.SetPen(wx.Pen("black", 1, wx.SOLID))
+        dc.SetPen(wx.Pen("black", 1 * self.scale, wx.SOLID))
         dc.DrawLineList([(x, 0, x, self.h - 1) for x in range(0, self.w, 50)])
-        dc.DrawLineList([(0, int(y * self.scale), self.w - 1, int(y * self.scale)) for y in range(0, self.max, 10)])
+        dc.DrawLineList([(0, int(y * self.plot_scale), self.w - 1, int(y * self.plot_scale)) for y in range(0, self.max, 10)])
 
         # scale
+        dc.SetFont(wx.Font(10 * self.scale, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
         dc.SetTextForeground((255, 255, 255))
         _, txt_h = dc.GetTextExtent("0")
-        dc.DrawTextList(["40", "30", "20", "10"], [(2, int(v * self.scale - txt_h // 2)) for v in [10, 20, 30, 40]])
-
-    def on_timer(self, event):
-        dc = wx.BufferedDC(wx.ClientDC(self), self.graph)
-        dc.DrawBitmap(self.grid, 0, 0)
-        dc = wx.GCDC(dc)  # for anti-aliasing
-
-        # graph
-        dc.SetPen(wx.Pen("yellow", 2, wx.SOLID))
-        self.ys[0:-1] = self.ys[1:]
-        self.ys[-1] = np.array(self.h - self.val * self.scale - 1, dtype=np.intc)
-        plots = np.dstack((self.xs, self.ys))
-        dc.DrawLinesFromBuffer(plots)
-        self.count()
-        self.Refresh(eraseBackground=False)
+        dc.DrawTextList(["40", "30", "20", "10"], [(2, int(v * self.plot_scale - txt_h // 2)) for v in [10, 20, 30, 40]])
 
     def load_thread(self):
         while not self.worker_thread_quit:
@@ -100,7 +87,7 @@ class OscilloGraph(wx.Panel):
             t1 = time.perf_counter()
 
             self.ys[0:-1] = self.ys[1:]
-            self.ys[-1] = np.array(self.h - self.val * self.scale - 1, dtype=np.intc)
+            self.ys[-1] = np.array(self.h - self.val * self.plot_scale - 1, dtype=np.intc)
 
             if not self.thread_lock.locked():
                 with self.thread_lock:
@@ -120,7 +107,7 @@ class OscilloGraph(wx.Panel):
         dc = wx.PaintDC(self)
         dc.DrawBitmap(self.grid, 0, 0)
         dc = wx.GCDC(dc)  # for anti-aliasing
-        dc.SetPen(wx.Pen("yellow", 2, wx.SOLID))
+        dc.SetPen(wx.Pen("yellow", 2 * self.scale, wx.SOLID))
         with self.thread_lock:
             dc.DrawLinesFromBuffer(self.plots)
 
@@ -131,6 +118,11 @@ if __name__ == "__main__":
     if pf == "Windows":
         from ctypes import windll
         windll.winmm.timeBeginPeriod(1)
+    import ctypes
+    try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(True)
+    except:
+        pass
 
     app = wx.App()
     frame = wx.Frame(None, wx.ID_ANY, "vacuum meter")
@@ -139,10 +131,15 @@ if __name__ == "__main__":
     def slider_value_change(event):
         obj = event.GetEventObject()
         panel1.vacuum = obj.GetValue()
-    slider = wx.Slider(frame, value=0, minValue=0, maxValue=40, pos=(0, 200), size=(200, 100), style=wx.SL_LABELS)
+
+    slider = wx.Slider(frame, value=0, minValue=0, maxValue=40, size=frame.FromDIP(wx.Size(200, 100)), style=wx.SL_LABELS)
     slider.Bind(wx.EVT_SLIDER, slider_value_change)
 
-    frame.Fit()
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    sizer.Add(panel1)
+    sizer.Add(slider)
+    frame.SetSizer(sizer)
+
     frame.Show()
     app.MainLoop()
 

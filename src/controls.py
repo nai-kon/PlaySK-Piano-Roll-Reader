@@ -5,7 +5,7 @@ from version import APP_TITLE, APP_VERSION, COPY_RIGHT
 
 class WelcomeMsg(wx.Panel):
     def __init__(self, parent, pos=(0, 0), size=(800, 600)):
-        wx.Panel.__init__(self, parent, wx.ID_ANY, pos, size)
+        wx.Panel.__init__(self, parent, wx.ID_ANY, pos, parent.FromDIP(wx.Size(size)))
 
         self.SetForegroundColour("white")
 
