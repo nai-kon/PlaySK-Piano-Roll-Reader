@@ -74,7 +74,7 @@ class OscilloGraph(wx.Panel):
 
         # grid line
         dc.SetPen(wx.Pen("black", 1 * self.scale, wx.SOLID))
-        dc.DrawLineList([(x, 0, x, self.h - 1) for x in range(0, self.w, 50)])
+        dc.DrawLineList([(x, 0, x, self.h - 1) for x in range(0, self.w, int(50 * self.scale))])
         dc.DrawLineList([(0, int(y * self.plot_scale), self.w - 1, int(y * self.plot_scale)) for y in range(0, self.max, 10)])
 
         # scale
