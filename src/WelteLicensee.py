@@ -5,20 +5,15 @@ class WelteLicensee(WelteT100):
     def __init__(self, confpath, midiobj):
         super().__init__(confpath, midiobj)
 
-        self.bass_slow_cres_sec = 4.92   # min to max
-        self.bass_slow_decres_sec = 5.6  # max to min
-        self.bass_fast_cres_sec = 0.5
-        self.bass_fast_decres_sec = 0.15
+        self.bass_slow_cres_rate = self.mf_hook_pos / 2.5   # min to mf takes 2.5sec
+        self.bass_slow_decres_rate = self.mf_hook_pos / 2.5   # mf to min takes 2.5sec
+        self.bass_fast_cres_rate = 1 / 0.58
+        self.bass_fast_decres_rate = 1 / 0.15
 
-        self.treble_slow_cres_sec = 4.92   # min to max
-        self.treble_slow_decres_sec = 5.6  # max to min
-        self.treble_fast_cres_sec = 0.5
-        self.treble_fast_decres_sec = 0.15
-
-        self.mf_hook_pos = 0.47
-        self.pre_time = None
-        self.min_vacuum = 6     # in W.G
-        self.max_vacuum = 35    # in W.G
+        self.treble_slow_cres_rate = self.mf_hook_pos / 2.5   # min to mf takes 2.5sec
+        self.treble_slow_decres_rate = self.mf_hook_pos / 2.5   # mf to min takes 2.5sec
+        self.treble_fast_cres_rate = 1 / 0.58
+        self.treble_fast_decres_rate = 1 / 0.15
 
         self.bass_vacuum = self.min_vacuum
         self.treble_vacuum = self.min_vacuum

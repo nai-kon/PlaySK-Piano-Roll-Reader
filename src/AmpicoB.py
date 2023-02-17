@@ -7,8 +7,8 @@ class AmpicoB(Player):
 
         self.amp_lock_pos = 0
         self.amp_cres_pos = 0
-        self.slow_cres_sec = 4
-        self.fast_cres_sec = 0.9
+        self.slow_cres_rate = 1 / 4  # 4sec
+        self.fast_cres_rate = 1 / 0.9  # 0.9sec
         self.pre_time = None
 
         self.bass_intensity_lock = [False, False, False]  # 2->4->6
@@ -94,6 +94,7 @@ class AmpicoB(Player):
     def calc_crescendo(self, curtime):
         if self.pre_time is None:
             self.pre_time = curtime
+        delta_time = curtime - self.pre_time
 
         amplifier = self.holes["amplifier"]
         slow_cres = self.holes["treble_slow_cresc"]
@@ -116,19 +117,19 @@ class AmpicoB(Player):
         if slow_cres["is_open"]:
             if fast_cres["is_open"] or amplifier["is_open"]:
                 # fast crescendo
-                self.amp_cres_pos += (curtime - self.pre_time) * (1 / self.fast_cres_sec)
+                self.amp_cres_pos += delta_time * self.fast_cres_rate
             else:
                 # slow crescendo
-                self.amp_cres_pos += (curtime - self.pre_time) * (1 / self.slow_cres_sec)
+                self.amp_cres_pos += delta_time * self.slow_cres_rate
 
         else:
             if fast_cres["is_open"] or amplifier["is_open"]:
                 # fast decrescendo
-                self.amp_cres_pos -= (curtime - self.pre_time) * (1 / self.fast_cres_sec)
+                self.amp_cres_pos -= delta_time * self.fast_cres_rate
                 self.amp_cres_pos = max(self.amp_cres_pos, self.amp_lock_pos)  # amplifier lock
             else:
                 # slow decrescendo
-                self.amp_cres_pos -= (curtime - self.pre_time) * (1 / self.slow_cres_sec)
+                self.amp_cres_pos -= delta_time * self.slow_cres_rate
                 self.amp_cres_pos = max(self.amp_cres_pos, self.amp_lock_pos)  # amplifier lock
 
         self.amp_cres_pos = max(self.amp_cres_pos, 0)

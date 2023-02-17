@@ -11,7 +11,7 @@ class WelcomeMsg(wx.Panel):
         self.SetForegroundColour("white")
 
         dummy = wx.StaticText(self, wx.ID_ANY, "")
-        msg1 = wx.StaticText(self, wx.ID_ANY, "SELECT FILE and START PLAYING!")
+        msg1 = wx.StaticText(self, wx.ID_ANY, "SELECT FILE and PLAY!")
         msg1.SetFont(wx.Font(30, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
 
         msg2 = wx.StaticText(self, wx.ID_ANY, APP_TITLE)
