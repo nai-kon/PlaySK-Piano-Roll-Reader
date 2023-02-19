@@ -103,15 +103,15 @@
     "soft": {
       "x": 771,
       "y": 298,
-      "w": 9,
+      "w": 10,
       "h": 13,
       "on_apature": 0.1,
       "off_apature": 0.05
     },
     "sustain": {
-      "x": 32,
+      "x": 31,
       "y": 298,
-      "w": 9,
+      "w": 10,
       "h": 13,
       "on_apature": 0.1,
       "off_apature": 0.05
@@ -123,11 +123,11 @@
         74,
         81
       ],
-      "y": 284,
+      "y": 283,
       "w": 5,
-      "h": 12,
-      "on_apature": 0.2,
-      "off_apature": 0.15
+      "h": 13,
+      "on_apature": 0.25,
+      "off_apature": 0.1
     },
     "theme": {
       "x": [
@@ -136,11 +136,11 @@
         726,
         734
       ],
-      "y": 284,
+      "y": 283,
       "w": 5,
-      "h": 12,
-      "on_apature": 0.2,
-      "off_apature": 0.15
+      "h": 13,
+      "on_apature": 0.25,
+      "off_apature": 0.1
     },
     "bass_snakebite": {
       "x": 44,

@@ -78,7 +78,7 @@ class OscilloGraph(wx.Panel):
         dc.DrawLineList([(0, int(y * self.plot_scale), self.w - 1, int(y * self.plot_scale)) for y in range(0, self.max, 10)])
 
         # scale
-        dc.SetFont(wx.Font(10 * self.scale, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
+        dc.SetFont(wx.Font(12 * self.scale, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
         dc.SetTextForeground((255, 255, 255))
         _, txt_h = dc.GetTextExtent("0")
         dc.DrawTextList(["40", "30", "20", "10"], [(2, int(v * self.plot_scale - txt_h // 2)) for v in [10, 20, 30, 40]])
@@ -115,7 +115,6 @@ class OscilloGraph(wx.Panel):
 
 
 if __name__ == "__main__":
-    import platform
     pf = platform.system()
     if pf == "Windows":
         from ctypes import windll

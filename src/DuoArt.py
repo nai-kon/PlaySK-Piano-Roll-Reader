@@ -16,24 +16,15 @@ class DuoArt(Player):
 
         # 1->2->4->8
         self.accomp_poss = [0, 0, 0, 0]
-        self.accomp_delay_rates = (
-            1 / 0.05,
-            1 / 0.06,
-            1 / 0.08,
-            1 / 0.12
-        )
 
         # 8->4->2->1
         self.theme_poss = [0, 0, 0, 0]
-        self.theme_delay_rates = (
-            1 / 0.12,
-            1 / 0.08,
-            1 / 0.06,
-            1 / 0.05,
-        )
 
         self.bass_vacuum = self.accomp_min
         self.treble_vacuum = self.accomp_min
+        self.delay_ratio = 0.25
+        self.theme_vacuum_pre = self.theme_min
+        self.accomp_vacuum_pre = self.accomp_min
         self.accomp_delay_que = deque([self.accomp_min] * 10, maxlen=10)
         self.theme_delay_que = deque([self.theme_min] * 10, maxlen=10)
 
@@ -43,41 +34,31 @@ class DuoArt(Player):
         self.theme_poss = [0, 0, 0, 0]
         self.bass_vacuum = self.accomp_min
         self.treble_vacuum = self.accomp_min
+        self.theme_vacuum_pre = self.theme_min
+        self.accomp_vacuum_pre = self.accomp_min
 
     def emulate_expression(self, curtime):
-        if self.pre_time is None:
-            self.pre_time = curtime
-        delta_time = curtime - self.pre_time
 
         # accomp 1->2->4->8
-        for i, (size, open, delay_rate) in enumerate(zip((1, 2, 4, 8), self.holes["accomp"]["is_open"], self.accomp_delay_rates)):
-            if open:
-                self.accomp_poss[i] += (delta_time * delay_rate) * size
-            else:
-                self.accomp_poss[i] -= (delta_time * delay_rate) * size
-            self.accomp_poss[i] = max(self.accomp_poss[i], 0)
-            self.accomp_poss[i] = min(self.accomp_poss[i], size)
-
-        accomp_pos = sum(self.accomp_poss)
+        accomp_pos = sum([v * l for v, l in zip((1, 2, 4, 8), self.holes["accomp"]["is_open"])])
         accomp_vacuum = self.accomp_min + (self.accomp_max - self.accomp_min) * (accomp_pos / 15)
 
         # theme 8->4->2->1
-        for i, (size, open, delay_rate) in enumerate(zip((8, 4, 2, 1), self.holes["theme"]["is_open"], self.theme_delay_rates)):
-            if open:
-                self.theme_poss[i] += (delta_time * delay_rate) * size
-            else:
-                self.theme_poss[i] -= (delta_time * delay_rate) * size
-            self.theme_poss[i] = max(self.theme_poss[i], 0)
-            self.theme_poss[i] = min(self.theme_poss[i], size)
-
-        theme_pos = sum(self.theme_poss)
+        theme_pos = sum([v * l for v, l in zip((8, 4, 2, 1), self.holes["theme"]["is_open"])])
         theme_vacuum = self.theme_min + (self.theme_max - self.theme_min) * (theme_pos / 15)
+
+        # crash valve
+        if theme_vacuum == self.theme_max:
+            theme_vacuum = self.crash_valve
+
+        # delay function
+        theme_vacuum = self.theme_vacuum_pre + (theme_vacuum - self.theme_vacuum_pre) * self.delay_ratio
+        self.theme_vacuum_pre = theme_vacuum
+        accomp_vacuum = self.accomp_vacuum_pre + (accomp_vacuum - self.accomp_vacuum_pre) * self.delay_ratio
+        self.accomp_vacuum_pre = accomp_vacuum
 
         if theme_vacuum < accomp_vacuum:
             theme_vacuum = accomp_vacuum + 0.5
-
-        if theme_vacuum == self.theme_max:
-            theme_vacuum = self.crash_valve
 
         # delay
         cur_accomp = self.accomp_delay_que.popleft()
