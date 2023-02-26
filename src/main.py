@@ -14,18 +14,20 @@ from version import APP_TITLE
 
 
 class CallBack():
-    def __init__(self, player, offset, bass_vac_lv, treble_vac_lv):
+    def __init__(self, player, tracker, bass_vac_lv, treble_vac_lv):
         self.player = player
         self.bass_vac_meter = bass_vac_lv
         self.treble_vac_meter = treble_vac_lv
-        self.offset = offset
+        self.tracker = tracker
 
     def emulate(self, frame, curtime):
         if self.player is not None:
+            self.player.auto_tracking = self.tracker.is_auto_tracking()
+            self.player.tracker_offset = self.tracker.offset
             self.player.emulate(frame, curtime)
             self.bass_vac_meter.vacuum = self.player.bass_vacuum
             self.treble_vac_meter.vacuum = self.player.treble_vacuum
-            self.offset.label = self.player.tracker_offset
+            self.tracker.changed(self.player.tracker_offset)
 
 
 class MainFrame(wx.Frame):
@@ -48,7 +50,7 @@ class MainFrame(wx.Frame):
         self.file_btn.Bind(wx.EVT_BUTTON, self.open_file)
 
         self.speed = SpeedSlider(self, callback=self.speed_change)
-        self.tracking = TrackerCtrl(self, callback=self.tracking_change)
+        self.tracking = TrackerCtrl(self)
 
         self.bass_vacuum_lv = VacuumGauge(self, caption="Bass Vacuum (inches of water)")
         self.treble_vacuum_lv = VacuumGauge(self, caption="Treble Vacuum (inches of water)")
@@ -129,7 +131,7 @@ class MainFrame(wx.Frame):
         player_tmp = self.player_mng.get_player_obj(name, self.midiobj)
         if player_tmp is not None:
             player_tmp.tracker_offset = self.tracking.offset
-            player_tmp.auto_tracking = self.tracking.is_auto_tracking
+            player_tmp.auto_tracking = self.tracking.auto_tracking
             self.obj.player = player_tmp
 
     def midi_onoff(self, event):
@@ -168,10 +170,6 @@ class MainFrame(wx.Frame):
         if hasattr(self.spool, "set_tempo"):
             self.spool.set_tempo(val)
 
-    def tracking_change(self, enable, pos):
-        self.obj.player.auto_tracking = enable
-        self.obj.player.tracker_offset = pos
-
 
 if __name__ == "__main__":
     # Set windows timer precision to 1ms
@@ -181,11 +179,11 @@ if __name__ == "__main__":
         windll.winmm.timeBeginPeriod(1)
 
     # high DPI awareness
-    try:
-        import ctypes
-        ctypes.windll.shcore.SetProcessDpiAwareness(True)
-    except Exception as e:
-        print(e)
+    # try:
+    #     import ctypes
+    #     ctypes.windll.shcore.SetProcessDpiAwareness(True)
+    # except Exception as e:
+    #     print(e)
 
     app = wx.App()
     MainFrame()

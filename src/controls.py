@@ -73,77 +73,45 @@ class SpeedSlider(wx.Panel):
 
 
 class TrackerCtrl(wx.Panel):
-    def __init__(self, parent, pos=(0, 0), callback=None):
+    def __init__(self, parent, pos=(0, 0)):
         wx.Panel.__init__(self, parent, wx.ID_ANY, pos)
-        self.callback = callback
-        self.offset = 0
 
         # auto-tracking check box
-        checkbox = wx.CheckBox(self, wx.ID_ANY, "Auto Tracking")
+        self.auto_tracking = wx.CheckBox(self, wx.ID_ANY, "Auto Tracking")
+        self.auto_tracking.SetValue(True)
 
         # tracker offset
-        self._label = wx.StaticText(self, wx.ID_ANY, "+0")
-        self._label.SetFont(wx.Font(20, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        self.offset = 0
+        self.label = wx.StaticText(self, wx.ID_ANY, "+0")
+        self.label.SetFont(wx.Font(20, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
         self.left = wx.Button(self, wx.ID_ANY, label="Left")
+        self.left.Bind(wx.EVT_BUTTON, lambda event: self.changed(self.offset - 1))
         self.right = wx.Button(self, wx.ID_ANY, label="Right")
-        self.left.Bind(wx.EVT_BUTTON, self._on_left)
-        self.right.Bind(wx.EVT_BUTTON, self._on_right)
-        checkbox.Bind(wx.EVT_CHECKBOX, self._on_auto)
-
-        # init
-        self.is_auto_tracking = True
-        checkbox.SetValue(self.is_auto_tracking)
-        self.right.Disable()
-        self.left.Disable()
+        self.right.Bind(wx.EVT_BUTTON, lambda event: self.changed(self.offset + 1))
 
         sizer = wx.GridBagSizer(vgap=2, hgap=2)
-        sizer.Add(checkbox, (0, 0), (1, 3), flag=wx.EXPAND)
-        sizer.Add(self._label, (1, 0), (1, 1), flag=wx.EXPAND)
+        sizer.Add(self.auto_tracking, (0, 0), (1, 3), flag=wx.EXPAND)
+        sizer.Add(self.label, (1, 0), (1, 1), flag=wx.EXPAND)
         sizer.Add(self.left, (1, 1), (1, 1), flag=wx.EXPAND | wx.LEFT, border=5)
         sizer.Add(self.right, (1, 2), (1, 1), flag=wx.EXPAND | wx.LEFT, border=5)
         self.SetSizer(sizer)
         self.Fit()
 
-    @property
-    def label(self):
-        return self._label.GetLabel()
+    def is_auto_tracking(self):
+        return self.auto_tracking.IsChecked()
 
-    @label.setter
-    def label(self, val):
+    def changed(self, val):
         if self.offset != val:
             self.offset = val
-            self._label.SetLabel(f"{self.offset:+}")
-
-    def _on_left(self, event):
-        self.offset -= 1
-        self._value_changed()
-
-    def _on_right(self, event):
-        self.offset += 1
-        self._value_changed()
-
-    def _on_auto(self, event):
-        self.is_auto_tracking = event.GetEventObject().IsChecked()
-        if self.is_auto_tracking:
-            self.right.Disable()
-            self.left.Disable()
-        else:
-            self.right.Enable()
-            self.left.Enable()
-
-        self._value_changed()
-
-    def _value_changed(self):
-        self._label.SetLabel(f"{self.offset:+}")
-        if self.callback is not None:
-            self.callback(self.is_auto_tracking, self.offset)
+            self.label.SetLabel(f"{self.offset:+}")
 
 
 if __name__ == "__main__":
     app = wx.App()
     frame = wx.Frame(None, wx.ID_ANY)
 
-    panel1 = WelcomeMsg(frame)
+    # panel1 = WelcomeMsg(frame)
+    panel1 = TrackerCtrl(frame)
 
     frame.Fit()
     frame.Show()

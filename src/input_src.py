@@ -123,10 +123,9 @@ class InputVideo(wx.Panel):
             if self.callback is not None:
                 self.callback.emulate(self.frame, time.perf_counter())
 
-            if not self.thread_lock.locked():
-                with self.thread_lock:
-                    self.bmp.CopyFromBuffer(self.frame)
-
+            if self.thread_lock.acquire(timeout=0):
+                self.bmp.CopyFromBuffer(self.frame)
+                self.thread_lock.release()
                 wx.CallAfter(self.Refresh, eraseBackground=False)  # refresh from thread need call after
 
             # wait for next frame
@@ -249,7 +248,7 @@ class InputScanImg(InputVideo):
         # take-up pixels per one second
         takeup_px = self.spool_rps * self.cur_spool_diameter * math.pi * self.roll_dpi
 
-        # how many fps needed for take up
+        # increase fps to emulating acceleration
         self.worker_fps = takeup_px / self.skip_px
 
         return 1 / self.worker_fps
@@ -257,6 +256,12 @@ class InputScanImg(InputVideo):
 
 if __name__ == "__main__":
     from midi_controller import MidiWrap
+
+    try:
+        import ctypes
+        ctypes.windll.shcore.SetProcessDpiAwareness(True)
+    except Exception as e:
+        print(e)
 
     app = wx.App()
     frame = wx.Frame(None, wx.ID_ANY, "テストフレーム", size=(1280, 720))
@@ -273,7 +278,7 @@ if __name__ == "__main__":
     def slider_value_change(event):
         obj = event.GetEventObject()
         panel1.set_tempo(obj.GetValue())
-    slider = wx.Slider(frame, value=80, minValue=10, maxValue=140, pos=(0, 600), size=(200, 100), style=wx.SL_HORIZONTAL | wx.SL_LABELS)
+    slider = wx.Slider(frame, value=80, minValue=10, maxValue=140, pos=(0, 600), size=frame.FromDIP(wx.Size((200, 100))), style=wx.SL_HORIZONTAL | wx.SL_LABELS)
     slider.SetPageSize(5)
     slider.Bind(wx.EVT_SLIDER, slider_value_change)
 

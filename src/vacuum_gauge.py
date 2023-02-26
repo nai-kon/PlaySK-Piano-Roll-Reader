@@ -91,9 +91,9 @@ class OscilloGraph(wx.Panel):
             self.ys[0:-1] = self.ys[1:]
             self.ys[-1] = np.array(self.h - self.val * self.plot_scale - 1, dtype=np.intc)
 
-            if not self.thread_lock.locked():
-                with self.thread_lock:
-                    self.plots = np.dstack((self.xs, self.ys))
+            if self.thread_lock.acquire(timeout=0):
+                self.plots = np.dstack((self.xs, self.ys))
+                self.thread_lock.release()
                 wx.CallAfter(self.Refresh, eraseBackground=False)
 
             elapsed_time = time.perf_counter() - t1
