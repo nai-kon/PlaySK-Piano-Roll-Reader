@@ -79,15 +79,18 @@ class TrackerCtrl(wx.Panel):
         # auto-tracking check box
         self.auto_tracking = wx.CheckBox(self, wx.ID_ANY, "Auto Tracking")
         self.auto_tracking.SetValue(True)
+        self.auto_tracking.Bind(wx.EVT_CHECKBOX, self._on_auto_checked)
 
-        # tracker offset
+        # tracker offset buttons
         self.offset = 0
         self.label = wx.StaticText(self, wx.ID_ANY, "+0")
         self.label.SetFont(wx.Font(20, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
         self.left = wx.Button(self, wx.ID_ANY, label="Left")
+        self.left.Disable()
         self.left.Bind(wx.EVT_BUTTON, lambda event: self.changed(self.offset - 1))
         self.right = wx.Button(self, wx.ID_ANY, label="Right")
         self.right.Bind(wx.EVT_BUTTON, lambda event: self.changed(self.offset + 1))
+        self.right.Disable()
 
         sizer = wx.GridBagSizer(vgap=2, hgap=2)
         sizer.Add(self.auto_tracking, (0, 0), (1, 3), flag=wx.EXPAND)
@@ -97,13 +100,21 @@ class TrackerCtrl(wx.Panel):
         self.SetSizer(sizer)
         self.Fit()
 
+    def _on_auto_checked(self, event):
+        if event.GetEventObject().IsChecked():
+            self.right.Disable()
+            self.left.Disable()
+        else:
+            self.right.Enable()
+            self.left.Enable()
+
     def is_auto_tracking(self):
         return self.auto_tracking.IsChecked()
 
     def changed(self, val):
         if self.offset != val:
             self.offset = val
-            self.label.SetLabel(f"{self.offset:+}")
+            wx.CallAfter(self.label.SetLabel, f"{self.offset:+}")
 
 
 if __name__ == "__main__":
