@@ -2,7 +2,7 @@
 
 # build
 source venv/bin/activate
-pyinstaller build_mac.spec
+pyinstaller build_mac_x64.spec
 deactivate
 
 # remove temp file
