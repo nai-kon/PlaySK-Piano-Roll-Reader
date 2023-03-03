@@ -98,9 +98,8 @@ class OscilloGraph(wx.Panel):
 
             elapsed_time = time.perf_counter() - t1
             sleep_time = (1 / self.fps) - elapsed_time
-            if sleep_time < 0:
-                sleep_time = 0
-            time.sleep(sleep_time)
+            if sleep_time > 0:
+                time.sleep(sleep_time)
             self.count()
 
         print("end thread")

@@ -4,10 +4,10 @@ import sys
 
 import wx
 
+sys.path.append("../src/")
 from input_src import InputScanImg
 from main import MainFrame
 
-sys.path.append("../src/")
 faulthandler.enable()
 
 
@@ -38,7 +38,7 @@ class Aging(MainFrame):
         self.obj.player.emulate_on()
         self.spool.start_play = True
         # open image every 5 miniutes
-        wx.CallLater(1000*60*5, self.aging)
+        wx.CallLater(1000 * 60 * 5, self.aging)
 
 
 if __name__ == "__main__":

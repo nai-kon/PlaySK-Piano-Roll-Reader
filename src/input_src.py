@@ -21,7 +21,7 @@ class FPScounter():
             self.start = cur
         self.fps += 1
         if cur - self.start > 1:
-            print(self.name, self.fps)
+            # print(self.name, self.fps)
             self.fps = 0
             self.start = cur
 

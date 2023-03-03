@@ -5,10 +5,10 @@ class AmpicoB(Player):
     def __init__(self, confpath, midiobj):
         super().__init__(confpath, midiobj)
 
-        self.amp_lock_pos = 0
+        self.amp_lock_range = [0, 1.0]
         self.amp_cres_pos = 0
         self.slow_cres_rate = 1 / 4  # 4sec
-        self.fast_cres_rate = 1 / 0.9  # 0.9sec
+        self.fast_cres_rate = 1 / 0.8  # 0.8sec
         self.pre_time = None
 
         self.bass_intensity_lock = [False, False, False]  # 2->4->6
@@ -45,7 +45,7 @@ class AmpicoB(Player):
         self.treble_intensity_lock = [False, False, False]
         self.bass_sub_intensity_lock = False
         self.treble_sub_intensity_lock = False
-        self.amp_lock_pos = 0
+        self.amp_lock_range = [0, 1.0]
         self.amp_cres_pos = 0
         self.bass_vacuum = self.intensity_range["none"][0]
         self.treble_vacuum = self.intensity_range["none"][0]
@@ -100,19 +100,17 @@ class AmpicoB(Player):
         slow_cres = self.holes["treble_slow_cresc"]
         fast_cres = self.holes["treble_fast_cresc"]
 
-        # amplifier operation
-        if amplifier["to_open"]:
-            if not slow_cres["is_open"]:
-                if self.amp_lock_pos == 1:
-                    self.amp_lock_pos = 0.4  # 1st amplifier
-                elif self.amp_lock_pos == 0.4:
-                    self.amp_lock_pos = 0  # none amplifier
-        elif amplifier["to_close"]:
-            if slow_cres["is_open"]:
-                if self.amp_lock_pos == 0:
-                    self.amp_lock_pos = 0.4  # 1st amplifier
-                elif self.amp_lock_pos == 0.4:
-                    self.amp_lock_pos = 1.0  # 2nd amplifier
+        if amplifier["to_close"] and 0.3 < self.amp_cres_pos < 0.85:
+            self.amp_lock_range = [0.3, 0.85]  # 1st amplifier
+        elif amplifier["to_close"] and 0.85 < self.amp_cres_pos:
+            self.amp_lock_range = [0.85, 1.0]  # 2nd amplifier
+        elif amplifier["to_close"] and self.amp_cres_pos < 0.3:
+            self.amp_lock_range = [0, 1.0]
+        elif amplifier["to_open"]:
+            self.amp_lock_range = [0, 1.0]
+
+        if amplifier["to_close"]:
+            print(self.amp_cres_pos, self.amp_lock_range)
 
         if slow_cres["is_open"]:
             if fast_cres["is_open"] or amplifier["is_open"]:
@@ -126,14 +124,12 @@ class AmpicoB(Player):
             if fast_cres["is_open"] or amplifier["is_open"]:
                 # fast decrescendo
                 self.amp_cres_pos -= delta_time * self.fast_cres_rate
-                self.amp_cres_pos = max(self.amp_cres_pos, self.amp_lock_pos)  # amplifier lock
             else:
                 # slow decrescendo
                 self.amp_cres_pos -= delta_time * self.slow_cres_rate
-                self.amp_cres_pos = max(self.amp_cres_pos, self.amp_lock_pos)  # amplifier lock
 
-        self.amp_cres_pos = max(self.amp_cres_pos, 0)
-        self.amp_cres_pos = min(self.amp_cres_pos, 1)
+        self.amp_cres_pos = max(self.amp_cres_pos, self.amp_lock_range[0])
+        self.amp_cres_pos = min(self.amp_cres_pos, self.amp_lock_range[1])
 
         self.pre_time = curtime
 
