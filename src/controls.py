@@ -65,7 +65,7 @@ class SpeedSlider(wx.Panel):
         self.label = label
         self.slider.SetRange(range[0], range[1])
         self.slider.SetValue(val)
-        self._value_changed(val)
+        wx.CallAfter(self._value_changed, val)
 
     def _slider_changed(self, event):
         val = event.GetEventObject().GetValue()
@@ -97,8 +97,13 @@ class TrackerCtrl(wx.Panel):
         sizer.Add(self.label, (1, 0), (1, 1), flag=wx.EXPAND)
         sizer.Add(self.left, (1, 1), (1, 1), flag=wx.EXPAND | wx.LEFT, border=5)
         sizer.Add(self.right, (1, 2), (1, 1), flag=wx.EXPAND | wx.LEFT, border=5)
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
         self.SetSizer(sizer)
         self.Fit()
+
+    def OnKeyDown(self, event):
+        print("keydown", event)
+
 
     def _on_auto_checked(self, event):
         if event.GetEventObject().IsChecked():
@@ -122,7 +127,8 @@ if __name__ == "__main__":
     frame = wx.Frame(None, wx.ID_ANY)
 
     # panel1 = WelcomeMsg(frame)
-    panel1 = TrackerCtrl(frame)
+    # panel1 = TrackerCtrl(frame)
+    panel1 = SpeedSlider(frame)
 
     frame.Fit()
     frame.Show()
