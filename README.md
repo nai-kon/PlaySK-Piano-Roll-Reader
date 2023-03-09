@@ -6,23 +6,26 @@ Optically reading a piano roll image, emulates expression and output midi signal
 
 The "virtual tracker bar" optically picks up the roll holes then emulates note, pedal and expression.
 Currently, four "virtual tracker bar" are available.
-- Ampico B
-- Welte-Mignon Licensee
-- Welte-Mignon T-100 (Red)
 - Standard 88-note
+- Ampico B
+- Duo-Art
+- Welte-Mignon (Licensee, T-100)
 
-We have a plan to support Ampico A and Duo-Art in the future.
+I have a plan to support Ampico A, Recordo, Welte T-98 in the future.
 
-## Download binary
+## Usage
 
-Windows and Mac binaries are available.
+1. Download the software.
+    https://github.com/nai-kon/PlaySK-Piano-Roll-Reader/releases/tag/Ver3.0
 
-https://github.com/nai-kon/PlaySK-Piano-Roll-Reader/releases/tag/Ver3.0
+2. Launch the program and Select MIDI output and Virtual tracker bar
+3. Select scan image from `sample_scans` folder
+4. Enjoy!
 
 
 ## Tips
-* The program picks up lighted holes. Dark holes are not supported on this version.
-* The input image requires white padding on both roll edges.
+* The program picks up lighted holes.
+* **The input image requires white padding on both roll edges.** (please refer to sample scans)
 * The roll scrolling direction is downward. So the Welte T-100 image should be inverted.
 * Ver3.0 only supports the scanned image. WebCam and .mp4 are not supported.
 * Automatically set the tempo if the input filename has the tempo keyword (tempoXX)
@@ -41,7 +44,7 @@ $ pip install -r requirements.txt
 $ cd src/
 $ python main.py
 ```
-We recommend to install on venv.
+We recommend to install packages on venv.
 
 ## Build binary
 
@@ -49,9 +52,8 @@ We recommend to install on venv.
     - `./build_win.bat`
     - tested on Windows10
 - macOS
-    - `./build_mac.sh`
-    - tested on macOS Venture with Intel CPU
-    - not tested on Apple silicon
+    - `./build_mac_x64.sh` `./build_mac_arm.sh`
+    - tested on macOS Venture (both Intel and M1 cpu)
 
 ## Notes
 * dark mode on Windows is not working due to the wxpython.

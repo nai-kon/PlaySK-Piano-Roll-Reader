@@ -85,13 +85,13 @@ class MainFrame(wx.Frame):
         self.Show()
 
     def create_status_bar(self):
-        sbar = self.CreateStatusBar(5)  # midi-port, tracker-bar
+        sbar = self.CreateStatusBar(4)  # midi-port, tracker-bar
         _, h = sbar.Size[:2]
-        sbar.SetStatusWidths([-1, -4, -1, -4, -5])
+        sbar.SetStatusWidths([-5, -1, -5, -10])
 
         # midi port
         ports = self.midiobj.port_list
-        rect = sbar.GetFieldRect(1)
+        rect = sbar.GetFieldRect(0)
         self.port_sel = wx.Choice(sbar, wx.ID_ANY, choices=ports, size=(rect.width, h))
         self.port_sel.Bind(wx.EVT_CHOICE, self.change_midi_port)
         self.port_sel.SetPosition((rect.x, 0))
@@ -101,7 +101,7 @@ class MainFrame(wx.Frame):
 
         # tracker bar
         players = self.player_mng.player_list
-        rect = sbar.GetFieldRect(3)
+        rect = sbar.GetFieldRect(2)
         self.player_sel = wx.Choice(sbar, wx.ID_ANY, choices=players, size=(rect.width, h))
         self.player_sel.Bind(wx.EVT_CHOICE, self.change_player)
         self.player_sel.SetPosition((rect.x, 0))
