@@ -15,9 +15,9 @@ I have a plan to support Ampico A, Recordo, Welte T-98 in the future.
 
 ## Usage
 
-1. Download the software.
-    https://github.com/nai-kon/PlaySK-Piano-Roll-Reader/releases/tag/Ver3.0
-
+1. Download the software. (will be released soon)
+    ~~https://github.com/nai-kon/PlaySK-Piano-Roll-Reader/releases/tag/Ver3.0~~
+    
 2. Launch the program and Select MIDI output and Virtual tracker bar
 3. Select scan image from `sample_scans` folder
 4. Enjoy!
@@ -33,7 +33,7 @@ I have a plan to support Ampico A, Recordo, Welte T-98 in the future.
     * If no keyword is given, the default tempo will be used. 98 for the Welte T-100 and 80 for the others.
 
 
-# For developer
+# For developers
 
 ## Requirements
 Developed with Python 3.9.13. 
@@ -52,7 +52,8 @@ We recommend to install packages on venv.
     - `./build_win.bat`
     - tested on Windows10
 - macOS
-    - `./build_mac_x64.sh` `./build_mac_arm.sh`
+    - `./build_mac_x64.sh`  (for Intel Mac)
+    - `./build_mac_arm.sh`  (for Apple Silicon Mac)
     - tested on macOS Venture (both Intel and M1 cpu)
 
 ## Notes
