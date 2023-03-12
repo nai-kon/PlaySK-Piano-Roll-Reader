@@ -27,6 +27,7 @@ I have a plan to support Ampico A, Recordo, Welte T-98 in the future.
 * The program picks up lighted holes.
 * **The input image requires white padding on both roll edges.** (please refer to sample scans)
 * The roll scrolling direction is downward. So the Welte T-100 image should be inverted.
+* The roll acceleration emulation is done by spool diameter and roll thickness.
 * Ver3.0 only supports the scanned image. WebCam and .mp4 are not supported.
 * Automatically set the tempo if the input filename has the tempo keyword (tempoXX)
     * e.g.) `Ampico 52305 Clair de Lune tempo90.jpg` -> set the tempo to 90 automatically.

@@ -29,6 +29,7 @@ class FPScounter():
 class InputVideo(wx.Panel):
     def __init__(self, parent, path, disp_size=(800, 600), callback=None):
         wx.Panel.__init__(self, parent, size=parent.FromDIP(wx.Size(disp_size)))
+        self.parent = parent
         self.SetDoubleBuffered(True)
         self.disp_w, self.disp_h = disp_size
         self.bmp = wx.Bitmap(self.disp_w, self.disp_h, depth=24)
@@ -114,6 +115,7 @@ class InputVideo(wx.Panel):
         return 1 / self.worker_fps
 
     def load_thread(self):
+        t_disp_slowcpu = 0
         while not self.worker_thread_quit:
             t1 = time.perf_counter()
 
@@ -130,9 +132,14 @@ class InputVideo(wx.Panel):
 
             # wait for next frame
             desired_time = self._get_one_frame_time()
-            elapsed_time = time.perf_counter() - t1
+            t2 = time.perf_counter()
+            elapsed_time = t2 - t1
             if desired_time - elapsed_time < 0:
+                t_disp_slowcpu = t2
+                self.parent.post_status_msg("Warning: Slow CPU")
                 print(f"コマ落ち中...{(desired_time - elapsed_time)*1000:.2f} msec")
+            if t2 - t_disp_slowcpu > 1:
+                self.parent.post_status_msg("")  # reset warning after 1sec
             while desired_time > elapsed_time:
                 sleep = 0.001 if desired_time - elapsed_time > 0.0015 else 0
                 time.sleep(sleep)

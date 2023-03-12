@@ -85,14 +85,14 @@ class MainFrame(wx.Frame):
         self.Show()
 
     def create_status_bar(self):
-        sbar = self.CreateStatusBar(4)  # midi-port, tracker-bar
-        _, h = sbar.Size[:2]
-        sbar.SetStatusWidths([-5, -1, -5, -10])
+        self.sbar = self.CreateStatusBar(5)  # midi-port, tracker-bar
+        _, h = self.sbar.Size[:2]
+        self.sbar.SetStatusWidths([-5, -1, -5, -5, -5])
 
         # midi port
         ports = self.midiobj.port_list
-        rect = sbar.GetFieldRect(0)
-        self.port_sel = wx.Choice(sbar, wx.ID_ANY, choices=ports, size=(rect.width, h))
+        rect = self.sbar.GetFieldRect(0)
+        self.port_sel = wx.Choice(self.sbar, wx.ID_ANY, choices=ports, size=(rect.width, h))
         self.port_sel.Bind(wx.EVT_CHOICE, self.change_midi_port)
         self.port_sel.SetPosition((rect.x, 0))
         last_sel = ports.index(self.conf.last_midi_port) if self.conf.last_midi_port in ports else 0
@@ -101,13 +101,16 @@ class MainFrame(wx.Frame):
 
         # tracker bar
         players = self.player_mng.player_list
-        rect = sbar.GetFieldRect(2)
-        self.player_sel = wx.Choice(sbar, wx.ID_ANY, choices=players, size=(rect.width, h))
+        rect = self.sbar.GetFieldRect(2)
+        self.player_sel = wx.Choice(self.sbar, wx.ID_ANY, choices=players, size=(rect.width, h))
         self.player_sel.Bind(wx.EVT_CHOICE, self.change_player)
         self.player_sel.SetPosition((rect.x, 0))
         last_sel = players.index(self.conf.last_tracker) if self.conf.last_tracker in players else 0
         self.player_sel.SetSelection(last_sel)
         self.change_player()  # call manually for init
+
+    def post_status_msg(self, msg):
+        wx.CallAfter(self.sbar.SetStatusText, text=msg, i=4)
 
     def on_close(self, event):
         print("on_close called")
