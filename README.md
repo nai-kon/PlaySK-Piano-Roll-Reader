@@ -1,116 +1,61 @@
-# PlaySK Piano Roll Reader       
-### Optically Reading a Piano Roll Scroll, Converts to Midi.
+# PlaySK Piano Roll Reader Ver3.0
 
-![Overall System](./docs/Overall_System.png)
+Optically reading a piano roll image, emulates expression and output midi signal in real-time.
 
-- GitHub      
-https://github.com/nai-kon/PlaySK-Piano-Roll-Reader
+![Overall System](./docs/Overall_System.jpg)
 
-- Software Download Link  
-https://drive.google.com/file/d/1yq7jKq54Z2azlLiP5jscRGhe1VcRFkRv/view
+The "virtual tracker bar" optically picks up the roll holes then emulates note, pedal and expression.
+Currently, four "virtual tracker bar" are available.
+- Standard 88-note
+- Ampico B
+- Duo-Art
+- Welte-Mignon (Licensee, T-100)
 
+I have a plan to support Ampico A, Recordo, Welte T-98 in the future.
 
-- [Demo] Reading Duo-Art roll with VST Piano   
-https://www.youtube.com/watch?v=8lkMRsoG9cg
- 
+## Usage
 
-- [Demo] Reading Ampico roll with Yamaha Disklavier     
-https://www.youtube.com/watch?v=2SyNJrevcNk
-
-This software reads piano roll scroll captured by Webcam or Video File. The Virtual Tracker Bar calculates brightness of each hole. The brightness will be darker if roll hole passes the tracker hole, it activates the note-on signal. 
-
-The software is designed for "reading" a piano roll, not for "scanning or storage" a piano roll. If you are considering storage, hardware scanner such as "MK4 scanner" would be better. 
-
-## Specific
-- Virtual Tracker Bar   
-    -Standard 88-note    
-    -Duo-Art     
-    -Ampico A
-
-    Note: Song roll couldn't read well because of printed lyrics.
-
-- Input     
-    -Web Camera, for real-time reading         
-    -Video File (over 60fps recommended)    
-
-    Note: support only 640x480 resoluton
-
-- Output    
-    -Midi signal to selected midi device    
-    e.x. Yamaha Disklavier, Piano VST (Ivory serires)
+1. Download the software. (will be released soon)
+    ~~https://github.com/nai-kon/PlaySK-Piano-Roll-Reader/releases/tag/Ver3.0~~
     
-## Code Layout
-The code is written in C/C++ Win32API, OpenCV without GUI Framework.  
-I know should rewrite by using GUI Framework such as .Net, but no time for it.
-
-**Build Environment**
-* Windows 10 64bit
-* Visual Studio 2017
-* OpenCV 2.4.9
-
-**layout**
-
-* src/
-  * main.cpp - main souce. UI control, emulating thread
-  * cvhelper.cpp - convert opencv image to device context
-  * json11.cpp - json parser
-  * player.cpp - 88-note player class(base class)
-  * DuoArt.cpp - Duo-Art player class
-  * AmpicoA.cpp - Ampico A player class
-
-* config/
-  * Setting.json - global setting of the software
-  * 88_tracker.json
-  * AmpicoA_tracker.json
-  * Duo-Art_tracker.json    
-
-* lib_opencv_249/     
-Contains OpenCV header/lib/bin
-
-* bin/     
-Built binary dir.
-
-* PostBuildEvent.bat      
-Copy config files and OpenCV libs to output dir.
+2. Launch the program and Select MIDI output and Virtual tracker bar
+3. Select scan image from `sample_scans` folder
+4. Enjoy!
 
 
-## How to Play
+## Tips
+* The program picks up lighted holes.
+* **The input image requires white padding on both roll edges.** (please refer to sample scans)
+* The roll scrolling direction is downward. So the Welte T-100 image should be inverted.
+* The roll acceleration emulation is done by spool diameter and roll thickness.
+* Ver3.0 only supports the scanned image. WebCam and .mp4 are not supported.
+* Automatically set the tempo if the input filename has the tempo keyword (tempoXX)
+    * e.g.) `Ampico 52305 Clair de Lune tempo90.jpg` -> set the tempo to 90 automatically.
+    * If no keyword is given, the default tempo will be used. 98 for the Welte T-100 and 80 for the others.
 
-### 1. Select Midi-Out and TrackerBar, Video Source
 
-![Player Setting](docs/Player_Setting.png)    
-* Player Setting    
-Select Midi-Out Device and Virtual Tracker Bar.
+# For developers
 
-* Input Video   
-  * Webcam  - Click "Webcab" and "OK"
-  * VideoFile  - Click "Video File" and select a video file.      
+## Requirements
+Developed with Python 3.9.13. 
 
-The default webcam device number is "0".     
-For changing, modify the "config/Setting.json"      
-```json
-"device": {
-    "webcam_devno": 0
-}
+Quick Start
 ```
-### 2. Start Reading and Emulating
-
-![Main U I](docs/MainUI.png)  
-Click "Play" and "Midi On".
-     
-
-### Adjust the Tracker Hole Position    
-Hole positions are written on tracker.json at ConfigFile directory.     
-The "x" position indicates left side of each tracker hole.
-```json
-"tracker_holes": {
-    "note": {
-        "x": [
-            48,
-            54,
-            60,
-            66,
-            ,
-            ,
+$ pip install -r requirements.txt
+$ cd src/
+$ python main.py
 ```
+We recommend to install packages on venv.
 
+## Build binary
+
+- Windows
+    - `./build_win.bat`
+    - tested on Windows10
+- macOS
+    - `./build_mac_x64.sh`  (for Intel Mac)
+    - `./build_mac_arm.sh`  (for Apple Silicon Mac)
+    - tested on macOS Venture (both Intel and M1 cpu)
+
+## Notes
+* dark mode on Windows is not working due to the wxpython.
