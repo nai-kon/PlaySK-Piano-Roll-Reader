@@ -15,9 +15,8 @@ I have a plan to support Ampico A, Recordo, Welte T-98 in the future.
 
 ## Usage
 
-1. Download the software. (will be released soon)
-    ~~https://github.com/nai-kon/PlaySK-Piano-Roll-Reader/releases/tag/Ver3.0~~
-    
+1. Download the software  
+    https://github.com/nai-kon/PlaySK-Piano-Roll-Reader/releases/tag/Ver3.0
 2. Launch the program and Select MIDI output and Virtual tracker bar
 3. Select scan image from `sample_scans` folder
 4. Enjoy!
