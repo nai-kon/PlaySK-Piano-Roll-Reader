@@ -7,6 +7,7 @@ from DuoArt import DuoArt
 from player import Player
 from WelteLicensee import WelteLicensee
 from WelteT100 import WelteT100
+from PhilippsDuca import PhilippsDuca
 
 
 class PlayerMng():
@@ -48,6 +49,9 @@ class PlayerMng():
 
             elif cls_name == "WelteLicensee":
                 return WelteLicensee(confpath, midiobj)
+
+            elif cls_name == "PhillipsDuca":
+                return PhilippsDuca(confpath, midiobj)
 
         return None
 
