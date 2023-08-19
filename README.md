@@ -13,6 +13,14 @@ Currently, four "virtual tracker bar" are available.
 
 I have a plan to support Ampico A, Recordo, Welte T-98 in the future.
 
+## Demo
+
+- Reading an Ampico B roll with Yamaha Disklavier
+https://www.youtube.com/watch?v=ldwOIEc21QE
+
+- Reading a Red Welte T-100 roll with Software Synthesizer
+https://www.youtube.com/watch?v=WMEPW-UWhSU
+
 ## Usage
 
 1. Download the software  
