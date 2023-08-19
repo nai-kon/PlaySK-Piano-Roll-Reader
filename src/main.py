@@ -36,7 +36,7 @@ class MainFrame(wx.Frame):
         super().__init__(parent=None, title=APP_TITLE, style=wx.CAPTION | wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.CLIP_CHILDREN)
         self.SetIcon(wx.Icon(os.path.join("config", "PlaySK_icon.ico"), wx.BITMAP_TYPE_ICO))
         if platform.system() == "Windows":
-            # wxpython on Windows not support Darkmode
+            # wxpython on Windows does not support Darkmode
             self.SetBackgroundColour("#AAAAAA")
 
         self.spool = WelcomeMsg(self, size=(800, 600))
