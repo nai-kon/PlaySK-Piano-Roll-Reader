@@ -139,7 +139,7 @@ class InputVideo(wx.Panel):
             if desired_time - elapsed_time < 0:
                 t_disp_slowcpu = t2
                 self.parent.post_status_msg("Warning: Slow CPU")
-                print(f"コマ落ち中...{(desired_time - elapsed_time)*1000:.2f} msec")
+                print(f"frame drop...{(desired_time - elapsed_time)*1000:.2f} msec")
             if t2 - t_disp_slowcpu > 1:
                 self.parent.post_status_msg("")  # reset warning after 1sec
             while desired_time > elapsed_time:
@@ -273,13 +273,12 @@ if __name__ == "__main__":
         print(e)
 
     app = wx.App()
-    frame = wx.Frame(None, wx.ID_ANY, "テストフレーム", size=(1280, 720))
+    frame = wx.Frame(None, wx.ID_ANY, "Frame", size=(1280, 720))
 
     midobj = MidiWrap()
     midobj.open_port(None)
 
-    # panel1 = InputVideo(frame, path="C:\\Users\\SASAKI\\Desktop\\AGDRec_20201217_200957.mp4", callback=obj.call_back)
-    panel1 = InputScanImg(frame, path="C:\\Users\\SASAKI\\source\\repos\\nai-kon\\cis-roll-converter\\output\\Popular Hits of the Day 71383A_tempo75.png")
+    panel1 = InputScanImg(frame, path="../sample_scans/Popular Hits of the Day 71383A_tempo75.png")
     panel1.start_worker()
     # print(InputWebcam.list_camera())
     # panel1 = InputWebcam(frame, webcam_no=0)

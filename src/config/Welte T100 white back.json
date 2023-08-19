@@ -105,128 +105,128 @@
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
-      "off_apature": 0.3
+      "on_apature": 0.15,
+      "off_apature": 0.15
     },
     "soft_off": {
       "x": 65,
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
-      "off_apature": 0.3
+      "on_apature": 0.15,
+      "off_apature": 0.15
     },
     "sustain_on": {
       "x": 722,
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
-      "off_apature": 0.3
+      "on_apature": 0.15,
+      "off_apature": 0.15
     },
     "sustain_off": {
       "x": 729,
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
-      "off_apature": 0.3
+      "on_apature": 0.15,
+      "off_apature": 0.15
     },
     "bass_mf_on": {
       "x": 27,
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
-      "off_apature": 0.3
+      "on_apature": 0.15,
+      "off_apature": 0.15
     },
     "bass_mf_off": {
       "x": 19,
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
-      "off_apature": 0.3
+      "on_apature": 0.15,
+      "off_apature": 0.15
     },
     "bass_cresc_piano": {
       "x": 34,
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
-      "off_apature": 0.3
+      "on_apature": 0.15,
+      "off_apature": 0.15
     },
     "bass_cresc_forte": {
       "x": 42,
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
-      "off_apature": 0.3
+      "on_apature": 0.15,
+      "off_apature": 0.15
     },
     "bass_forz_piano": {
       "x": 50,
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
-      "off_apature": 0.3
+      "on_apature": 0.1,
+      "off_apature": 0.1
     },
     "bass_forz_forte": {
       "x": 57,
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
-      "off_apature": 0.3
+      "on_apature": 0.1,
+      "off_apature": 0.1
     },
     "treble_mf_on": {
       "x": 767,
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
-      "off_apature": 0.3
+      "on_apature": 0.15,
+      "off_apature": 0.15
     },
     "treble_mf_off": {
       "x": 775,
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
-      "off_apature": 0.3
+      "on_apature": 0.15,
+      "off_apature": 0.15
     },
     "treble_cresc_piano": {
       "x": 760,
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
-      "off_apature": 0.3
+      "on_apature": 0.15,
+      "off_apature": 0.15
     },
     "treble_cresc_forte": {
       "x": 752,
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
-      "off_apature": 0.3
+      "on_apature": 0.15,
+      "off_apature": 0.15
     },
     "treble_forz_piano": {
       "x": 744,
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
-      "off_apature": 0.3
+      "on_apature": 0.1,
+      "off_apature": 0.1
     },
     "treble_forz_forte": {
       "x": 737,
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
-      "off_apature": 0.3
+      "on_apature": 0.1,
+      "off_apature": 0.1
     }
   }
 }

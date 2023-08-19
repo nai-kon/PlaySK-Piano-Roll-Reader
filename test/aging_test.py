@@ -20,7 +20,7 @@ class Aging(MainFrame):
 
     def aging(self):
         import glob
-        paths = list(glob.glob("/Users/sasaki/Desktop/output/*Ampico*"))
+        paths = list(glob.glob("roll_images/*Ampico*"))
         import random
         path = random.choice(paths)
         print(self.aging_cnt, path)

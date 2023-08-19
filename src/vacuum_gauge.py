@@ -121,7 +121,7 @@ if __name__ == "__main__":
     import ctypes
     try:
         ctypes.windll.shcore.SetProcessDpiAwareness(True)
-    except:
+    except Exception:
         pass
 
     app = wx.App()

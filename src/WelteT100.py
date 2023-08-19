@@ -7,10 +7,10 @@ class WelteT100(Player):
     def __init__(self, confpath, midiobj):
         super().__init__(confpath, midiobj)
 
-        self.mf_hook_pos = 0.3
+        self.mf_hook_pos = 0.47
         self.min_vacuum = 5     # in W.G
         self.max_vacuum = 35    # in W.G
-        self.cres_pos_to_vacuum = np.poly1d(np.polyfit((0, 0.3, 1), (5, 20, 35), 2))
+        self.cres_pos_to_vacuum = np.poly1d(np.polyfit((0, self.mf_hook_pos, 1), (5, 20, 35), 2))
 
         self.bass_cres_pos = 0
         self.bass_cres_state = "slow_decres"
@@ -151,8 +151,6 @@ class WelteT100(Player):
 if __name__ == "__main__":
     import os
     import time
-
-    import numpy as np
 
     from midi_controller import MidiWrap
     midiobj = MidiWrap()

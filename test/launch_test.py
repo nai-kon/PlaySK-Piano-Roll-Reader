@@ -53,7 +53,7 @@ if __name__ == "__main__":
     # except Exception as e:
     #     print(e)
 
-    paths = list(glob.glob(r"C:\Users\sasaki\source\repos\nai-kon\cis-roll-converter\output\*Ampico*"))
+    paths = list(glob.glob("roll_images/*Ampico*"))
 
     def launch_app():
         path = random.choice(paths)
