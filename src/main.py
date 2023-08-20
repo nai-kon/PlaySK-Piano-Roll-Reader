@@ -30,8 +30,23 @@ class CallBack():
             self.tracker.changed(self.player.tracker_offset)
 
 
-class MainFrame(wx.Frame):
+class FileDrop(wx.FileDropTarget):
+    def __init__(self, parent):
+        wx.FileDropTarget.__init__(self)
+        self.parent = parent
 
+    def OnDropFiles(self, x, y, filenames):
+        path = filenames[0]
+        ext = os.path.splitext(path)[-1]
+        if ext in (".jpg", ".png", ".bmp"):
+            self.parent.load_file(path)
+        else:
+            wx.MessageBox("supported image formats are jpg, png, bmp", "unsupported file")
+
+        return True
+
+
+class MainFrame(wx.Frame):
     def __init__(self):
         super().__init__(parent=None, title=APP_TITLE, style=wx.CAPTION | wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.CLIP_CHILDREN)
         self.SetIcon(wx.Icon(os.path.join("config", "PlaySK_icon.ico"), wx.BITMAP_TYPE_ICO))
@@ -80,6 +95,9 @@ class MainFrame(wx.Frame):
         self.Fit()
         self.create_status_bar()
         self.Fit()
+
+        self.droptarget = FileDrop(self)
+        self.SetDropTarget(self.droptarget)
 
         self.Bind(wx.EVT_CLOSE, self.on_close)
         self.Show()
@@ -145,12 +163,7 @@ class MainFrame(wx.Frame):
             self.obj.player.emulate_off()
             obj.SetLabel("MIDI On")
 
-    def open_file(self, event):
-        filters = "image files (*.jpg;*.png;*.bmp)|*.jpg;*.png;*.bmp"
-        with wx.FileDialog(self, "Select File", style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST, wildcard=filters) as dlg:
-            if dlg.ShowModal() != wx.ID_OK:
-                return
-            path = dlg.GetPath()
+    def load_file(self, path):
         self.obj.player.emulate_off()
         self.spool.release_src()
         tmp = self.spool
@@ -167,6 +180,14 @@ class MainFrame(wx.Frame):
         val = re.search(r"tempo:?\s*(\d{2,3})", self.Title)
         tempo = int(val.group(1)) if val is not None else self.obj.player.default_tempo
         self.speed.set("Tempo", (50, 140), tempo)
+
+    def open_file(self, event):
+        filters = "image files (*.jpg;*.png;*.bmp)|*.jpg;*.png;*.bmp"
+        with wx.FileDialog(self, "Select File", style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST, wildcard=filters) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                path = dlg.GetPath()
+                self.load_file(path)
+
 
     def speed_change(self, val):
         if hasattr(self.spool, "set_tempo"):
