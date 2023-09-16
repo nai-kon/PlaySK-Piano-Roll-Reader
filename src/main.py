@@ -76,16 +76,17 @@ class MainFrame(wx.Frame):
         self.player_mng = PlayerMng()
 
         # sizer of controls
+        border_size = self.FromDIP(5)
         self.sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        self.sizer1.Add(self.midi_btn, flag=wx.EXPAND | wx.ALL, border=5, proportion=1)
-        self.sizer1.Add(self.file_btn, flag=wx.EXPAND | wx.ALL, border=5, proportion=1)
+        self.sizer1.Add(self.midi_btn, flag=wx.EXPAND | wx.ALL, border=border_size, proportion=1)
+        self.sizer1.Add(self.file_btn, flag=wx.EXPAND | wx.ALL, border=border_size, proportion=1)
 
         self.sizer2 = wx.BoxSizer(wx.VERTICAL)
         self.sizer2.Add(self.sizer1, flag=wx.EXPAND)
-        self.sizer2.Add(self.speed, flag=wx.EXPAND | wx.ALL, border=5)
-        self.sizer2.Add(self.tracking, flag=wx.EXPAND | wx.ALL, border=5)
-        self.sizer2.Add(self.bass_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=5)
-        self.sizer2.Add(self.treble_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=5)
+        self.sizer2.Add(self.speed, flag=wx.EXPAND | wx.ALL, border=border_size)
+        self.sizer2.Add(self.tracking, flag=wx.EXPAND | wx.ALL, border=border_size)
+        self.sizer2.Add(self.bass_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=border_size)
+        self.sizer2.Add(self.treble_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=border_size)
 
         self.sizer3 = wx.BoxSizer(wx.HORIZONTAL)
         self.sizer3.Add(self.spool)
@@ -188,7 +189,6 @@ class MainFrame(wx.Frame):
                 path = dlg.GetPath()
                 self.load_file(path)
 
-
     def speed_change(self, val):
         if hasattr(self.spool, "set_tempo"):
             self.spool.set_tempo(val)
@@ -202,11 +202,11 @@ if __name__ == "__main__":
         windll.winmm.timeBeginPeriod(1)
 
     # high DPI awareness
-    # try:
-    #     import ctypes
-    #     ctypes.windll.shcore.SetProcessDpiAwareness(True)
-    # except Exception as e:
-    #     print(e)
+    try:
+        import ctypes
+        ctypes.windll.shcore.SetProcessDpiAwareness(True)
+    except Exception as e:
+        print(e)
 
     app = wx.App()
     MainFrame()
