@@ -110,7 +110,6 @@ class InputVideo(wx.Panel):
             new_w = self.disp_w
             new_h = src_h * new_w // src_w
             resized = cv2.resize(frame, dsize=(new_w, new_h), interpolation=cv2.INTER_NEAREST)
-            print(resized.shape)
             vert_margin = self.disp_h - new_h
             self.frame = cv2.copyMakeBorder(resized, top=math.floor(vert_margin / 2), bottom=math.ceil(vert_margin / 2), left=0, right=0, borderType=cv2.BORDER_CONSTANT)
             
@@ -149,7 +148,7 @@ class InputVideo(wx.Panel):
                 time.sleep(sleep)
                 elapsed_time = time.perf_counter() - t1
 
-                self.cnt_worker_fps()
+            self.cnt_worker_fps()
 
         print("end thread")
 
@@ -287,7 +286,7 @@ if __name__ == "__main__":
     midobj = MidiWrap()
     midobj.open_port(None)
 
-    panel1 = InputScanImg(frame, path="../sample_scans/Ampico B 68361 Dancing Tambourine tempo95.png")
+    panel1 = InputScanImg(frame, path="../sample_scans/Ampico 71543 Hits of the Day No.35 tempo85.png")
     panel1.start_worker()
     # print(InputWebcam.list_camera())
     # panel1 = InputWebcam(frame, webcam_no=0)
