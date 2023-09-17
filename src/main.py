@@ -195,6 +195,11 @@ class MainFrame(wx.Frame):
 
 
 if __name__ == "__main__":
+    app = wx.App()
+    if not MidiWrap().port_list:
+        wx.MessageBox("No any midi out port found. Exit software.", "midi port error")
+        exit(-1)
+
     # Set windows timer precision to 1ms
     pf = platform.system()
     if pf == "Windows":
@@ -208,7 +213,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
 
-    app = wx.App()
     MainFrame()
     app.MainLoop()
     print("main loop end")
