@@ -95,8 +95,9 @@ class TrackerCtrl(wx.Panel):
         sizer = wx.GridBagSizer(vgap=2, hgap=2)
         sizer.Add(self.auto_tracking, (0, 0), (1, 3), flag=wx.EXPAND)
         sizer.Add(self.label, (1, 0), (1, 1), flag=wx.EXPAND)
-        sizer.Add(self.left, (1, 1), (1, 1), flag=wx.EXPAND | wx.LEFT, border=5)
-        sizer.Add(self.right, (1, 2), (1, 1), flag=wx.EXPAND | wx.LEFT, border=5)
+        border_size = parent.FromDIP(5)
+        sizer.Add(self.left, (1, 1), (1, 1), flag=wx.EXPAND | wx.LEFT, border=border_size)
+        sizer.Add(self.right, (1, 2), (1, 1), flag=wx.EXPAND | wx.LEFT, border=border_size)
         self.SetSizer(sizer)
         self.Fit()
 

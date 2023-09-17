@@ -17,7 +17,7 @@ class TrackerHoles():
         for name, v in holes.items():
             if isinstance(v, dict) and "w" in v:
                 key = (v["w"], v["h"])
-                self.holes_by_size.setdefault(key, {"pos": [], "on_apatures": [], "off_apatures": []})
+                self.holes_by_size.setdefault(key, {"pos": [], "pos_xs": None, "pos_ys": None, "on_apatures": [], "off_apatures": []})
                 si = len(self.holes_by_size[key]["pos"])
 
                 xs = v["x"] if isinstance(v["x"], list) else [v["x"]]
@@ -36,6 +36,11 @@ class TrackerHoles():
             v["on_apatures"] = np.array(v["on_apatures"])
             v["off_apatures"] = np.array(v["off_apatures"])
 
+        # for ROI extraction
+        for k, v in self.holes_by_size.items():
+            v["pos_xs"] = np.array([p[0] for p in v["pos"]])[:, None, None] + np.arange(k[0])[None, :, None]
+            v["pos_ys"] = np.array([p[1] for p in v["pos"]])[:, None, None] + np.arange(k[1])[None, None, :]
+
         self.xoffset = 0
 
     def set_frame(self, frame, xoffset):
@@ -43,7 +48,8 @@ class TrackerHoles():
 
         # calc hole open ratio
         for v in self.holes_by_size.values():
-            hole_list = np.array([frame[p[1]: p[3], p[0] + xoffset: p[2] + xoffset] for p in v["pos"]])
+            # hole_list = np.array([frame[p[1]: p[3], p[0] + xoffset: p[2] + xoffset] for p in v["pos"]])
+            hole_list = frame[v["pos_ys"], v["pos_xs"] + self.xoffset]  # more elegant way
 
             if self.is_dark_hole:
                 open_ratios = (hole_list < self.th_bright).all(axis=3).mean(axis=(2, 1))
@@ -193,7 +199,7 @@ if __name__ == "__main__":
 
     from midi_controller import MidiWrap
     midiobj = MidiWrap()
-    player = Player(os.path.join("config", "88Note white background.json"), midiobj)
+    player = Player(os.path.join("config", "88 Note white background.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)
     start = time.perf_counter()
     for _ in range(10000):
