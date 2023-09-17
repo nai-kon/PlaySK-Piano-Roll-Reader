@@ -1,4 +1,4 @@
-# PlaySK Piano Roll Reader Ver3.0
+# PlaySK Piano Roll Reader Ver3.1
 
 Optically reading a piano roll image, emulates expression and output midi signal in real-time.
 
@@ -24,7 +24,7 @@ I have a plan to support Ampico A, Recordo, Welte T-98 in the future.
 ## Usage
 
 1. Download the software  
-    https://github.com/nai-kon/PlaySK-Piano-Roll-Reader/releases/tag/Ver3.0
+    https://github.com/nai-kon/PlaySK-Piano-Roll-Reader/releases/tag/Ver3.1
 2. Launch the program and Select MIDI output and Virtual tracker bar
 3. Select scan image from `sample_scans` folder
 4. Enjoy!
@@ -35,7 +35,7 @@ I have a plan to support Ampico A, Recordo, Welte T-98 in the future.
 * **The input image requires white padding on both roll edges.** (please refer to sample scans)
 * The roll scrolling direction is downward. So the Welte T-100 image should be inverted.
 * The roll acceleration emulation is done by spool diameter and roll thickness.
-* Ver3.0 only supports the scanned image. WebCam and .mp4 are not supported.
+* Ver3.1 only supports the scanned image. WebCam and .mp4 are not supported.
 * Automatically set the tempo if the input filename has the tempo keyword (tempoXX)
     * e.g.) `Ampico 52305 Clair de Lune tempo90.jpg` -> set the tempo to 90 automatically.
     * If no keyword is given, the default tempo will be used. 98 for the Welte T-100 and 80 for the others.

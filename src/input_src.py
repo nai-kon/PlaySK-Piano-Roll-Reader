@@ -168,7 +168,7 @@ class InputWebcam(InputVideo):
         return camera_list
 
 
-class InputScanImg(InputVideo):
+class InputScanImg_v0(InputVideo):
     def __init__(self, parent, path, spool_diameter=2.72, roll_width=11.25, tempo=80, disp_size=(800, 600), callback=None):
         super().__init__(parent, path, disp_size, callback)
         self.skip_px = 1
@@ -185,7 +185,7 @@ class InputScanImg(InputVideo):
             self.src = cv2.cvtColor(self.src, cv2.COLOR_BGR2RGB)
         # load initial frame
         self.cur_y = self.src.shape[0] - 1
-        self.left_side, self.right_side = self.__find_roll_edge()
+        self.left_side, self.right_side = self._find_roll_edge()
         margin = 7 * (self.right_side - self.left_side + 1) // (self.disp_w - 7 * 2)  # 7px on both edge @800x600
         self.crop_x1 = self.left_side - margin
         self.crop_x2 = self.right_side + margin
@@ -205,9 +205,10 @@ class InputScanImg(InputVideo):
             # calc skip pixels to be less than 200fps
             if (px_per_sec / i) < 200:
                 self.skip_px = i
+                print("self.skip_px", self.skip_px)
                 break
 
-    def __find_roll_edge(self):
+    def _find_roll_edge(self):
         roll_h, roll_w = self.src.shape[:2]
         edges = []
         edge_th = 220
@@ -261,6 +262,42 @@ class InputScanImg(InputVideo):
         self.worker_fps = takeup_px / self.skip_px
 
         return 1 / self.worker_fps
+
+
+class InputScanImg(InputScanImg_v0):
+    def start_worker(self):
+        with wx.BusyCursor():
+            self.src = cv2.imread(self.src_path)
+            self.src = cv2.cvtColor(self.src, cv2.COLOR_BGR2RGB)
+        # load initial frame
+        self.left_side, self.right_side = self._find_roll_edge()
+        margin = 7 * (self.right_side - self.left_side + 1) // (self.disp_w - 7 * 2)  # 7px on both edge @800x600
+        # crop and resize image
+        crop_x1 = self.left_side - margin
+        crop_x2 = self.right_side + margin
+        self.src = self.src[:, crop_x1:crop_x2 + 1]
+        resize_ratio = self.disp_w / self.src.shape[1]
+        resize_h = int(self.src.shape[0] * resize_ratio)
+        self.src = cv2.resize(self.src, dsize=(self.disp_w, resize_h))
+        self.cur_y = self.src.shape[0] - 1
+
+        self.crop_h = self.disp_h
+        self.roll_dpi = resize_ratio * (self.right_side - self.left_side + 1) / self.roll_width
+        self.set_tempo(self.tempo)
+        self._load_next_frame()
+        self.thread_worker.start()
+
+    def _load_next_frame(self):
+        crop_y2 = self.cur_y
+        crop_y1 = crop_y2 - self.crop_h
+        if crop_y1 < 0:
+            return
+        self.frame = self.src[crop_y1:crop_y2].copy()
+        self.cur_y -= self.skip_px
+
+        # update take-up spool round
+        spool_rpf = self.spool_rps / self.worker_fps
+        self.cur_spool_pos += spool_rpf
 
 
 if __name__ == "__main__":

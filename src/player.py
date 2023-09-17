@@ -6,6 +6,7 @@ import numpy as np
 
 class TrackerHoles():
     def __init__(self, conf):
+        self.xoffset = 0
         holes = conf["tracker_holes"]
         self.is_dark_hole = holes["is_dark_hole"]
         self.th_bright = holes["on_brightness"]
@@ -40,8 +41,6 @@ class TrackerHoles():
         for k, v in self.holes_by_size.items():
             v["pos_xs"] = np.array([p[0] for p in v["pos"]])[:, None, None] + np.arange(k[0])[None, :, None]
             v["pos_ys"] = np.array([p[1] for p in v["pos"]])[:, None, None] + np.arange(k[1])[None, None, :]
-
-        self.xoffset = 0
 
     def set_frame(self, frame, xoffset):
         self.xoffset = xoffset
