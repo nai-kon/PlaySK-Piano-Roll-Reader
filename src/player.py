@@ -2,6 +2,7 @@ import json
 
 import cv2
 import numpy as np
+import wx
 
 
 class TrackerHoles():
@@ -143,7 +144,28 @@ class Player():
             self.emulate_pedals()
             self.emulate_notes()
 
-        self.draw_tracker(frame)
+        # self.draw_tracker(frame)
+
+    def draw_tracker2(self, wxdc: wx.PaintDC):
+
+        # draw tracker frame
+        wxdc.SetPen(wx.Pen((0, 100, 100)))
+        wxdc.DrawLineList([(0, 275, 799, 275), (0, 325, 799, 325)])
+
+        # draw tracker ear
+        wxdc.SetPen(wx.Pen((200, 0, 0)))
+        wxdc.DrawLineList([(6, 290, 6, 310), (793, 290, 793, 310)])
+
+        # draw holes
+        rects = []
+        pens = []
+        xoffset = self.tracker_offset
+        wxdc.SetBrush(wx.TRANSPARENT_BRUSH)
+        for k, v in self.holes.holes_by_size.items():
+            for pos, open in zip(v["pos"], v["is_open"]):
+                pens.append(wx.Pen((200, 0, 0)) if open else wx.Pen((0, 0, 200)))
+                rects.append((pos[0] + xoffset, pos[1], k[0], k[1]))
+        wxdc.DrawRectangleList(rects, pens)
 
     def emulate_expression(self, curtime):
         pass
