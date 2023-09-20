@@ -73,12 +73,12 @@ class OscilloGraph(wx.Panel):
         dc.Clear()
 
         # grid line
-        dc.SetPen(wx.Pen("black", 1 * self.scale, wx.SOLID))
+        dc.SetPen(wx.Pen("black", int(1 * self.scale), wx.SOLID))
         dc.DrawLineList([(x, 0, x, self.h - 1) for x in range(0, self.w, int(50 * self.scale))])
         dc.DrawLineList([(0, int(y * self.plot_scale), self.w - 1, int(y * self.plot_scale)) for y in range(0, self.max, 10)])
 
         # scale
-        dc.SetFont(wx.Font(12 * self.scale, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        dc.SetFont(wx.Font(int(12 * self.scale), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
         dc.SetTextForeground((255, 255, 255))
         _, txt_h = dc.GetTextExtent("0")
         dc.DrawTextList(["40", "30", "20", "10"], [(2, int(v * self.plot_scale - txt_h // 2)) for v in [10, 20, 30, 40]])
@@ -108,7 +108,7 @@ class OscilloGraph(wx.Panel):
         dc = wx.PaintDC(self)
         dc.DrawBitmap(self.grid, 0, 0)
         dc = wx.GCDC(dc)  # for anti-aliasing
-        dc.SetPen(wx.Pen("yellow", 2 * self.scale, wx.SOLID))
+        dc.SetPen(wx.Pen("yellow", int(2 * self.scale), wx.SOLID))
         with self.thread_lock:
             dc.DrawLinesFromBuffer(self.plots)
 

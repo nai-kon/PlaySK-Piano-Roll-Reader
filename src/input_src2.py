@@ -97,8 +97,8 @@ class InputVideo(wx.Panel):
         dc.SetBrush(wx.Brush("white"))
         dc.SetPen(wx.Pen("white"))
         rad = self.disp_h // 20
-        dc.DrawPolygon([(center_x - rad // 2, center_y - math.sqrt(3) * rad // 2),
-                        (center_x - rad // 2, center_y + math.sqrt(3) * rad // 2),
+        dc.DrawPolygon([(center_x - rad // 2, center_y - int(math.sqrt(3) * rad) // 2),
+                        (center_x - rad // 2, center_y + int(math.sqrt(3) * rad) // 2),
                         (center_x + rad, center_y)])
 
     def on_start(self, event):

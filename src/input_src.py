@@ -94,8 +94,8 @@ class InputVideo(wx.Panel):
         dc.SetBrush(wx.Brush("white"))
         dc.SetPen(wx.Pen("white"))
         rad = self.disp_h // 20
-        dc.DrawPolygon([(center_x - rad // 2, center_y - math.sqrt(3) * rad // 2),
-                        (center_x - rad // 2, center_y + math.sqrt(3) * rad // 2),
+        dc.DrawPolygon([(center_x - rad // 2, center_y - int(math.sqrt(3) * rad) // 2),
+                        (center_x - rad // 2, center_y + int(math.sqrt(3) * rad) // 2),
                         (center_x + rad, center_y)])
 
     def on_start(self, event):
@@ -138,10 +138,10 @@ class InputVideo(wx.Panel):
             elapsed_time = t2 - t1
             if desired_time - elapsed_time < 0:
                 t_disp_slowcpu = t2
-                self.parent.post_status_msg("Warning: Slow CPU")
+                # self.parent.post_status_msg("Warning: Slow CPU")
                 print(f"frame drop...{(desired_time - elapsed_time)*1000:.2f} msec")
-            if t2 - t_disp_slowcpu > 1:
-                self.parent.post_status_msg("")  # reset warning after 1sec
+            # if t2 - t_disp_slowcpu > 1:
+            #     self.parent.post_status_msg("")  # reset warning after 1sec
             while desired_time > elapsed_time:
                 sleep = 0.001 if desired_time - elapsed_time > 0.0015 else 0
                 time.sleep(sleep)
@@ -315,7 +315,7 @@ if __name__ == "__main__":
     midobj = MidiWrap()
     midobj.open_port(None)
 
-    panel1 = InputScanImg(frame, path="../sample_scans/Popular Hits of the Day 71383A_tempo75.png")
+    panel1 = InputScanImg(frame, path="../sample_scans/Ampico B 68361 Dancing Tambourine tempo95.png")
     panel1.start_worker()
     # print(InputWebcam.list_camera())
     # panel1 = InputWebcam(frame, webcam_no=0)
