@@ -1,7 +1,7 @@
 @echo off
 
 rem build
-call venv\Scripts\activate
+call .venv\Scripts\activate
 pyinstaller build_win.spec
 call deactivate
 
