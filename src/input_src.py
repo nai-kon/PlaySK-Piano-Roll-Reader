@@ -182,9 +182,15 @@ class InputScanImg_v0(InputVideo):
         self.roll_width = roll_width
         self.tempo = tempo
 
+    def imread(self, path, flags=cv2.IMREAD_COLOR):
+        # support multi-byte file path
+        n = np.fromfile(path, np.uint8)
+        img = cv2.imdecode(n, flags)
+        return img
+
     def start_worker(self):
         with wx.BusyCursor():
-            self.src = cv2.imread(self.src_path)
+            self.src = self.imread(self.src_path)
             self.src = cv2.cvtColor(self.src, cv2.COLOR_BGR2RGB)
         # load initial frame
         self.cur_y = self.src.shape[0] - 1
@@ -270,7 +276,7 @@ class InputScanImg_v0(InputVideo):
 class InputScanImg(InputScanImg_v0):
     def start_worker(self):
         with wx.BusyCursor():
-            self.src = cv2.imread(self.src_path)
+            self.src = self.imread(self.src_path)
             self.src = cv2.cvtColor(self.src, cv2.COLOR_BGR2RGB)
         # load initial frame
         self.left_side, self.right_side = self._find_roll_edge()
