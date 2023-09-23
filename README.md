@@ -44,15 +44,16 @@ I have a plan to support Ampico A, Recordo, Welte T-98 in the future.
 # For developers
 
 ## Requirements
-Developed with Python 3.9.13. 
+
+* Python 3.11.5
+* Poetry
 
 Quick Start
 ```
-$ pip install -r requirements.txt
+$ poetry install
 $ cd src/
 $ python main.py
 ```
-We recommend to install packages on venv.
 
 ## Build binary
 

@@ -76,6 +76,9 @@ class InputVideo(wx.Panel):
         with self.thread_lock:
             dc.DrawBitmap(self.bmp, 0, 0)
 
+        if self.callback is not None:
+            self.callback.player.draw_tracker(dc)
+
         # draw play button
         if not self.start_play:
             self.draw_play_button(dc)
@@ -292,7 +295,7 @@ class InputScanImg(InputScanImg_v0):
         crop_y1 = crop_y2 - self.crop_h
         if crop_y1 < 0:
             return
-        self.frame = self.src[crop_y1:crop_y2].copy()
+        self.frame = self.src[crop_y1:crop_y2]
         self.cur_y -= self.skip_px
 
         # update take-up spool round

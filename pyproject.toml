@@ -2,7 +2,7 @@
 name = "PlaySK-Piano-Roll-Reader"
 version = "3.1.0"
 description = "Optically reading a piano roll image, emulates expression and output midi signal in real-time."
-authors = ["nai-kon <https://github.com/nai-kon>"]
+authors = ["nai-kon <fxtch686@yahoo.co.jp>"]
 readme = "README.md"
 repository =  "https://github.com/nai-kon/PlaySK-Piano-Roll-Reader"
 

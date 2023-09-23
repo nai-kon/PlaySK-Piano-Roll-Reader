@@ -1,6 +1,5 @@
 import json
 
-import cv2
 import numpy as np
 import wx
 
@@ -72,13 +71,7 @@ class TrackerHoles():
         for v in self.group_by_size.values():
             v["is_open"] = v["to_open"] = v["to_close"] = np.array([False] * len(v["pos"]))
 
-    def draw(self, frame):
-        for v in self.group_by_size.values():
-            for pos, open in zip(v["pos"], v["is_open"]):
-                color = (200, 0, 0) if open else (0, 0, 200)
-                cv2.rectangle(frame, (pos[0] + self.xoffset, pos[1]), (pos[2] + self.xoffset, pos[3]), color, 1)
-
-    def draw2(self, wxdc: wx.PaintDC):
+    def draw(self, wxdc: wx.PaintDC):
         wxdc.SetBrush(wx.TRANSPARENT_BRUSH)
         open_color = wx.Pen((200, 0, 0))
         close_color = wx.Pen((0, 0, 200))
@@ -159,8 +152,6 @@ class Player():
             self.emulate_pedals()
             self.emulate_notes()
 
-        # self.draw_tracker(frame)
-
     def emulate_expression(self, curtime):
         pass
 
@@ -195,18 +186,7 @@ class Player():
         for key in note["to_close"].nonzero()[0]:
             self.midi.note_off(key + offset)
 
-    def draw_tracker(self, frame):
-        # draw tracker frame
-        cv2.rectangle(frame, (-1, 275), (800, 325), (0, 100, 100), 1, cv2.LINE_4)
-
-        # draw tracker ear
-        cv2.line(frame, (6, 290), (6, 310), (200, 0, 0), 1, cv2.LINE_4)
-        cv2.line(frame, (793, 290), (793, 310), (200, 0, 0), 1, cv2.LINE_4)
-
-        # draw holes
-        self.holes.draw(frame)
-
-    def draw_tracker2(self, wxdc: wx.PaintDC):
+    def draw_tracker(self, wxdc: wx.PaintDC):
         # draw tracker frame
         wxdc.SetPen(wx.Pen((0, 100, 100)))
         wxdc.DrawLineList([(0, 275, 799, 275), (0, 325, 799, 325)])
@@ -216,7 +196,7 @@ class Player():
         wxdc.DrawLineList([(6, 290, 6, 310), (793, 290, 793, 310)])
 
         # draw holes
-        self.holes.draw2(wxdc)
+        self.holes.draw(wxdc)
 
 
 if __name__ == "__main__":

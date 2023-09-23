@@ -140,15 +140,6 @@ class WelteT100(Player):
         elif self.holes["soft_off"]["is_open"]:
             self.midi.hammer_lift_off()
 
-    def draw_tracker(self, frame):
-        # need override for drawing lock hole
-        # self.holes["bass_mf_on"]["is_open"] = self.bass_mf_hook
-        # self.holes["bass_intensity"]["is_open"][:] = self.bass_intensity_lock[:]
-        # self.holes["treble_intensity"]["is_open"][:] = self.treble_intensity_lock[::-1]
-        # self.holes["subintensity"]["is_open"][0] = self.bass_sub_intensity_lock or self.treble_sub_intensity_lock
-        return super().draw_tracker(frame)
-
-
 if __name__ == "__main__":
     import numpy as np
     import time
