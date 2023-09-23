@@ -61,8 +61,7 @@ $ python main.py
     - `./build_win.bat`
     - tested on Windows10
 - macOS
-    - `./build_mac_x64.sh`  (for Intel Mac)
-    - `./build_mac_arm.sh`  (for Apple Silicon Mac)
+    - `./build_mac.sh`
     - tested on macOS Venture (both Intel and M1 cpu)
 
 ## Notes
