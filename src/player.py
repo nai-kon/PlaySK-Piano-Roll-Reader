@@ -14,40 +14,46 @@ class TrackerHoles():
         self.lowest_note = holes["lowest_note"]
 
         # use numpy for fast calculation
-        self.holes_by_size = {}
-        self.holes_by_name = {}
+        self.group_by_size = {}
+        self.group_by_name = {}
         for name, v in holes.items():
             if isinstance(v, dict) and "w" in v:
                 key = (v["w"], v["h"])
-                self.holes_by_size.setdefault(key, {"pos": [], "pos_xs": None, "pos_ys": None, "on_apatures": [], "off_apatures": []})
-                si = len(self.holes_by_size[key]["pos"])
+                self.group_by_size.setdefault(key, {"pos": [], "pos_xs": None, "pos_ys": None, "on_apatures": [], "off_apatures": []})
+                si = len(self.group_by_size[key]["pos"])
 
                 xs = v["x"] if isinstance(v["x"], list) else [v["x"]]
                 tmp = [(x, v["y"], x + v["w"], v["y"] + v["h"]) for x in xs]
-                self.holes_by_size[key]["pos"].extend(tmp)
+                self.group_by_size[key]["pos"].extend(tmp)
                 tmp = [v["on_apature"]] * len(xs)
-                self.holes_by_size[key]["on_apatures"].extend(tmp)
+                self.group_by_size[key]["on_apatures"].extend(tmp)
                 tmp = [v["off_apature"]] * len(xs)
-                self.holes_by_size[key]["off_apatures"].extend(tmp)
+                self.group_by_size[key]["off_apatures"].extend(tmp)
 
-                ei = len(self.holes_by_size[key]["pos"])
-                self.holes_by_name.setdefault(name, [key, slice(si, ei)])
+                ei = len(self.group_by_size[key]["pos"])
+                self.group_by_name.setdefault(name, [key, slice(si, ei)])
 
-        for v in self.holes_by_size.values():
+        for v in self.group_by_size.values():
             v["is_open"] = v["to_open"] = v["to_close"] = np.array([False] * len(v["pos"]))
             v["on_apatures"] = np.array(v["on_apatures"])
             v["off_apatures"] = np.array(v["off_apatures"])
 
         # for ROI extraction
-        for k, v in self.holes_by_size.items():
+        for k, v in self.group_by_size.items():
             v["pos_xs"] = np.array([p[0] for p in v["pos"]])[:, None, None] + np.arange(k[0])[None, :, None]
             v["pos_ys"] = np.array([p[1] for p in v["pos"]])[:, None, None] + np.arange(k[1])[None, None, :]
+
+        # for draw holes
+        self.draw_rects = []
+        for k, v in self.group_by_size.items():
+            for pos in v["pos"]:
+                self.draw_rects.append((pos[0], pos[1], k[0] + 1, k[1] + 1))
 
     def set_frame(self, frame, xoffset):
         self.xoffset = xoffset
 
         # calc hole open ratio
-        for v in self.holes_by_size.values():
+        for v in self.group_by_size.values():
             # hole_list = np.array([frame[p[1]: p[3], p[0] + xoffset: p[2] + xoffset] for p in v["pos"]])
             hole_list = frame[v["pos_ys"], v["pos_xs"] + self.xoffset]  # more elegant way
 
@@ -63,22 +69,31 @@ class TrackerHoles():
             v["is_open"] ^= (v["to_open"] | v["to_close"])  # hole is open or close
 
     def all_off(self):
-        for v in self.holes_by_size.values():
+        for v in self.group_by_size.values():
             v["is_open"] = v["to_open"] = v["to_close"] = np.array([False] * len(v["pos"]))
 
     def draw(self, frame):
-        for v in self.holes_by_size.values():
+        for v in self.group_by_size.values():
             for pos, open in zip(v["pos"], v["is_open"]):
                 color = (200, 0, 0) if open else (0, 0, 200)
                 cv2.rectangle(frame, (pos[0] + self.xoffset, pos[1]), (pos[2] + self.xoffset, pos[3]), color, 1)
 
+    def draw2(self, wxdc: wx.PaintDC):
+        wxdc.SetBrush(wx.TRANSPARENT_BRUSH)
+        open_color = wx.Pen((200, 0, 0))
+        close_color = wx.Pen((0, 0, 200))
+        pens = [open_color if open else close_color for v in self.group_by_size.values() for open in v["is_open"]]
+        wxdc.SetLogicalOrigin(self.xoffset * -1, 0)
+        wxdc.DrawRectangleList(self.draw_rects, pens)
+        wxdc.SetLogicalOrigin(0, 0)
+
     def __getitem__(self, key):
-        hole_size, idx = self.holes_by_name[key]
+        hole_size, idx = self.group_by_name[key]
         ret = {
-            "pos": self.holes_by_size[hole_size]["pos"][idx],
-            "is_open": self.holes_by_size[hole_size]["is_open"][idx],
-            "to_open": self.holes_by_size[hole_size]["to_open"][idx],
-            "to_close": self.holes_by_size[hole_size]["to_close"][idx],
+            "pos": self.group_by_size[hole_size]["pos"][idx],
+            "is_open": self.group_by_size[hole_size]["is_open"][idx],
+            "to_open": self.group_by_size[hole_size]["to_open"][idx],
+            "to_close": self.group_by_size[hole_size]["to_close"][idx],
         }
         return ret
 
@@ -106,13 +121,13 @@ class Player():
         self.emulate_enable = False
 
         # vacuum to velocity map
-        vacuum = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
+        vacuum = list(range(5, 41))
         self.velocity = [37, 42, 46.5, 50.5, 54, 57, 59.5, 61.7, 63.7, 65.5, 67.1, 68.6, 70, 71.3, 72.5, 73.6, 74.6, 75.6, 76.5, 77.4, 78.3, 79.1, 79.9, 80.7, 81.4, 82.1, 82.8, 83.4, 84, 84.6, 85.2, 85.8, 86.4, 87, 87.6, 88.2]
         k = np.polyfit(self.velocity, vacuum, 5)
-        self.velo_bins = [np.poly1d(k)(v) for v in range(int(self.velocity[0]), int(self.velocity[-1] + 1))]
+        self.velocity_bins = [np.poly1d(k)(v) for v in range(int(self.velocity[0]), int(self.velocity[-1] + 1))]
 
     def calc_velocity(self):
-        idx = np.digitize([self.bass_vacuum, self.treble_vacuum], bins=self.velo_bins)
+        idx = np.digitize([self.bass_vacuum, self.treble_vacuum], bins=self.velocity_bins)
         return self.velocity[0] + idx
 
     def emulate_off(self):
@@ -145,27 +160,6 @@ class Player():
             self.emulate_notes()
 
         # self.draw_tracker(frame)
-
-    def draw_tracker2(self, wxdc: wx.PaintDC):
-
-        # draw tracker frame
-        wxdc.SetPen(wx.Pen((0, 100, 100)))
-        wxdc.DrawLineList([(0, 275, 799, 275), (0, 325, 799, 325)])
-
-        # draw tracker ear
-        wxdc.SetPen(wx.Pen((200, 0, 0)))
-        wxdc.DrawLineList([(6, 290, 6, 310), (793, 290, 793, 310)])
-
-        # draw holes
-        rects = []
-        pens = []
-        xoffset = self.tracker_offset
-        wxdc.SetBrush(wx.TRANSPARENT_BRUSH)
-        for k, v in self.holes.holes_by_size.items():
-            for pos, open in zip(v["pos"], v["is_open"]):
-                pens.append(wx.Pen((200, 0, 0)) if open else wx.Pen((0, 0, 200)))
-                rects.append((pos[0] + xoffset, pos[1], k[0], k[1]))
-        wxdc.DrawRectangleList(rects, pens)
 
     def emulate_expression(self, curtime):
         pass
@@ -202,7 +196,6 @@ class Player():
             self.midi.note_off(key + offset)
 
     def draw_tracker(self, frame):
-
         # draw tracker frame
         cv2.rectangle(frame, (-1, 275), (800, 325), (0, 100, 100), 1, cv2.LINE_4)
 
@@ -212,6 +205,18 @@ class Player():
 
         # draw holes
         self.holes.draw(frame)
+
+    def draw_tracker2(self, wxdc: wx.PaintDC):
+        # draw tracker frame
+        wxdc.SetPen(wx.Pen((0, 100, 100)))
+        wxdc.DrawLineList([(0, 275, 799, 275), (0, 325, 799, 325)])
+
+        # draw tracker ear
+        wxdc.SetPen(wx.Pen((200, 0, 0)))
+        wxdc.DrawLineList([(6, 290, 6, 310), (793, 290, 793, 310)])
+
+        # draw holes
+        self.holes.draw2(wxdc)
 
 
 if __name__ == "__main__":
