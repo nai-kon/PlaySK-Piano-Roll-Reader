@@ -1,4 +1,6 @@
 import json
+import threading
+from typing import final
 
 import numpy as np
 import wx
@@ -69,7 +71,9 @@ class TrackerHoles():
 
     def all_off(self):
         for v in self.group_by_size.values():
-            v["is_open"] = v["to_open"] = v["to_close"] = np.array([False] * len(v["pos"]))
+            v["is_open"] &= False
+            v["to_open"] &= False
+            v["to_close"] &= False
 
     def draw(self, wxdc: wx.PaintDC):
         wxdc.SetBrush(wx.TRANSPARENT_BRUSH)
@@ -108,6 +112,8 @@ class Player():
         self.on_bright = conf["tracker_holes"]["on_brightness"]
 
         self.holes = TrackerHoles(conf)
+        self.during_emulate_evt = threading.Event()
+        self.during_emulate_evt.set()
 
         self.tracker_offset = 0
         self.auto_tracking = True
@@ -125,6 +131,7 @@ class Player():
 
     def emulate_off(self):
         self.emulate_enable = False
+        self.during_emulate_evt.wait(timeout=1)
         self.holes.all_off()
         self.midi.all_off()
 
@@ -144,13 +151,18 @@ class Player():
 
         self.tracker_offset = int(left_end - right_end) + 1
 
+    @final
     def emulate(self, frame, curtime):
         if self.emulate_enable:
+            self.during_emulate_evt.clear()
+
             self.auto_track(frame)
             self.holes.set_frame(frame, self.tracker_offset)
             self.emulate_expression(curtime)
             self.emulate_pedals()
             self.emulate_notes()
+
+            self.during_emulate_evt.set()
 
     def emulate_expression(self, curtime):
         pass
