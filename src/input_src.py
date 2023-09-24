@@ -58,14 +58,16 @@ class InputVideo(wx.Panel):
 
     def release_src(self):
         self.worker_thread_quit = True
-        self.thread_worker.join(timeout=3)
+        if self.thread_worker.is_alive():
+            self.thread_worker.join(timeout=3)
         if self.src is not None:
             self.src = None
             gc.collect()
 
     def on_destroy(self, event):
         self.worker_thread_quit = True
-        self.thread_worker.join(timeout=3)
+        if self.thread_worker.is_alive():
+            self.thread_worker.join(timeout=3)
         wx.GetApp().Yield(onlyIfNeeded=True)
 
     def on_paint(self, event):
@@ -214,7 +216,7 @@ class InputScanImg_v0(InputVideo):
             # calc skip pixels to be less than 200fps
             if (px_per_sec / i) < 200:
                 self.skip_px = i
-                print("self.skip_px", self.skip_px)
+                print("self.skip_px", self.skip_px, ", fps", px_per_sec / i)
                 break
 
     def _find_roll_edge(self):
