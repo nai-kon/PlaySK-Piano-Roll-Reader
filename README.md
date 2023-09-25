@@ -31,6 +31,7 @@ I have a plan to support Ampico A, Recordo, Welte T-98 in the future.
 
 
 ## Tips
+* support general image formats such as `.jpg`, `.tif`, `.png`, `.bmp`.
 * The program picks up lighted holes.
 * **The input image requires white padding on both roll edges.** (please refer to sample scans)
 * The roll scrolling direction is downward. So the Welte T-100 image should be inverted.

@@ -38,10 +38,10 @@ class FileDrop(wx.FileDropTarget):
     def OnDropFiles(self, x, y, filenames):
         path = filenames[0]
         ext = os.path.splitext(path)[-1]
-        if ext in (".jpg", ".png", ".bmp"):
+        if ext.lower() in (".jpg", ".png", ".tif", ".bmp"):
             self.parent.load_file(path)
         else:
-            wx.MessageBox("supported image formats are jpg, png, bmp", "unsupported file")
+            wx.MessageBox("supported image formats are .jpg, .png, .tif, .bmp", "unsupported file")
 
         return True
 
@@ -183,7 +183,7 @@ class MainFrame(wx.Frame):
         self.speed.set("Tempo", (50, 140), tempo)
 
     def open_file(self, event):
-        filters = "image files (*.jpg;*.png;*.bmp)|*.jpg;*.png;*.bmp"
+        filters = "image files (*.jpg;*.png;*.tif;*.bmp)|*.jpg;*.png;*.tif;*.bmp"
         with wx.FileDialog(self, "Select File", style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST, wildcard=filters) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
