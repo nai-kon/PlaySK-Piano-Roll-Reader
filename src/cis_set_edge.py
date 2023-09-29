@@ -1,5 +1,6 @@
 import wx
 import cv2
+import numpy as np
 from cis_decoder import CisImage, ScannerType
 import platform
 
@@ -25,9 +26,9 @@ class SetEdgeDlg(wx.Dialog):
         sizer2.Add(wx.StaticText(self, label=f"- Horizontal {cis.hol_dpi} DPI"))
         sizer2.Add(wx.StaticText(self, label=f"- Horizontal {cis.hol_px} px"))
         if cis.scanner_type in [ScannerType.WHEELRUN, ScannerType.SHAFTRUN]:
-            sizer2.Add(wx.StaticText(self, label=f"- Vertical {cis.hol_dpi} TPI"))
+            sizer2.Add(wx.StaticText(self, label=f"- Vertical {cis.vert_res} TPI"))
         else:
-            sizer2.Add(wx.StaticText(self, label=f"- Vertical {cis.hol_dpi} LPI"))
+            sizer2.Add(wx.StaticText(self, label=f"- Vertical {cis.vert_res} LPI"))
         ok_btn = wx.Button(self, wx.ID_OK, size=self.FromDIP(wx.Size((90, 50))), label="OK")
         cancel_btn = wx.Button(self, wx.ID_CANCEL, size=self.FromDIP(wx.Size((90, 50))), label="Cancel")
         sizer2.Add(ok_btn)
@@ -39,7 +40,7 @@ class SetEdgeDlg(wx.Dialog):
         self.SetSizer(sizer3)
         self.Fit()
 
-    def get_edge_pos(self):
+    def get_margin_pos(self):
         return self.panel.get_pos()
 
 
@@ -53,6 +54,7 @@ class SetEdgePane(wx.Panel):
         org_img_h, self.org_img_w = img.shape[:2]
         resized_h = org_img_h * self.frame_w // self.org_img_w
         img = cv2.resize(img, dsize=(self.frame_w, resized_h))
+        self.left_margin_x, self.right_margin_x = self.find_margin_center(img)
         self.img = wx.Bitmap.FromBuffer(img.shape[1], img.shape[0], img)
         self.img_h = self.img.GetHeight()
         self.scroll_y1 = self.img_h // 2
@@ -60,8 +62,6 @@ class SetEdgePane(wx.Panel):
         self.norm_cursor = wx.Cursor()
         self.adjust_cursor = wx.Cursor(wx.CURSOR_SIZEWE)
         self.adjust_cursor_slip = self.FromDIP(20)
-        self.left_edge_x = self.FromDIP(50)
-        self.right_edge_x = self.FromDIP(900)
         self.guide_base_text = "Set this line to the center of the white margin"
         self.guide_font = wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD)
         self.scale = self.GetDPIScaleFactor() if platform.system() == "Windows" else 1
@@ -70,23 +70,41 @@ class SetEdgePane(wx.Panel):
         self.Bind(wx.EVT_MOUSEWHEEL, self.on_scroll)
         self.Bind(wx.EVT_MOTION, self.on_mouse)
 
+    def find_margin_center(self, img):
+        samples = 100
+        margin_th = 220
+        hist_th = samples * 0.8
+        sample_ys = np.linspace(0, img.shape[0] - 1, 100, dtype=int)
+        # center of left margin
+        left_sample = img[sample_ys, 0:img.shape[1] // 4, 0]  # enough with first ch
+        left_hist = (left_sample > margin_th).sum(axis=0) > hist_th
+        left_margin_center = np.median(left_hist.nonzero())
+        left_margin_center = int(left_margin_center)
+        # center of right margin
+        sx = 3 * img.shape[1] // 4
+        right_sample = img[sample_ys, sx:, 0]  # enough with first ch
+        right_hist = (right_sample > margin_th).sum(axis=0) > hist_th
+        right_margin_center = np.median(right_hist.nonzero()) + sx
+        right_margin_center = int(right_margin_center)
+
+        return left_margin_center, right_margin_center
+
     def on_paint(self, event):
         dc = wx.PaintDC(self)
-
         dc.DrawBitmap(self.img, 0, self.scroll_y1 * -1)
 
         # guide text
         dc.SetFont(self.guide_font)
         dc.SetBackgroundMode(wx.BRUSHSTYLE_SOLID)
         dc.SetTextForeground((180, 0, 0))
-        dc.DrawText("← " + self.guide_base_text, self.left_edge_x, self.frame_w // 3)
+        dc.DrawText("← " + self.guide_base_text, self.left_margin_x, self.frame_w // 3)
         text_len = dc.GetFullMultiLineTextExtent(self.guide_base_text + " →", self.guide_font)
-        dc.DrawText(self.guide_base_text + " →", self.right_edge_x - text_len[0], self.frame_w // 2)
+        dc.DrawText(self.guide_base_text + " →", self.right_margin_x - text_len[0], self.frame_w // 2)
 
         # guide line
         dc.SetPen(wx.Pen((180, 0, 0), self.FromDIP(3), wx.SOLID))
-        dc.DrawLine(self.left_edge_x, 0, self.left_edge_x, self.frame_w)
-        dc.DrawLine(self.right_edge_x, 0, self.right_edge_x, self.frame_w)
+        dc.DrawLine(self.left_margin_x, 0, self.left_margin_x, self.frame_w)
+        dc.DrawLine(self.right_margin_x, 0, self.right_margin_x, self.frame_w)
 
     def on_scroll(self, event):
         direction = -1 if event.GetWheelRotation() > 0 else 1
@@ -97,9 +115,9 @@ class SetEdgePane(wx.Panel):
         pos = event.GetPosition()
         left_active = False
         right_active = False
-        if self.left_edge_x - self.adjust_cursor_slip < pos.x < self.left_edge_x + self.adjust_cursor_slip:
+        if self.left_margin_x - self.adjust_cursor_slip < pos.x < self.left_margin_x + self.adjust_cursor_slip:
             left_active = True
-        elif self.right_edge_x - self.adjust_cursor_slip < pos.x < self.right_edge_x + self.adjust_cursor_slip:
+        elif self.right_margin_x - self.adjust_cursor_slip < pos.x < self.right_margin_x + self.adjust_cursor_slip:
             right_active = True
 
         if left_active or right_active:
@@ -108,15 +126,15 @@ class SetEdgePane(wx.Panel):
             self.SetCursor(self.norm_cursor)
 
         if left_active and event.Dragging():
-            self.left_edge_x = pos.x
+            self.left_margin_x = pos.x
             self.Refresh()
         elif right_active and event.Dragging():
-            self.right_edge_x = pos.x
+            self.right_margin_x = pos.x
             self.Refresh()
 
     def get_pos(self):
-        left = self.ToDIP(self.left_edge_x) * self.org_img_w * self.scale / self.frame_w
-        right = self.ToDIP(self.right_edge_x) * self.org_img_w * self.scale / self.frame_w
+        left = self.ToDIP(self.left_margin_x) * self.org_img_w * self.scale / self.frame_w
+        right = self.ToDIP(self.right_margin_x) * self.org_img_w * self.scale / self.frame_w
         return int(left), int(right)
 
 

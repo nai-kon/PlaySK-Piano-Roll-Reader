@@ -1,4 +1,3 @@
-import gc
 import math
 import os
 import platform
@@ -34,10 +33,10 @@ def load_scan(path, default_tempo):
                 return None, default_tempo
         with SetEdgeDlg(obj) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
-                left, right = dlg.get_edge_pos()
-                print(left, right)
-                img = obj.img_data[:, left:right]
-                return img, obj.tempo
+                left, right = dlg.get_margin_pos()
+                obj.img_data[:, :left] = (255, 255, 255)
+                obj.img_data[:, right:] = (255, 255, 255)
+                return obj.img_data, obj.tempo
             else:
                 return None, default_tempo
 
@@ -219,7 +218,6 @@ class InputScanImg_v0(InputVideo):
         self.roll_width = roll_width
         self.tempo = tempo
 
-
     def start_worker(self):
         # load initial frame
         self.cur_y = self.src.shape[0] - 1
@@ -308,8 +306,8 @@ class InputScanImg(InputScanImg_v0):
         self.left_side, self.right_side = self._find_roll_edge()
         margin = 7 * (self.right_side - self.left_side + 1) // (self.disp_w - 7 * 2)  # 7px on both edge @800x600
         # crop and resize image
-        crop_x1 = self.left_side - margin
-        crop_x2 = self.right_side + margin
+        crop_x1 = max(self.left_side - margin, 0)
+        crop_x2 = min(self.right_side + margin, self.src.shape[1])
         self.src = self.src[:, crop_x1:crop_x2 + 1]
         resize_ratio = self.disp_w / self.src.shape[1]
         resize_h = int(self.src.shape[0] * resize_ratio)

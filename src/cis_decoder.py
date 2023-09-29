@@ -132,8 +132,8 @@ class CisImage:
         if len(self.img_data) == 0:
             raise BufferError
 
-        if self.scanner_type == ScannerType.STEPPER and self.vert_res != self.hol_dpi:
-            self.img_data = cv2.resize(self.img_data, dsize=None, fx=1, fy=self.vert_res / self.hol_dpi)
+        if self.scanner_type not in [ScannerType.WHEELRUN, ScannerType.SHAFTRUN] and self.vert_res != self.hol_dpi:
+            self.img_data = cv2.resize(self.img_data, dsize=None, fx=1, fy=self.hol_dpi / self.vert_res)
 
 
 if __name__ == "__main__":
