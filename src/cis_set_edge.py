@@ -78,14 +78,20 @@ class SetEdgePane(wx.Panel):
         # center of left margin
         left_sample = img[sample_ys, 0:img.shape[1] // 4, 0]  # enough with first ch
         left_hist = (left_sample > margin_th).sum(axis=0) > hist_th
-        left_margin_center = np.median(left_hist.nonzero())
-        left_margin_center = int(left_margin_center)
+        left_margin_idx = left_hist.nonzero()[0]
+        if left_margin_idx.size > 0:
+            left_margin_center = int(np.median(left_margin_idx))
+        else:
+            left_margin_center = 100
         # center of right margin
         sx = 3 * img.shape[1] // 4
         right_sample = img[sample_ys, sx:, 0]  # enough with first ch
         right_hist = (right_sample > margin_th).sum(axis=0) > hist_th
-        right_margin_center = np.median(right_hist.nonzero()) + sx
-        right_margin_center = int(right_margin_center)
+        right_margin_idx = right_hist.nonzero()[0]
+        if right_margin_idx.size > 0:
+            right_margin_center = int(np.median(right_margin_idx) + sx)
+        else:
+            right_margin_center = img.shape[1] - 100
 
         return left_margin_center, right_margin_center
 
@@ -151,7 +157,7 @@ if __name__ == '__main__':
     app = wx.App()
 
     obj = CisImage()
-    if obj.load("../Ampico 214671 Peanuts and Kisses tempo105.CIS"):
+    if obj.load("../Dinner Music # 5 (1925) 65163A.CIS"):
         with SetEdgeDlg(obj) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 print(dlg.get_edge_pos())
