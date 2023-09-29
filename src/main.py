@@ -6,7 +6,7 @@ import wx
 
 from config import ConfigMng
 from controls import SpeedSlider, TrackerCtrl, WelcomeMsg
-from input_src import InputScanImg
+from input_src import InputScanImg, load_scan
 from midi_controller import MidiWrap
 from player_mng import PlayerMng
 from vacuum_gauge import VacuumGauge
@@ -38,10 +38,10 @@ class FileDrop(wx.FileDropTarget):
     def OnDropFiles(self, x, y, filenames):
         path = filenames[0]
         ext = os.path.splitext(path)[-1]
-        if ext.lower() in (".jpg", ".png", ".tif", ".bmp"):
+        if ext.lower() in (".cis", ".jpg", ".png", ".tif", ".bmp"):
             self.parent.load_file(path)
         else:
-            wx.MessageBox("supported image formats are .jpg, .png, .tif, .bmp", "unsupported file")
+            wx.MessageBox("supported image formats are .cis .jpg, .png, .tif, .bmp", "unsupported file")
 
         return True
 
@@ -57,11 +57,11 @@ class MainFrame(wx.Frame):
         self.spool = WelcomeMsg(self, size=(800, 600))
         self.spool.start_worker()
 
-        self.midi_btn = wx.Button(self, wx.ID_ANY, size=self.FromDIP(wx.Size((90, 50))), label="MIDI On")
+        self.midi_btn = wx.Button(self, size=self.FromDIP(wx.Size((90, 50))), label="MIDI On")
         self.midi_btn.Bind(wx.EVT_BUTTON, self.midi_onoff)
         self.midi_btn.Disable()
 
-        self.file_btn = wx.Button(self, wx.ID_ANY, size=self.FromDIP(wx.Size((90, 50))), label="File")
+        self.file_btn = wx.Button(self, size=self.FromDIP(wx.Size((90, 50))), label="File")
         self.file_btn.Bind(wx.EVT_BUTTON, self.open_file)
 
         self.speed = SpeedSlider(self, callback=self.speed_change)
@@ -111,7 +111,7 @@ class MainFrame(wx.Frame):
         # midi port
         ports = self.midiobj.port_list
         rect = self.sbar.GetFieldRect(0)
-        self.port_sel = wx.Choice(self.sbar, wx.ID_ANY, choices=ports, size=(rect.width, h))
+        self.port_sel = wx.Choice(self.sbar, choices=ports, size=(rect.width, h))
         self.port_sel.Bind(wx.EVT_CHOICE, self.change_midi_port)
         self.port_sel.SetPosition((rect.x, 0))
         last_sel = ports.index(self.conf.last_midi_port) if self.conf.last_midi_port in ports else 0
@@ -121,7 +121,7 @@ class MainFrame(wx.Frame):
         # tracker bar
         players = self.player_mng.player_list
         rect = self.sbar.GetFieldRect(2)
-        self.player_sel = wx.Choice(self.sbar, wx.ID_ANY, choices=players, size=(rect.width, h))
+        self.player_sel = wx.Choice(self.sbar, choices=players, size=(rect.width, h))
         self.player_sel.Bind(wx.EVT_CHOICE, self.change_player)
         self.player_sel.SetPosition((rect.x, 0))
         last_sel = players.index(self.conf.last_tracker) if self.conf.last_tracker in players else 0
@@ -165,10 +165,14 @@ class MainFrame(wx.Frame):
             obj.SetLabel("MIDI On")
 
     def load_file(self, path):
+        img, tempo = load_scan(path, self.obj.player.default_tempo)
+        if img is None:
+            return
+
         self.obj.player.emulate_off()
         self.spool.release_src()
         tmp = self.spool
-        self.spool = InputScanImg(self, path, self.obj.player.spool_diameter, self.obj.player.roll_width, callback=self.obj)
+        self.spool = InputScanImg(self, img, self.obj.player.spool_diameter, self.obj.player.roll_width, callback=self.obj)
         self.spool.start_worker()
         self.Title = os.path.basename(path)
         self.sizer3.Replace(tmp, self.spool)
@@ -178,12 +182,10 @@ class MainFrame(wx.Frame):
         self.midi_btn.Enable()
 
         # Set tempo
-        val = re.search(r"tempo:?\s*(\d{2,3})", self.Title)
-        tempo = int(val.group(1)) if val is not None else self.obj.player.default_tempo
         self.speed.set("Tempo", (50, 140), tempo)
 
     def open_file(self, event):
-        filters = "image files (*.jpg;*.png;*.tif;*.bmp)|*.jpg;*.png;*.tif;*.bmp"
+        filters = "image files (*cis;*.jpg;*.png;*.tif;*.bmp)|*cis;*.jpg;*.png;*.tif;*.bmp"
         with wx.FileDialog(self, "Select File", style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST, wildcard=filters) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()

@@ -2,6 +2,7 @@ import gc
 import math
 import os
 import platform
+import re
 import threading
 import time
 
@@ -9,6 +10,42 @@ os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2, 42).__str__()
 import cv2
 import numpy as np
 import wx
+
+from cis_decoder import CisImage
+from cis_set_edge import SetEdgeDlg
+
+
+def load_scan(path, default_tempo):
+    def img_load(path, default_tempo):
+        with wx.BusyCursor():
+            # cv2.imread erros with multi-byte path
+            n = np.fromfile(path, np.uint8)
+            img = cv2.imdecode(n, cv2.IMREAD_COLOR)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        val = re.search(r"tempo:?\s*(\d{2,3})", basename)
+        tempo = int(val.group(1)) if val is not None else default_tempo
+        return img, tempo
+
+    def cis_load(path, default_tempo):
+        obj = CisImage()
+        with wx.BusyCursor():
+            if not obj.load(path):
+                return None, default_tempo
+        with SetEdgeDlg(obj) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                left, right = dlg.get_edge_pos()
+                print(left, right)
+                img = obj.img_data[:, left:right]
+                return img, obj.tempo
+            else:
+                return None, default_tempo
+
+    basename = os.path.basename(path)
+    if basename.lower().endswith(".cis"):
+        return cis_load(path, default_tempo)
+    else:
+        return img_load(path, default_tempo)
 
 
 class FPScounter():
@@ -60,9 +97,6 @@ class InputVideo(wx.Panel):
         self.worker_thread_quit = True
         if self.thread_worker.is_alive():
             self.thread_worker.join(timeout=3)
-        if self.src is not None:
-            self.src = None
-            gc.collect()
 
     def on_destroy(self, event):
         self.worker_thread_quit = True
@@ -174,8 +208,9 @@ class InputWebcam(InputVideo):
 
 
 class InputScanImg_v0(InputVideo):
-    def __init__(self, parent, path, spool_diameter=2.72, roll_width=11.25, tempo=80, disp_size=(800, 600), callback=None):
-        super().__init__(parent, path, disp_size, callback)
+    def __init__(self, parent, img, spool_diameter=2.72, roll_width=11.25, tempo=80, disp_size=(800, 600), callback=None):
+        super().__init__(parent, None, disp_size, callback)
+        self.src = img
         self.skip_px = 1
         self.spool_rps = 0
         self.cur_spool_diameter = self.org_spool_diameter = spool_diameter
@@ -184,16 +219,8 @@ class InputScanImg_v0(InputVideo):
         self.roll_width = roll_width
         self.tempo = tempo
 
-    def imread(self, path, flags=cv2.IMREAD_COLOR):
-        # support multi-byte file path
-        n = np.fromfile(path, np.uint8)
-        img = cv2.imdecode(n, flags)
-        return img
 
     def start_worker(self):
-        with wx.BusyCursor():
-            self.src = self.imread(self.src_path)
-            self.src = cv2.cvtColor(self.src, cv2.COLOR_BGR2RGB)
         # load initial frame
         self.cur_y = self.src.shape[0] - 1
         self.left_side, self.right_side = self._find_roll_edge()
@@ -277,9 +304,6 @@ class InputScanImg_v0(InputVideo):
 
 class InputScanImg(InputScanImg_v0):
     def start_worker(self):
-        with wx.BusyCursor():
-            self.src = self.imread(self.src_path)
-            self.src = cv2.cvtColor(self.src, cv2.COLOR_BGR2RGB)
         # load initial frame
         self.left_side, self.right_side = self._find_roll_edge()
         margin = 7 * (self.right_side - self.left_side + 1) // (self.disp_w - 7 * 2)  # 7px on both edge @800x600
