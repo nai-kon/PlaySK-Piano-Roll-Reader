@@ -1,6 +1,5 @@
 import wx
 import cv2
-import numpy as np
 from cis_decoder import CisImage, ScannerType
 import platform
 
@@ -54,7 +53,7 @@ class SetEdgePane(wx.Panel):
         org_img_h, self.org_img_w = img.shape[:2]
         resized_h = org_img_h * self.frame_w // self.org_img_w
         img = cv2.resize(img, dsize=(self.frame_w, resized_h))
-        self.left_margin_x, self.right_margin_x = self.find_margin_center(img)
+        self.left_margin_x, self.right_margin_x = 100, img.shape[1] - 100
         self.img = wx.Bitmap.FromBuffer(img.shape[1], img.shape[0], img)
         self.img_h = self.img.GetHeight()
         self.scroll_y1 = self.img_h // 2
@@ -69,31 +68,6 @@ class SetEdgePane(wx.Panel):
         self.Bind(wx.EVT_PAINT, self.on_paint)
         self.Bind(wx.EVT_MOUSEWHEEL, self.on_scroll)
         self.Bind(wx.EVT_MOTION, self.on_mouse)
-
-    def find_margin_center(self, img):
-        samples = 100
-        margin_th = 220
-        hist_th = samples * 0.8
-        sample_ys = np.linspace(0, img.shape[0] - 1, 100, dtype=int)
-        # center of left margin
-        left_sample = img[sample_ys, 0:img.shape[1] // 4, 0]  # enough with first ch
-        left_hist = (left_sample > margin_th).sum(axis=0) > hist_th
-        left_margin_idx = left_hist.nonzero()[0]
-        if left_margin_idx.size > 0:
-            left_margin_center = int(np.median(left_margin_idx))
-        else:
-            left_margin_center = 100
-        # center of right margin
-        sx = 3 * img.shape[1] // 4
-        right_sample = img[sample_ys, sx:, 0]  # enough with first ch
-        right_hist = (right_sample > margin_th).sum(axis=0) > hist_th
-        right_margin_idx = right_hist.nonzero()[0]
-        if right_margin_idx.size > 0:
-            right_margin_center = int(np.median(right_margin_idx) + sx)
-        else:
-            right_margin_center = img.shape[1] - 100
-
-        return left_margin_center, right_margin_center
 
     def on_paint(self, event):
         dc = wx.PaintDC(self)

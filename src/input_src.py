@@ -4,18 +4,43 @@ import platform
 import re
 import threading
 import time
-
-os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2, 42).__str__()
-import cv2
 import numpy as np
 import wx
 
 from cis_decoder import CisImage
 from cis_set_edge import SetEdgeDlg
 
+os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2, 42).__str__()
+import cv2
 
-def load_scan(path, default_tempo):
-    def img_load(path, default_tempo):
+
+def find_edge_margin(img):
+    samples = 100
+    margin_th = 220
+    hist_th = samples * 0.8
+    sample_ys = np.linspace(0, img.shape[0] - 1, 100, dtype=int)
+    # center of left margin
+    left_sample = img[sample_ys, 0:img.shape[1] // 4, 0]  # enough with first ch
+    left_hist = (left_sample > margin_th).sum(axis=0) > hist_th
+    left_margin_idx = left_hist.nonzero()[0]
+    left_margin_center = None
+    if left_margin_idx.size > 0:
+        left_margin_center = int(np.median(left_margin_idx))
+
+    # center of right margin
+    sx = 3 * img.shape[1] // 4
+    right_sample = img[sample_ys, sx:, 0]  # enough with first ch
+    right_hist = (right_sample > margin_th).sum(axis=0) > hist_th
+    right_margin_idx = right_hist.nonzero()[0]
+    right_margin_center = None
+    if right_margin_idx.size > 0:
+        right_margin_center = int(np.median(right_margin_idx) + sx)
+
+    return left_margin_center, right_margin_center
+
+
+def load_scan(path, default_tempo, force_manual_adjust=False):
+    def _img_load(path, default_tempo):
         with wx.BusyCursor():
             # cv2.imread erros with multi-byte path
             n = np.fromfile(path, np.uint8)
@@ -26,25 +51,33 @@ def load_scan(path, default_tempo):
         tempo = int(val.group(1)) if val is not None else default_tempo
         return img, tempo
 
-    def cis_load(path, default_tempo):
+    def _cis_load(path, default_tempo, force_manual_adjust):
+        # load
         obj = CisImage()
         with wx.BusyCursor():
             if not obj.load(path):
                 return None, default_tempo
-        with SetEdgeDlg(obj) as dlg:
-            if dlg.ShowModal() == wx.ID_OK:
-                left, right = dlg.get_margin_pos()
-                obj.img_data[:, :left] = (255, 255, 255)
-                obj.img_data[:, right:] = (255, 255, 255)
-                return obj.img_data, obj.tempo
-            else:
-                return None, default_tempo
+        # find center of roll margin or manually set if not found
+        left_edge, right_edge = find_edge_margin(obj.img_data)
+        if left_edge is None or right_edge is None or force_manual_adjust:
+            with SetEdgeDlg(obj) as dlg:
+                if dlg.ShowModal() == wx.ID_OK:
+                    left_edge, right_edge = dlg.get_margin_pos()
+                else:
+                    return None, default_tempo
+        # cut off edge
+        obj.img_data[:, :left_edge] = (255, 255, 255)
+        obj.img_data[:, right_edge:] = (255, 255, 255)
+        w = obj.img_data.shape[1]
+        padding = np.full((w // 2, w, 3), 255, dtype=np.uint8)
+        obj.img_data = np.concatenate([obj.img_data, padding])
+        return obj.img_data, obj.tempo
 
     basename = os.path.basename(path)
     if basename.lower().endswith(".cis"):
-        return cis_load(path, default_tempo)
+        return _cis_load(path, default_tempo, force_manual_adjust)
     else:
-        return img_load(path, default_tempo)
+        return _img_load(path, default_tempo)
 
 
 class FPScounter():

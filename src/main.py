@@ -1,6 +1,5 @@
 import os
 import platform
-import re
 
 import wx
 
@@ -36,14 +35,15 @@ class FileDrop(wx.FileDropTarget):
         self.parent = parent
 
     def OnDropFiles(self, x, y, filenames):
-        path = filenames[0]
+        wx.CallAfter(self._load_inner, path=filenames[0])
+        return True
+
+    def _load_inner(self, path):
         ext = os.path.splitext(path)[-1]
         if ext.lower() in (".cis", ".jpg", ".png", ".tif", ".bmp"):
             self.parent.load_file(path)
         else:
             wx.MessageBox("supported image formats are .cis .jpg, .png, .tif, .bmp", "unsupported file")
-
-        return True
 
 
 class MainFrame(wx.Frame):
