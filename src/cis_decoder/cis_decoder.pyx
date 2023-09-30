@@ -1,6 +1,6 @@
 # cython: language_level=3
 
-import numpy as np
+cimport cython
 cimport numpy as cnp
 
 cdef enum CurColor:
@@ -9,6 +9,8 @@ cdef enum CurColor:
     ROLL = 2
     MARK = 3
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data, cnp.ndarray[cnp.uint8_t, ndim=3] out_img, int vert_px, int hol_px, bint bicolor):
 
     # decode CIS
