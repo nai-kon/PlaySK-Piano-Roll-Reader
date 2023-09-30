@@ -2,6 +2,7 @@ import wx
 import cv2
 import numpy as np
 import time
+from cis_decoder.cis_decoder import decode_cis
 from enum import Enum, IntEnum, auto
 
 
@@ -43,6 +44,56 @@ class CisImage:
 
         return False
 
+    # slow pure python version. cython version is in cis_decoder/cis_decoder.pyx
+    def decode_cis_py(self, data, out_img, vert_px, hol_px, bicolor):
+        class CurColor(IntEnum):
+            NONE = auto()
+            BG = auto()
+            ROLL = auto()
+            MARK = auto()
+
+        # decode CIS
+        bg_color = (255, 255, 255)
+        black_color = (0, 0, 0)
+        cur_idx = 0
+        for cur_line in range(vert_px - 1, 0, -1):
+            # decode holes
+            last_pos = 0
+            cur_pix = CurColor.NONE
+            none_end_pos = 0
+            while True:
+                change_len = data[cur_idx]
+                match cur_pix:
+                    case CurColor.NONE:
+                        out_img[cur_line, last_pos:last_pos + change_len] = black_color
+                        cur_pix = CurColor.BG
+                        none_end_pos = change_len
+                    case CurColor.BG:
+                        out_img[cur_line, last_pos:last_pos + change_len] = bg_color
+                        cur_pix = CurColor.ROLL
+                    case CurColor.ROLL:
+                        cur_pix = CurColor.BG
+
+                cur_idx += 1
+                last_pos += change_len
+                if last_pos == hol_px:
+                    cur_idx += 1
+                    break
+
+            # decode lyrics
+            last_pos = none_end_pos
+            cur_pix = CurColor.BG
+            while bicolor:
+                change_len = data[cur_idx]
+                cur_idx += 1
+                if change_len == 0:
+                    break
+
+                if cur_pix == CurColor.MARK:
+                    out_img[cur_line, last_pos:last_pos + change_len] = black_color
+                cur_pix = CurColor.MARK if cur_pix == CurColor.BG else CurColor.BG
+                last_pos += change_len
+
     def _load_inner(self, path):
         # CIS file format
         # http://semitone440.co.uk/rolls/utils/cisheader/cis-format.htm#scantype
@@ -78,56 +129,14 @@ class CisImage:
         self.tempo = int.from_bytes(bytes[44:46], byteorder="little")
         self.vert_res = int.from_bytes(bytes[46:48], byteorder="little")  # lpi in stepper scanner. tpi in encoder wheel
         self.vert_px = int.from_bytes(bytes[48:52], byteorder="little")
-        scan_data = np.frombuffer(bytes[52:], np.uint16).tolist()
+        scan_data = np.frombuffer(bytes[52:], np.uint16)
 
-        class CurColor(IntEnum):
-            NONE = auto()
-            BG = auto()
-            ROLL = auto()
-            MARK = auto()
-
-        # decode CIS
-        bg_color = (255, 255, 255)
-        black_color = (0, 0, 0)
         self.img_data = np.full((self.vert_px, self.hol_px, 3), 120, np.uint8)
-        cur_idx = 0
-        for cur_line in range(self.vert_px - 1, 0, -1):
-            # decode holes
-            last_pos = 0
-            cur_pix = CurColor.NONE
-            none_end_pos = 0
-            while True:
-                change_len = scan_data[cur_idx]
-                match cur_pix:
-                    case CurColor.NONE:
-                        self.img_data[cur_line, last_pos:last_pos + change_len] = black_color
-                        cur_pix = CurColor.BG
-                        none_end_pos = change_len
-                    case CurColor.BG:
-                        self.img_data[cur_line, last_pos:last_pos + change_len] = bg_color
-                        cur_pix = CurColor.ROLL
-                    case CurColor.ROLL:
-                        cur_pix = CurColor.BG
 
-                cur_idx += 1
-                last_pos += change_len
-                if last_pos == self.hol_px:
-                    cur_idx += 1
-                    break
+        # self.decode_cis(scan_data.tolist(), self.img_data, self.vert_px, self.hol_px, self.bicolor)
 
-            # decode lyrics
-            last_pos = none_end_pos
-            cur_pix = CurColor.BG
-            while self.bicolor:
-                change_len = scan_data[cur_idx]
-                cur_idx += 1
-                if change_len == 0:
-                    break
-
-                if cur_pix == CurColor.MARK:
-                    self.img_data[cur_line, last_pos:last_pos + change_len] = black_color
-                cur_pix = CurColor.MARK if cur_pix == CurColor.BG else CurColor.BG
-                last_pos += change_len
+        # written in cython for speed up
+        decode_cis(scan_data, self.img_data, self.vert_px, self.hol_px, self.bicolor)
 
         if len(self.img_data) == 0:
             raise BufferError
@@ -140,6 +149,6 @@ if __name__ == "__main__":
     app = wx.App()
     s = time.time()
     obj = CisImage()
-    if obj.load("../Elegie Op 3 No 1 69253A.CIS"):
+    if obj.load("../Ampico 68383 Appassionate Sonata 3nd mvt.CIS"):
+        print(time.time() - s)
         cv2.imwrite("decoded_cis.png", obj.img_data)
-    print(time.time() - s)

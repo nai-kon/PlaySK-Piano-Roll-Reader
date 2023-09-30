@@ -7,7 +7,7 @@ import time
 import numpy as np
 import wx
 
-from cis_decoder import CisImage
+from cis_image import CisImage
 from cis_set_edge import SetEdgeDlg
 
 os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2, 42).__str__()
@@ -71,7 +71,8 @@ def load_scan(path, default_tempo, force_manual_adjust=False):
         w = obj.img_data.shape[1]
         padding = np.full((w // 2, w, 3), 255, dtype=np.uint8)
         obj.img_data = np.concatenate([obj.img_data, padding])
-        return obj.img_data, obj.tempo
+        tempo = default_tempo if obj.tempo == 0 else obj.tempo
+        return obj.img_data, tempo
 
     basename = os.path.basename(path)
     if basename.lower().endswith(".cis"):
