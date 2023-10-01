@@ -54,6 +54,7 @@ class MainFrame(wx.Frame):
             # wxpython on Windows does not support Darkmode
             self.SetBackgroundColour("#AAAAAA")
 
+        self.img_path = None
         self.spool = WelcomeMsg(self, size=(800, 600))
         self.spool.start_worker()
 
@@ -69,6 +70,10 @@ class MainFrame(wx.Frame):
 
         self.bass_vacuum_lv = VacuumGauge(self, caption="Bass Vacuum (inches of water)")
         self.treble_vacuum_lv = VacuumGauge(self, caption="Treble Vacuum (inches of water)")
+
+        self.edit_btn = wx.Button(self, size=self.FromDIP(wx.Size((180, 50))), label="Adjust Image")
+        self.edit_btn.Bind(wx.EVT_BUTTON, self.adjust_image)
+        self.edit_btn.Disable()
 
         self.obj = CallBack(None, self.tracking, self.bass_vacuum_lv, self.treble_vacuum_lv)
         self.midiobj = MidiWrap()
@@ -87,6 +92,7 @@ class MainFrame(wx.Frame):
         self.sizer2.Add(self.tracking, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.bass_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.treble_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=border_size)
+        self.sizer2.Add(self.edit_btn, flag=wx.EXPAND | wx.ALL, border=border_size)
 
         self.sizer3 = wx.BoxSizer(wx.HORIZONTAL)
         self.sizer3.Add(self.spool)
@@ -164,11 +170,15 @@ class MainFrame(wx.Frame):
             self.obj.player.emulate_off()
             obj.SetLabel("MIDI On")
 
-    def load_file(self, path):
-        img, tempo = load_scan(path, self.obj.player.default_tempo)
+    def load_file(self, path, force_manual_adjust=False):
+        img, tempo = load_scan(path, self.obj.player.default_tempo, force_manual_adjust)
         if img is None:
             return
-
+        self.img_path = path
+        if self.img_path.lower().endswith(".cis"):
+            self.edit_btn.Enable()
+        else:
+            self.edit_btn.Disable()
         self.obj.player.emulate_off()
         self.spool.release_src()
         tmp = self.spool
@@ -194,6 +204,11 @@ class MainFrame(wx.Frame):
     def speed_change(self, val):
         if hasattr(self.spool, "set_tempo"):
             self.spool.set_tempo(val)
+
+    def adjust_image(self, event):
+        if self.img_path is not None:
+            # re-open with manually adjust dialog
+            self.load_file(self.img_path, True)
 
 
 if __name__ == "__main__":

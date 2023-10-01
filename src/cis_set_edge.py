@@ -6,7 +6,7 @@ import platform
 
 class SetEdgeDlg(wx.Dialog):
     def __init__(self, cis: CisImage):
-        wx.Dialog.__init__(self, None, title="Set roll edge")
+        wx.Dialog.__init__(self, None, title="Adjust roll image")
         border_size = self.FromDIP(5)
         self.panel = SetEdgePane(self, cis.img_data)
         sizer1 = wx.BoxSizer(wx.VERTICAL)
@@ -76,6 +76,7 @@ class SetEdgePane(wx.Panel):
         # guide text
         dc.SetFont(self.guide_font)
         dc.SetBackgroundMode(wx.BRUSHSTYLE_SOLID)
+        dc.SetTextBackground((255, 255, 255))
         dc.SetTextForeground((180, 0, 0))
         dc.DrawText("← " + self.guide_base_text, self.left_margin_x, self.frame_w // 3)
         text_len = dc.GetFullMultiLineTextExtent(self.guide_base_text + " →", self.guide_font)

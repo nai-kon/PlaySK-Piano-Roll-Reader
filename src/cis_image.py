@@ -129,15 +129,14 @@ class CisImage:
         self.vert_px = int.from_bytes(bytes[48:52], byteorder="little")
         scan_data = np.frombuffer(bytes[52:], np.uint16)
 
-        # malloc output image. Add white padding on start.
+        # malloc output image. Add white padding on beginning.
         start_padding_y = self.hol_px // 2
         self.img_data = np.full((self.vert_px + start_padding_y, self.hol_px, 3), 120, np.uint8)
         self.img_data[self.vert_px:] = 255
 
-        # self.decode_cis_py(scan_data.tolist(), self.img_data, self.vert_px, self.hol_px, self.bicolor)
-
-        # written in cython for speed up
+        # decode scan data. written in cython.
         decode_cis(scan_data, self.img_data, self.vert_px, self.hol_px, self.bicolor)
+        # self.decode_cis_py(scan_data.tolist(), self.img_data, self.vert_px, self.hol_px, self.bicolor)
 
         if len(self.img_data) == 0:
             raise BufferError
