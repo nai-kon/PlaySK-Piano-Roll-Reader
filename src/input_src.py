@@ -68,9 +68,6 @@ def load_scan(path, default_tempo, force_manual_adjust=False):
         # cut off edge
         obj.img_data[:, :left_edge] = (255, 255, 255)
         obj.img_data[:, right_edge:] = (255, 255, 255)
-        w = obj.img_data.shape[1]
-        padding = np.full((w // 2, w, 3), 255, dtype=np.uint8)
-        obj.img_data = np.concatenate([obj.img_data, padding])
         tempo = default_tempo if obj.tempo == 0 else obj.tempo
         return obj.img_data, tempo
 
