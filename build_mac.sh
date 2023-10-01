@@ -1,9 +1,14 @@
 #! /bin/zsh
 set -euo pipefail
 
-# build
 source .venv/bin/activate
 
+# build cython code
+pushd ./src/cis_decoder/
+python setup.py build_ext --inplace
+popd
+
+# build exe
 case `uname -m` in
     "x86_64" ) pyinstaller build_mac_x64.spec;;
     "arm64" ) pyinstaller build_mac_arm.spec;;
