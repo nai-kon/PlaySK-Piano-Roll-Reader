@@ -71,9 +71,9 @@ class MainFrame(wx.Frame):
         self.bass_vacuum_lv = VacuumGauge(self, caption="Bass Vacuum (inches of water)")
         self.treble_vacuum_lv = VacuumGauge(self, caption="Treble Vacuum (inches of water)")
 
-        self.edit_btn = wx.Button(self, size=self.FromDIP(wx.Size((180, 50))), label="Adjust Image")
-        self.edit_btn.Bind(wx.EVT_BUTTON, self.adjust_image)
-        self.edit_btn.Disable()
+        self.adjust_btn = wx.Button(self, size=self.FromDIP(wx.Size((180, 50))), label="Adjust Image")
+        self.adjust_btn.Bind(wx.EVT_BUTTON, self.adjust_image)
+        self.adjust_btn.Disable()
 
         self.obj = CallBack(None, self.tracking, self.bass_vacuum_lv, self.treble_vacuum_lv)
         self.midiobj = MidiWrap()
@@ -92,7 +92,7 @@ class MainFrame(wx.Frame):
         self.sizer2.Add(self.tracking, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.bass_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.treble_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=border_size)
-        self.sizer2.Add(self.edit_btn, flag=wx.EXPAND | wx.ALL, border=border_size)
+        self.sizer2.Add(self.adjust_btn, flag=wx.EXPAND | wx.ALL, border=border_size)
 
         self.sizer3 = wx.BoxSizer(wx.HORIZONTAL)
         self.sizer3.Add(self.spool)
@@ -176,9 +176,9 @@ class MainFrame(wx.Frame):
             return
         self.img_path = path
         if self.img_path.lower().endswith(".cis"):
-            self.edit_btn.Enable()
+            self.adjust_btn.Enable()
         else:
-            self.edit_btn.Disable()
+            self.adjust_btn.Disable()
         self.obj.player.emulate_off()
         self.spool.release_src()
         tmp = self.spool

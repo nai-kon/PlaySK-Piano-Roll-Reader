@@ -47,7 +47,17 @@ def load_scan(path, default_tempo, force_manual_adjust=False):
             img = cv2.imdecode(n, cv2.IMREAD_COLOR)
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        val = re.search(r"tempo:?\s*(\d{2,3})", basename)
+        # search tempo from ANN file
+        ann_path = path.rsplit(".", 1)[0] + ".ANN"
+        if os.path.exists(ann_path):
+            with open(ann_path) as f:
+                for line in f.readlines():
+                    val = re.search(r"^/roll_tempo:\s+(\d{2,3})", line)
+                    if val is not None:
+                        return img, int(val.group(1))
+
+        # search tempo from file name
+        val = re.search(r"tempo:?\s*(\d{2,3})", path)
         tempo = int(val.group(1)) if val is not None else default_tempo
         return img, tempo
 

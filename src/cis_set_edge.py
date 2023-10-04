@@ -16,6 +16,8 @@ class SetEdgeDlg(wx.Dialog):
         sizer2.Add(wx.StaticText(self, label=f"- {cis.scanner_type.value}"))
         if cis.doubler:
             sizer2.Add(wx.StaticText(self, label="- Clock Doubler"))
+        if cis.twin_array:
+            sizer2.Add(wx.StaticText(self, label="- Twin Array scan"))
         if cis.bicolor:
             sizer2.Add(wx.StaticText(self, label="- Bi-Color scan"))
         if cis.mirror:
