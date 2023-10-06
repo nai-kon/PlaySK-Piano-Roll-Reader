@@ -68,7 +68,7 @@ def load_scan(path, default_tempo, force_manual_adjust=False):
             if not obj.load(path):
                 return None, default_tempo
         # find center of roll margin or manually set if not found
-        left_edge, right_edge = find_edge_margin(obj.img_data)
+        left_edge, right_edge = find_edge_margin(obj.img)
         if left_edge is None or right_edge is None or force_manual_adjust:
             with SetEdgeDlg(obj) as dlg:
                 if dlg.ShowModal() == wx.ID_OK:
@@ -76,10 +76,10 @@ def load_scan(path, default_tempo, force_manual_adjust=False):
                 else:
                     return None, default_tempo
         # cut off edge
-        obj.img_data[:, :left_edge] = (255, 255, 255)
-        obj.img_data[:, right_edge:] = (255, 255, 255)
+        obj.img[:, :left_edge] = (255, 255, 255)
+        obj.img[:, right_edge:] = (255, 255, 255)
         tempo = default_tempo if obj.tempo == 0 else obj.tempo
-        return obj.img_data, tempo
+        return obj.img, tempo
 
     basename = os.path.basename(path)
     if basename.lower().endswith(".cis"):

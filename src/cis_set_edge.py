@@ -8,7 +8,7 @@ class SetEdgeDlg(wx.Dialog):
     def __init__(self, cis: CisImage):
         wx.Dialog.__init__(self, None, title="Adjust roll image")
         border_size = self.FromDIP(5)
-        self.panel = SetEdgePane(self, cis.img_data)
+        self.panel = SetEdgePane(self, cis.img)
         sizer1 = wx.BoxSizer(wx.VERTICAL)
         sizer1.Add(self.panel)
         sizer2 = wx.BoxSizer(wx.VERTICAL)
