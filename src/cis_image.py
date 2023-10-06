@@ -4,6 +4,7 @@ import math
 import numpy as np
 import time
 from cis_decoder.cis_decoder import decode_cis
+from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum, IntEnum, auto
 
 
@@ -35,6 +36,8 @@ class CisImage:
         self.img_data = None
 
     def load(self, path):
+        self._load_inner(path)
+        return True
         try:
             self._load_inner(path)
             return True
@@ -44,6 +47,64 @@ class CisImage:
             wx.MessageBox("Failed to load a CIS image", "Load error")
 
         return False
+
+    # slow python version. only used for debugging
+    def decode_cis_tpi(self, data, out_img, vert_px, hol_px, bicolor, twin, twin_overlap, twin_vsep):
+        class CurColor(IntEnum):
+            BG = auto()
+            ROLL = auto()
+            MARK = auto()
+
+        division = self.vert_res / self.encoder_division
+        lpt = int(Decimal(self.hol_dpi / division).quantize(Decimal('0'), rounding=ROUND_HALF_UP))
+        self.vert_res = int(Decimal(lpt * division).quantize(Decimal('0'), rounding=ROUND_HALF_UP))
+
+        # 300 / 496 / 4 = 33
+        # decode CIS
+        bg_color = (255, 255, 255)
+        black_color = (0, 0, 0)
+        cur_idx = 0
+        twin_offset_x = hol_px - twin_overlap
+        pre_clock = None
+        buffers = {}
+        out_line = vert_px - 1
+        for cur_line in range(vert_px - 1, 0, -1):
+            # decode holes
+            line_buffer = np.full((hol_px, 3), 120, np.uint8)
+            last_pos = 0
+            cur_pix = CurColor.ROLL
+            while last_pos != hol_px:
+                change_len = int.from_bytes(data[cur_idx:cur_idx + 2], byteorder="little")
+                if cur_pix == CurColor.BG:
+                    line_buffer[last_pos:last_pos + change_len] = bg_color
+                    # out_img[cur_line, last_pos:last_pos + change_len] = bg_color
+                    cur_pix = CurColor.ROLL
+                elif cur_pix == CurColor.ROLL:
+                    cur_pix = CurColor.BG
+
+                cur_idx += 2
+                last_pos += change_len
+
+            clock = bool(data[cur_idx] & 32)
+            state = bool(data[cur_idx] & 128)
+            # print(cur_line, clock, state)
+
+            if pre_clock != state:
+                # kinntouni割り振る
+                if buffers:
+                    si = min(buffers.keys())
+                    ei = max(buffers.keys())
+                    # print(si, ei)
+                    for i in np.linspace(ei, si, lpt).round():
+                        if out_line >= 0:
+                            out_img[out_line] = buffers[i]
+                        out_line -= 1
+                    buffers = {}
+
+            buffers[cur_line] = line_buffer.copy()
+            pre_clock = state
+            cur_idx += 2
+
 
     # slow python version. only used for debugging
     def decode_cis_py(self, data, out_img, vert_px, hol_px, bicolor, twin, twin_overlap, twin_vsep):
@@ -132,7 +193,7 @@ class CisImage:
         self.twin_array = bool(status_flags[0] & 32)
 
         self.bicolor = bool(status_flags[0] & 64)
-        self.encoder_division = int(status_flags[1] & 15)
+        self.encoder_division = 2 ** int(status_flags[1] & 15)
         self.mirror = bool(status_flags[1] & 16)
         self.reverse = bool(status_flags[1] & 32)
         self.vert_sep_twin = int.from_bytes(bytes[36:38], byteorder="little")
@@ -157,8 +218,10 @@ class CisImage:
         # decode scan data
         twin_overlap = self.overlap_twin // 2
         twin_vsep = math.ceil(self.vert_sep_twin * self.vert_res / 1000)
-        decode_cis(scan_data, self.img_data, self.vert_px, self.hol_px, self.bicolor, self.twin_array, twin_overlap, twin_vsep)
-        # self.decode_cis_py(scan_data.tolist(), self.img_data, self.vert_px, self.hol_px, self.bicolor, self.twin_array, twin_overlap, twin_vsep)
+        if self.scanner_type not in [ScannerType.WHEELRUN, ScannerType.SHAFTRUN]:
+            decode_cis(scan_data, self.img_data, self.vert_px, self.hol_px, self.bicolor, self.twin_array, twin_overlap, twin_vsep)
+        else:
+            self.decode_cis_tpi(bytes[52:], self.img_data, self.vert_px, self.hol_px, self.bicolor, self.twin_array, twin_overlap, twin_vsep)
 
         if self.twin_array:
             self.hol_px = hol_px
@@ -166,7 +229,7 @@ class CisImage:
         if len(self.img_data) == 0:
             raise BufferError
 
-        if self.scanner_type not in [ScannerType.WHEELRUN, ScannerType.SHAFTRUN] and self.vert_res != self.hol_dpi:
+        if self.vert_res != self.hol_dpi:
             self.img_data = cv2.resize(self.img_data, dsize=None, fx=1, fy=self.hol_dpi / self.vert_res)
 
 
@@ -174,6 +237,6 @@ if __name__ == "__main__":
     app = wx.App()
     s = time.time()
     obj = CisImage()
-    if obj.load("../Ampico 68383 Appassionate Sonata 3nd mvt.CIS"):
+    if obj.load("../71551A.CIS"):
         print(time.time() - s)
         cv2.imwrite("decoded_cis.png", obj.img_data)
