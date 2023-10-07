@@ -43,7 +43,7 @@ class FileDrop(wx.FileDropTarget):
         if ext.lower() in (".cis", ".jpg", ".png", ".tif", ".bmp"):
             self.parent.load_file(path)
         else:
-            wx.MessageBox("supported image formats are .cis .jpg, .png, .tif, .bmp", "unsupported file")
+            wx.MessageBox("Supported image formats are .cis .jpg, .png, .tif, .bmp", "Unsupported file")
 
 
 class MainFrame(wx.Frame):
@@ -214,7 +214,7 @@ class MainFrame(wx.Frame):
 if __name__ == "__main__":
     app = wx.App()
     if not MidiWrap().port_list:
-        wx.MessageBox("No any midi out port found. Exit software.", "midi port error")
+        wx.MessageBox("No any midi out port found. Exit software.", "Midi port error")
         exit(-1)
 
     # Set windows timer precision to 1ms

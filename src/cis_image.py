@@ -41,8 +41,6 @@ class CisImage:
         self.need_reclock = False  # reposition line
 
     def load(self, path):
-        self._load_inner(path)
-        return True
         try:
             self._load_inner(path)
             return True
