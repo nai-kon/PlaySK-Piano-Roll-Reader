@@ -8,7 +8,7 @@ import numpy as np
 import wx
 
 from cis_image import CisImage
-from cis_set_edge import SetEdgeDlg
+from input_editor import ImgEditDlg
 
 os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2, 42).__str__()
 import cv2
@@ -18,18 +18,21 @@ def find_edge_margin(img):
     samples = 100
     margin_th = 220
     hist_th = samples * 0.8
-    sample_ys = np.linspace(0, img.shape[0] - 1, 100, dtype=int)
+    h, w = img.shape[:2]
+    sample_ys = np.linspace(w, img.shape[0] - w, 100, dtype=int)  # avoid padding of start/end
     # center of left margin
-    left_sample = img[sample_ys, 0:img.shape[1] // 4, 0]  # enough with first ch
+    sx = 5
+    ex = img.shape[1] // 4
+    left_sample = img[sample_ys, sx: ex, 0]  # enough with first ch
     left_hist = (left_sample > margin_th).sum(axis=0) > hist_th
     left_margin_idx = left_hist.nonzero()[0]
     left_margin_center = None
     if left_margin_idx.size > 0:
         left_margin_center = int(np.median(left_margin_idx))
-
     # center of right margin
     sx = 3 * img.shape[1] // 4
-    right_sample = img[sample_ys, sx:, 0]  # enough with first ch
+    ex = img.shape[1] - 5
+    right_sample = img[sample_ys, sx: ex, 0]  # enough with first ch
     right_hist = (right_sample > margin_th).sum(axis=0) > hist_th
     right_margin_idx = right_hist.nonzero()[0]
     right_margin_center = None
@@ -55,7 +58,6 @@ def load_scan(path, default_tempo, force_manual_adjust=False):
                     val = re.search(r"^/roll_tempo:\s+(\d{2,3})", line)
                     if val is not None:
                         return img, int(val.group(1))
-
         # search tempo from file name
         val = re.search(r"tempo:?\s*(\d{2,3})", path)
         tempo = int(val.group(1)) if val is not None else default_tempo
@@ -70,7 +72,7 @@ def load_scan(path, default_tempo, force_manual_adjust=False):
         # find center of roll margin or manually set if not found
         left_edge, right_edge = find_edge_margin(obj.img)
         if left_edge is None or right_edge is None or force_manual_adjust:
-            with SetEdgeDlg(obj) as dlg:
+            with ImgEditDlg(obj) as dlg:
                 if dlg.ShowModal() == wx.ID_OK:
                     left_edge, right_edge = dlg.get_margin_pos()
                 else:

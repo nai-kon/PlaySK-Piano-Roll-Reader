@@ -4,7 +4,7 @@ from cis_image import CisImage, ScannerType
 import platform
 
 
-class SetEdgeDlg(wx.Dialog):
+class ImgEditDlg(wx.Dialog):
     def __init__(self, cis: CisImage):
         wx.Dialog.__init__(self, None, title="Adjust roll image")
         border_size = self.FromDIP(5)
@@ -41,16 +41,19 @@ class SetEdgeDlg(wx.Dialog):
         self.SetSizer(sizer3)
         self.Fit()
 
+        x, y = self.GetPosition()
+        self.SetPosition((x, 0))
+
     def get_margin_pos(self):
         return self.panel.get_pos()
 
 
 class SetEdgePane(wx.Panel):
     def __init__(self, parent, img):
-        size = parent.FromDIP(wx.Size(950, 950))
-        wx.Panel.__init__(self, parent, size=size)
+        self.frame_w = parent.FromDIP(950)
+        self.frame_h = wx.Display().GetClientArea().height  # display height
+        wx.Panel.__init__(self, parent, size=(self.frame_w, self.frame_h))
         self.SetDoubleBuffered(True)
-        self.frame_w = size[1]
 
         org_img_h, self.org_img_w = img.shape[:2]
         resized_h = org_img_h * self.frame_w // self.org_img_w
@@ -80,18 +83,18 @@ class SetEdgePane(wx.Panel):
         dc.SetBackgroundMode(wx.BRUSHSTYLE_SOLID)
         dc.SetTextBackground((255, 255, 255))
         dc.SetTextForeground((180, 0, 0))
-        dc.DrawText("← " + self.guide_base_text, self.left_margin_x, self.frame_w // 3)
+        dc.DrawText("← " + self.guide_base_text, self.left_margin_x, self.frame_h // 3)
         text_len = dc.GetFullMultiLineTextExtent(self.guide_base_text + " →", self.guide_font)
-        dc.DrawText(self.guide_base_text + " →", self.right_margin_x - text_len[0], self.frame_w // 2)
+        dc.DrawText(self.guide_base_text + " →", self.right_margin_x - text_len[0], self.frame_h // 2)
 
         # guide line
-        dc.SetPen(wx.Pen((180, 0, 0), self.FromDIP(3), wx.SOLID))
-        dc.DrawLine(self.left_margin_x, 0, self.left_margin_x, self.frame_w)
-        dc.DrawLine(self.right_margin_x, 0, self.right_margin_x, self.frame_w)
+        dc.SetPen(wx.Pen((180, 0, 0), self.FromDIP(2), wx.SOLID))
+        dc.DrawLine(self.left_margin_x, 0, self.left_margin_x, self.frame_h)
+        dc.DrawLine(self.right_margin_x, 0, self.right_margin_x, self.frame_h)
 
     def on_scroll(self, event):
         direction = -1 if event.GetWheelRotation() > 0 else 1
-        self.scroll_y1 = max(min(self.scroll_y1 + self.scroll_size * direction, self.img_h - self.frame_w), 0)
+        self.scroll_y1 = max(min(self.scroll_y1 + self.scroll_size * direction, self.img_h - self.frame_h), 0)
         self.Refresh()
 
     def on_mouse(self, event):
@@ -135,6 +138,6 @@ if __name__ == '__main__':
 
     obj = CisImage()
     if obj.load("../Dinner Music # 5 (1925) 65163A.CIS"):
-        with SetEdgeDlg(obj) as dlg:
+        with ImgEditDlg(obj) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 print(dlg.get_edge_pos())

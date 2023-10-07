@@ -87,7 +87,7 @@ def get_outimg_size(cnp.ndarray[cnp.uint16_t, ndim=1] data,
 @cython.wraparound(False)
 def decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data, 
                 cnp.ndarray[cnp.uint8_t, ndim=3] out_img, 
-                int vert_px, int hol_px, int twin_overlap, int twin_vsep,
+                int vert_px, int hol_px, int twin_overlap, int twin_vsep, int end_padding_y,
                 bint bicolor, bint twin, bint need_reclock, list reclock_map):
 
     # CIS file format
@@ -108,7 +108,7 @@ def decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
         int ex
 
     # decode lines
-    for cur_line in range(vert_px - 1, 0, -1):
+    for cur_line in range(vert_px + end_padding_y- 1, end_padding_y, -1):
         last_pos = 0
         cur_pix = ROLL
         while last_pos != hol_px:
@@ -129,7 +129,7 @@ def decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
         if twin:
             last_pos = 0
             cur_pix = ROLL
-            cur_line_twin = min(cur_line + twin_vsep, vert_px - 1)
+            cur_line_twin = cur_line + twin_vsep
             while last_pos != hol_px:
                 change_len = data[cur_idx]
                 if cur_pix == BG:
@@ -169,4 +169,4 @@ def decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
     if need_reclock:
         # reposition lines
         for sx, ex in reclock_map:
-            out_img[ex] = out_img[sx]
+            out_img[ex + end_padding_y] = out_img[sx + end_padding_y]
