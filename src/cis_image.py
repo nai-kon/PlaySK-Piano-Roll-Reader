@@ -3,7 +3,7 @@ import cv2
 import math
 import numpy as np
 import time
-from cis_decoder.cis_decoder import decode_cis
+from cis_decoder.cis_decoder import get_outimg_size, decode_cis
 from enum import Enum, IntEnum, auto
 
 
@@ -39,7 +39,6 @@ class CisImage:
         self.img = None
         self.lpt = 0  # lines per tick. only for re-clock
         self.need_reclock = False  # reposition line
-        self.reclock_map: list[int, int] = []  # reposition line mapping. [[src line idx, dest line idx]]
 
     def load(self, path):
         self._load_inner(path)
@@ -53,6 +52,8 @@ class CisImage:
         return False
 
     def get_outimg_size(self, data):
+        reclock_map: list[int, int] = []
+
         # width
         width = self.hol_px
         if self.twin_array:
@@ -84,7 +85,7 @@ class CisImage:
                         ei = max(buf_lines)
                         # make re-clock map
                         for i in np.linspace(ei, si, self.lpt):
-                            self.reclock_map.append([round(i), height])  # [src, dest]
+                            reclock_map.append([round(i), height])  # [src, dest]
                             height += 1
                         buf_lines = []
 
@@ -93,20 +94,20 @@ class CisImage:
                 cur_idx += 1
 
             # adjust re-clock map
-            for v in self.reclock_map:
+            for v in reclock_map:
                 v[1] = height - v[1]
 
-            if not self.reclock_map:
+            if not reclock_map:
                 raise ValueError("No encoder clock signal found")
 
             if height < self.vert_px:
                 raise ValueError("Not support this type")
 
         print(width, height, self.vert_px)
-        return width, height
+        return width, height, reclock_map
 
     # slow python version. only used for debugging
-    def decode_cis_py(self, data, out_img, vert_px, hol_px, bicolor, twin, twin_overlap, twin_vsep):
+    def decode_cis_py(self, data, out_img, vert_px, hol_px, bicolor, twin, twin_overlap, twin_vsep, reclock_map):
         class CurColor(IntEnum):
             BG = auto()
             ROLL = auto()
@@ -170,7 +171,7 @@ class CisImage:
 
         if self.need_reclock:
             # reposition lines
-            for src, dest in self.reclock_map:
+            for src, dest in reclock_map:
                 out_img[dest] = out_img[src]
 
     def _load_inner(self, path):
@@ -216,7 +217,9 @@ class CisImage:
         self.vert_res = round(self.lpt * division)
 
         # reserve output image
-        out_w, out_h = self.get_outimg_size(scan_data)
+        out_w, out_h, reclock_map = get_outimg_size(scan_data, self.vert_px, self.hol_px, self.overlap_twin, self.lpt, self.bicolor, self.twin_array, self.need_reclock)
+        # out_w, out_h, reclock_map = self.get_outimg_size(scan_data)
+
         start_padding_y = out_w // 2
         self.img = np.full((out_h + start_padding_y, out_w, 3), 120, np.uint8)
         self.img[self.vert_px:] = 255
@@ -224,8 +227,8 @@ class CisImage:
         # decode scan data
         twin_overlap = self.overlap_twin // 2
         twin_vsep = math.ceil(self.vert_sep_twin * self.vert_res / 1000)
-        # decode_cis(scan_data, self.out_img, self.vert_px, self.hol_px, self.bicolor, self.twin_array, twin_overlap, twin_vsep)
-        self.decode_cis_py(scan_data, self.img, self.vert_px, self.hol_px, self.bicolor, self.twin_array, twin_overlap, twin_vsep)
+        decode_cis(scan_data, self.img, self.vert_px, self.hol_px, twin_overlap, twin_vsep, self.bicolor, self.twin_array, self.need_reclock, reclock_map)
+        # self.decode_cis_py(scan_data, self.img, self.vert_px, self.hol_px, self.bicolor, self.twin_array, twin_overlap, twin_vsep, reclock_map)
 
         if len(self.img) == 0:
             raise BufferError
@@ -241,6 +244,6 @@ if __name__ == "__main__":
     app = wx.App()
     s = time.time()
     obj = CisImage()
-    if obj.load("../A Little Bit of Heaven 52923a shrink.CIS"):
+    if obj.load("../72013A.CIS"):
         print(time.time() - s)
         cv2.imwrite("decoded_cis.png", obj.img)
