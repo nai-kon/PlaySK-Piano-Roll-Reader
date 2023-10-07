@@ -1,5 +1,8 @@
 import os
 import platform
+import sys
+import socket
+import threading
 
 import wx
 
@@ -35,15 +38,8 @@ class FileDrop(wx.FileDropTarget):
         self.parent = parent
 
     def OnDropFiles(self, x, y, filenames):
-        wx.CallAfter(self._load_inner, path=filenames[0])
+        wx.CallAfter(self.parent.load_file, path=filenames[0])
         return True
-
-    def _load_inner(self, path):
-        ext = os.path.splitext(path)[-1]
-        if ext.lower() in (".cis", ".jpg", ".png", ".tif", ".bmp"):
-            self.parent.load_file(path)
-        else:
-            wx.MessageBox("Supported image formats are .cis .jpg, .png, .tif, .bmp", "Unsupported file")
 
 
 class MainFrame(wx.Frame):
@@ -109,6 +105,10 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.on_close)
         self.Show()
 
+        # app was opened with file
+        if len(sys.argv) > 1:
+            wx.CallAfter(self.load_file, path=sys.argv[1])
+
     def create_status_bar(self):
         self.sbar = self.CreateStatusBar(5)  # midi-port, tracker-bar
         _, h = self.sbar.Size[:2]
@@ -171,6 +171,11 @@ class MainFrame(wx.Frame):
             obj.SetLabel("MIDI On")
 
     def load_file(self, path, force_manual_adjust=False):
+        ext = os.path.splitext(path)[-1]
+        if ext.lower() not in (".cis", ".jpg", ".png", ".tif", ".bmp"):
+            wx.MessageBox("Supported image formats are .cis .jpg, .png, .tif, .bmp", "Unsupported file")
+            return
+
         img, tempo = load_scan(path, self.obj.player.default_tempo, force_manual_adjust)
         if img is None:
             return
@@ -211,7 +216,50 @@ class MainFrame(wx.Frame):
             self.load_file(self.img_path, True)
 
 
+class SingleInstHelper():
+    """
+    Check app is single instance.
+    If already exists, send command line arg path(sys.argv[1]) to exist app then close myself.
+    If not exists, run socket sever to receive file path from later launched app.
+    """
+    def __init__(self, init_path=None) -> None:
+        self.init_path = init_path
+        self.app_frame: wx.Frame = None
+        self.message_ident = "PlaySKident:"
+        self.port = 58583
+        try:
+            # check single instance or notz
+            client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client_socket.connect(("localhost", self.port))
+            if init_path is not None:
+                # send file path to exists app
+                client_socket.sendall(f"{self.message_ident}{init_path}".encode())
+            client_socket.close()
+            print("app is already exists. close")
+            sys.exit(0)  # close myself
+        except socket.error:
+            # app is not exists, run socket server as a daemon
+            th = threading.Thread(target=self.run_socket_server, daemon=True)
+            th.start()
+
+    def run_socket_server(self):
+        # receive file path from later launched instance
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.bind(("localhost", self.port))
+        server_socket.listen(1)
+        while True:
+            conn, addr = server_socket.accept()
+            msg = conn.recv(1024).decode()
+            print("receive", msg)
+            if msg.startswith(self.message_ident) and self.app_frame is not None:
+                path = msg.replace(self.message_ident, "", 1)
+                wx.CallAfter(self.app_frame.load_file, path=path)
+
+
 if __name__ == "__main__":
+    init_path = sys.argv[1] if len(sys.argv) > 1 else None
+    single_inst = SingleInstHelper(init_path)
+
     app = wx.App()
     if not MidiWrap().port_list:
         wx.MessageBox("No any midi out port found. Exit software.", "Midi port error")
@@ -223,6 +271,9 @@ if __name__ == "__main__":
         from ctypes import windll
         windll.winmm.timeBeginPeriod(1)
 
+        # drop file to .exe changes current dir and causes errors, so fix current dir
+        os.chdir(os.path.dirname(sys.argv[0]))
+
     # high DPI awareness
     try:
         import ctypes
@@ -230,7 +281,8 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
 
-    MainFrame()
+    frame = MainFrame()
+    single_inst.app_frame = frame
     app.MainLoop()
     print("main loop end")
 
