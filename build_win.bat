@@ -9,11 +9,12 @@ popd
 
 rem build exe
 pyinstaller build_win.spec -y
-call deactivate
 
 rem generate 3rd party license txt
 pip-licenses --format=plain-vertical --with-license-file --no-license-path --output-file="3rd-party-license.txt"
 
+call deactivate
+
 rem copy files
-xcopy /s /i /y 3rd-party-license.txt .\dist\
-xcopy /s /i /y .\src\config\ .\dist\config\
+xcopy /i /y "3rd-party-license.txt" ".\dist\PlaySK Piano Roll Reader\"
+xcopy /s /i /y ".\src\config\" ".\dist\PlaySK Piano Roll Reader\config\"
