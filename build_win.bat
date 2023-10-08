@@ -8,8 +8,12 @@ python setup.py build_ext --inplace
 popd
 
 rem build exe
-pyinstaller build_win.spec
+pyinstaller build_win.spec -y
 call deactivate
 
-rem copy config files
+rem generate 3rd party license txt
+pip-licenses --format=plain-vertical --with-license-file --no-license-path --output-file="3rd-party-license.txt"
+
+rem copy files
+xcopy /s /i /y 3rd-party-license.txt .\dist\
 xcopy /s /i /y .\src\config\ .\dist\config\

@@ -283,6 +283,40 @@ docs = ["furo", "olefile", "sphinx (>=2.4)", "sphinx-copybutton", "sphinx-inline
 tests = ["check-manifest", "coverage", "defusedxml", "markdown2", "olefile", "packaging", "pyroma", "pytest", "pytest-cov", "pytest-timeout"]
 
 [[package]]
+name = "pip-licenses"
+version = "4.3.3"
+description = "Dump the software license list of Python packages installed with pip."
+optional = false
+python-versions = "~=3.8"
+files = [
+    {file = "pip-licenses-4.3.3.tar.gz", hash = "sha256:d14447094135eb5e43e4d9e1e3bcdb17a05751a9199df2d07f043a542c241c7a"},
+    {file = "pip_licenses-4.3.3-py3-none-any.whl", hash = "sha256:1b697cace3149d7d380307bb1f1e0505f0db98f25fada64d32b7e6240f37f72c"},
+]
+
+[package.dependencies]
+prettytable = ">=2.3.0"
+
+[package.extras]
+test = ["docutils", "mypy", "pytest-cov", "pytest-pycodestyle", "pytest-runner"]
+
+[[package]]
+name = "prettytable"
+version = "3.9.0"
+description = "A simple Python library for easily displaying tabular data in a visually appealing ASCII table format"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "prettytable-3.9.0-py3-none-any.whl", hash = "sha256:a71292ab7769a5de274b146b276ce938786f56c31cf7cea88b6f3775d82fe8c8"},
+    {file = "prettytable-3.9.0.tar.gz", hash = "sha256:f4ed94803c23073a90620b201965e5dc0bccf1760b7a7eaf3158cab8aaffdf34"},
+]
+
+[package.dependencies]
+wcwidth = "*"
+
+[package.extras]
+tests = ["pytest", "pytest-cov", "pytest-lazy-fixture"]
+
+[[package]]
 name = "pycodestyle"
 version = "2.11.0"
 description = "Python style guide checker"
@@ -406,6 +440,17 @@ files = [
 ]
 
 [[package]]
+name = "wcwidth"
+version = "0.2.8"
+description = "Measures the displayed width of unicode strings in a terminal"
+optional = false
+python-versions = "*"
+files = [
+    {file = "wcwidth-0.2.8-py2.py3-none-any.whl", hash = "sha256:77f719e01648ed600dfa5402c347481c0992263b81a027344f3e1ba25493a704"},
+    {file = "wcwidth-0.2.8.tar.gz", hash = "sha256:8705c569999ffbb4f6a87c6d1b80f324bd6db952f5eb0b95bc07517f4c1813d4"},
+]
+
+[[package]]
 name = "wxpython"
 version = "4.2.1"
 description = "Cross platform GUI toolkit for Python, \"Phoenix\" version"
@@ -438,4 +483,4 @@ six = "*"
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.11"
-content-hash = "38d125b18c25faa4bbab7beda8564ec2a30711e9bc71ae230f22260c309eda48"
+content-hash = "40b7997d576edf218eb1f31789301e8fec8fe9867ce34551cf317a395f53d953"
