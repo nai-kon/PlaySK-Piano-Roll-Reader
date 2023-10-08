@@ -1,11 +1,9 @@
 import faulthandler
-import os
 import sys
 
 import wx
 
 sys.path.append("../src/")
-from input_src import InputScanImg
 from main import MainFrame
 
 faulthandler.enable()
@@ -18,20 +16,10 @@ class Aging(MainFrame):
 
     def aging(self, path):
         print(path)
-
-        self.obj.player.emulate_off()
-        self.spool.release_src()
-        tmp = self.spool
-        self.spool = InputScanImg(
-            self, path, self.obj.player.spool_diameter, self.obj.player.roll_width, callback=self.obj)
-        self.spool.start_worker()
-        self.Title = os.path.basename(path)
-        self.sizer3.Replace(tmp, self.spool)
-        tmp.Destroy()
+        self.load_file(path)
         self.obj.player.emulate_on()
         self.spool.start_play = True
         # close app every 10 seconds and re-launch
-        print("call close")
         wx.CallLater(1000 * 10, self.on_close, event=None)
 
 
@@ -47,13 +35,13 @@ if __name__ == "__main__":
         windll.winmm.timeBeginPeriod(1)
 
     # high DPI awareness
-    # try:
-    #     import ctypes
-    #     ctypes.windll.shcore.SetProcessDpiAwareness(True)
-    # except Exception as e:
-    #     print(e)
+    try:
+        import ctypes
+        ctypes.windll.shcore.SetProcessDpiAwareness(True)
+    except Exception as e:
+        print(e)
 
-    paths = list(glob.glob("roll_images/*Ampico*"))
+    paths = list(glob.glob("../sample_scans/*Ampico*"))
 
     def launch_app():
         path = random.choice(paths)
