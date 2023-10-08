@@ -1,7 +1,7 @@
 import os
 import platform
-import sys
 import socket
+import sys
 import threading
 
 import wx
@@ -220,40 +220,40 @@ class SingleInstHelper():
     """
     Check app is single instance.
     If already exists, send command line arg path(sys.argv[1]) to exist app then close myself.
-    If not exists, run socket sever to receive file path from later launched app.
+    If not exists, run socket sever to receive file path from later launch app.
     """
     def __init__(self, init_path=None) -> None:
-        self.init_path = init_path
         self.app_frame: wx.Frame = None
-        self.message_ident = "PlaySKident:"
+        self.message_notify = "PlaySK_msg_notify:"
+        self.message_path = "PlaySK_msg_path:"
         self.port = 58583
         try:
-            # check single instance or notz
-            client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            client_socket.connect(("localhost", self.port))
-            if init_path is not None:
-                # send file path to exists app
-                client_socket.sendall(f"{self.message_ident}{init_path}".encode())
-            client_socket.close()
+            with socket.create_connection(("localhost", self.port), timeout=0.1) as sock:
+                if init_path is None:
+                    sock.sendall(self.message_notify.encode())
+                else:
+                    sock.sendall(f"{self.message_path}{init_path}".encode())
             print("app is already exists. close")
             sys.exit(0)  # close myself
         except socket.error:
-            # app is not exists, run socket server as a daemon
+            # app is not exists. run socket server as a daemon
             th = threading.Thread(target=self.run_socket_server, daemon=True)
             th.start()
 
     def run_socket_server(self):
         # receive file path from later launched instance
-        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_socket.bind(("localhost", self.port))
-        server_socket.listen(1)
-        while True:
-            conn, addr = server_socket.accept()
-            msg = conn.recv(1024).decode()
-            print("receive", msg)
-            if msg.startswith(self.message_ident) and self.app_frame is not None:
-                path = msg.replace(self.message_ident, "", 1)
-                wx.CallAfter(self.app_frame.load_file, path=path)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.bind(("localhost", self.port))
+            sock.listen(1)
+            while True:
+                conn, addr = sock.accept()
+                msg = conn.recv(1024).decode()
+                if self.app_frame is not None:
+                    if msg.startswith(self.message_path):
+                        path = msg.replace(self.message_path, "", 1)
+                        wx.CallAfter(self.app_frame.load_file, path=path)
+                    elif msg.startswith(self.message_notify):
+                        wx.CallAfter(self.app_frame.Raise)
 
 
 if __name__ == "__main__":

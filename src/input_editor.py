@@ -1,7 +1,9 @@
-import wx
-import cv2
-from cis_image import CisImage, ScannerType
 import platform
+
+import cv2
+import wx
+
+from cis_image import CisImage, ScannerType
 
 
 class ImgEditDlg(wx.Dialog):

@@ -1,10 +1,12 @@
-import wx
-import cv2
 import math
-import numpy as np
 import time
-from cis_decoder.cis_decoder import get_outimg_size, decode_cis
 from enum import Enum, IntEnum, auto
+
+import cv2
+import numpy as np
+import wx
+
+from cis_decoder.cis_decoder import decode_cis, get_outimg_size
 
 
 class ScannerType(Enum):
