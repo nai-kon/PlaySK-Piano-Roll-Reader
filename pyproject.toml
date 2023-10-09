@@ -16,7 +16,7 @@ mido = "^1.3.0"
 cython = "^3.0.2"
 
 [tool.poetry.group.dev.dependencies]
-pyinstaller = "^5.13.2"
+pyinstaller = "^6.0.0"
 autopep8 = "^2.0.4"
 pip-licenses = "^4.3.3"
 
