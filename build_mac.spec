@@ -46,7 +46,7 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='main',
+    name='_internal',
 )
 app = BUNDLE(
     coll,

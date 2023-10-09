@@ -144,7 +144,7 @@ class InputVideo(wx.Panel):
         self.worker_thread_quit = True
         if self.thread_worker.is_alive():
             self.thread_worker.join(timeout=3)
-        wx.GetApp().Yield(onlyIfNeeded=True)
+        # wx.GetApp().Yield(onlyIfNeeded=True)
 
     def on_paint(self, event):
         # no need for BufferedPaintDC since SetDoubleBuffered(True)

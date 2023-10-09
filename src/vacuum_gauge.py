@@ -63,7 +63,7 @@ class OscilloGraph(wx.Panel):
     def on_destroy(self, event):
         self.worker_thread_quit = True
         self.thread_worker.join(timeout=3)
-        wx.GetApp().Yield(onlyIfNeeded=True)
+        # wx.GetApp().Yield(onlyIfNeeded=True)
 
     def init_grid(self):
         dc = wx.BufferedDC(wx.ClientDC(self), self.grid)
