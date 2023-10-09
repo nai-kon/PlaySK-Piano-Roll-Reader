@@ -216,23 +216,24 @@ class MainFrame(wx.Frame):
             self.load_file(self.img_path, True)
 
 
-class SingleInstHelper():
+class SingleInstWin():
     """
-    Check app is single instance.
+    Check app is single instance on Windows.
     If already exists, send command line arg path(sys.argv[1]) to exist app then close myself.
     If not exists, run socket sever to receive file path from later launch app.
     """
-    def __init__(self, init_path=None) -> None:
+
+    def __init__(self) -> None:
         self.app_frame: wx.Frame = None
         self.message_notify = "PlaySK_msg_notify:"
         self.message_path = "PlaySK_msg_path:"
         self.port = 58583
         try:
             with socket.create_connection(("localhost", self.port), timeout=0.1) as sock:
-                if init_path is None:
-                    sock.sendall(self.message_notify.encode())
+                if len(sys.argv) > 1:
+                    sock.sendall(f"{self.message_path}{sys.argv[1]}".encode())
                 else:
-                    sock.sendall(f"{self.message_path}{init_path}".encode())
+                    sock.sendall(self.message_notify.encode())
             print("app is already exists. close")
             sys.exit(0)  # close myself
         except socket.error:
@@ -256,33 +257,40 @@ class SingleInstHelper():
                         wx.CallAfter(self.app_frame.Raise)
 
 
-if __name__ == "__main__":
-    init_path = sys.argv[1] if len(sys.argv) > 1 else None
-    single_inst = SingleInstHelper(init_path)
+class AppMain(wx.App):
+    """
+    For open file with associated program on Mac.
+    """
+    def __init__(self):
+        super().__init__()
 
-    app = wx.App()
+    def MacOpenFile(self, path):
+        # open on default app event
+        if self.GetTopWindow() is None:
+            # app frame is not created yet, so add to sys.argv and load it on MainFrame.init()
+            sys.argv.append(path)
+        else:
+            wx.CallAfter(self.GetTopWindow().load_file, path=path)
+
+
+if __name__ == "__main__":
+    pf = platform.system()
+    if pf == "Windows":
+        from ctypes import windll
+        single_inst = SingleInstWin()
+        windll.winmm.timeBeginPeriod(1)
+        windll.shcore.SetProcessDpiAwareness(True)
+        # drop file to .exe changes current dir and causes errors, so fix current dir
+        os.chdir(os.path.dirname(sys.argv[0]))
+
+    app = AppMain()
     if not MidiWrap().port_list:
         wx.MessageBox("No any midi out port found. Exit software.", "Midi port error")
         exit(-1)
 
-    # Set windows timer precision to 1ms
-    pf = platform.system()
-    if pf == "Windows":
-        from ctypes import windll
-        windll.winmm.timeBeginPeriod(1)
-
-        # drop file to .exe changes current dir and causes errors, so fix current dir
-        os.chdir(os.path.dirname(sys.argv[0]))
-
-    # high DPI awareness
-    try:
-        import ctypes
-        ctypes.windll.shcore.SetProcessDpiAwareness(True)
-    except Exception as e:
-        print(e)
-
     frame = MainFrame()
-    single_inst.app_frame = frame
+    if pf == "Windows":
+        single_inst.app_frame = frame
     app.MainLoop()
     print("main loop end")
 
