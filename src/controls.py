@@ -35,7 +35,7 @@ class WelcomeMsg(wx.Panel):
         # compatible with InputVideo classes
         pass
 
-    def release_src(self):
+    def on_destroy(self):
         # compatible with InputVideo classes
         pass
 

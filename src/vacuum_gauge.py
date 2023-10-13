@@ -5,7 +5,7 @@ import time
 import numpy as np
 import wx
 
-from input_src import FPScounter
+from input_src import FPScounter, deco_start_end
 
 
 class VacuumGauge(wx.Panel):
@@ -27,6 +27,9 @@ class VacuumGauge(wx.Panel):
     @vacuum.setter
     def vacuum(self, val):
         self.meter.val = val
+
+    def destroy(self):
+        self.meter.on_destroy(None)
 
 
 class OscilloGraph(wx.Panel):
@@ -55,15 +58,15 @@ class OscilloGraph(wx.Panel):
 
         self.fps = 65
 
-        self.worker_thread_quit = False
+        self.thread_enable = True
         self.thread_lock = threading.Lock()
         self.thread_worker = threading.Thread(target=self.load_thread)
         self.thread_worker.start()
 
     def on_destroy(self, event):
-        self.worker_thread_quit = True
-        self.thread_worker.join(timeout=3)
-        # wx.GetApp().Yield(onlyIfNeeded=True)
+        self.thread_enable = False
+        if self.thread_worker.is_alive():
+            self.thread_worker.join(timeout=3)
 
     def init_grid(self):
         dc = wx.BufferedDC(wx.ClientDC(self), self.grid)
@@ -84,10 +87,8 @@ class OscilloGraph(wx.Panel):
         dc.DrawTextList(["40", "30", "20", "10"], [(2, int(v * self.plot_scale - txt_h // 2)) for v in [10, 20, 30, 40]])
 
     def load_thread(self):
-        while not self.worker_thread_quit:
-
+        while self.thread_enable:
             t1 = time.perf_counter()
-
             self.ys[0:-1] = self.ys[1:]
             self.ys[-1] = np.array(self.h - self.val * self.plot_scale - 1, dtype=np.intc)
 
@@ -101,8 +102,7 @@ class OscilloGraph(wx.Panel):
             if sleep_time > 0:
                 time.sleep(sleep_time)
             self.count()
-
-        print("end thread")
+        print("end OscilloGraph.load_thread")
 
     def on_paint(self, event):
         dc = wx.PaintDC(self)
@@ -118,27 +118,27 @@ if __name__ == "__main__":
     if pf == "Windows":
         from ctypes import windll
         windll.winmm.timeBeginPeriod(1)
-    import ctypes
-    try:
-        ctypes.windll.shcore.SetProcessDpiAwareness(True)
-    except Exception:
-        pass
+        windll.shcore.SetProcessDpiAwareness(True)
 
     app = wx.App()
     frame = wx.Frame(None, wx.ID_ANY, "vacuum meter")
     panel1 = VacuumGauge(frame, (0, 0), "Treble Vacuum")
+    panel2 = VacuumGauge(frame, (0, 0), "Treble Vacuum")
 
     def slider_value_change(event):
         obj = event.GetEventObject()
         panel1.vacuum = obj.GetValue()
+        panel2.vacuum = obj.GetValue() + 10
 
     slider = wx.Slider(frame, value=0, minValue=0, maxValue=40, size=frame.FromDIP(wx.Size(200, 100)), style=wx.SL_LABELS)
     slider.Bind(wx.EVT_SLIDER, slider_value_change)
 
     sizer = wx.BoxSizer(wx.VERTICAL)
     sizer.Add(panel1)
+    sizer.Add(panel2)
     sizer.Add(slider)
     frame.SetSizer(sizer)
+    frame.Fit()
 
     frame.Show()
     app.MainLoop()

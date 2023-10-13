@@ -9,42 +9,38 @@ from cis_image import CisImage, ScannerType
 class ImgEditDlg(wx.Dialog):
     def __init__(self, cis: CisImage):
         wx.Dialog.__init__(self, None, title="Adjust roll image")
-        border_size = self.FromDIP(5)
+        self.cis = cis
         self.panel = SetEdgePane(self, cis.img)
-        sizer1 = wx.BoxSizer(wx.VERTICAL)
-        sizer1.Add(self.panel)
-        sizer2 = wx.BoxSizer(wx.VERTICAL)
-        sizer2.Add(wx.StaticText(self, label=f"- Tempo {cis.tempo}"))
-        sizer2.Add(wx.StaticText(self, label=f"- {cis.scanner_type.value}"))
-        if cis.doubler:
-            sizer2.Add(wx.StaticText(self, label="- Clock Doubler"))
-        if cis.twin_array:
-            sizer2.Add(wx.StaticText(self, label="- Twin Array scan"))
-        if cis.bicolor:
-            sizer2.Add(wx.StaticText(self, label="- Bi-Color scan"))
-        if cis.mirror:
-            sizer2.Add(wx.StaticText(self, label="- Miror Image"))
-        if cis.reverse:
-            sizer2.Add(wx.StaticText(self, label="- Reverse Scan"))
-        sizer2.Add(wx.StaticText(self, label=f"- Horizontal {cis.hol_dpi} DPI"))
-        sizer2.Add(wx.StaticText(self, label=f"- Horizontal {cis.hol_px} px"))
-        if cis.scanner_type in [ScannerType.WHEELRUN, ScannerType.SHAFTRUN]:
-            sizer2.Add(wx.StaticText(self, label=f"- Vertical {cis.vert_res} TPI"))
-        else:
-            sizer2.Add(wx.StaticText(self, label=f"- Vertical {cis.vert_res} LPI"))
-        ok_btn = wx.Button(self, wx.ID_OK, size=self.FromDIP(wx.Size((90, 50))), label="OK")
-        cancel_btn = wx.Button(self, wx.ID_CANCEL, size=self.FromDIP(wx.Size((90, 50))), label="Cancel")
-        sizer2.Add(ok_btn)
-        sizer2.Add(cancel_btn)
 
-        sizer3 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer3.Add(sizer1, border=border_size)
-        sizer3.Add(sizer2, border=border_size)
-        self.SetSizer(sizer3)
+        border_size = self.FromDIP(5)
+        sizer1 = wx.BoxSizer(wx.VERTICAL)
+        sizer1.Add(wx.StaticText(self, label=self.get_show_text()), 1, wx.EXPAND | wx.ALL, border=border_size)
+        sizer1.Add(wx.Button(self, wx.ID_OK, label="OK"), 1, wx.EXPAND | wx.ALL, border=border_size) 
+        sizer1.Add(wx.Button(self, wx.ID_CANCEL, label="Cancel"), 1, wx.EXPAND | wx.ALL, border=border_size)
+
+        sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer2.Add(self.panel)
+        sizer2.Add(sizer1)
+        self.SetSizer(sizer2)
         self.Fit()
 
         x, y = self.GetPosition()
         self.SetPosition((x, 0))
+
+    def get_show_text(self):
+        out = [f"type: {self.cis.scanner_type.value}"]
+        if self.cis.twin_array:
+            out.append("Twin Array scan")
+        if self.cis.bicolor:
+            out.append("Bi-Color scan")
+        out.append(f"Tempo: {self.cis.tempo}")
+        out.append(f"Horizontal: {self.cis.hol_dpi} Dots/inch")
+        if self.cis.scanner_type in [ScannerType.WHEELRUN, ScannerType.SHAFTRUN]:
+            out.append(f"Vertical: {self.cis.vert_res} Ticks/inch (Re-clocked)")
+        else:
+            out.append(f"Vertical: {self.cis.vert_res} Lines/inch")
+
+        return "\n".join(out)
 
     def get_margin_pos(self):
         return self.panel.get_pos()
@@ -142,4 +138,4 @@ if __name__ == '__main__':
     if obj.load("../Dinner Music # 5 (1925) 65163A.CIS"):
         with ImgEditDlg(obj) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
-                print(dlg.get_edge_pos())
+                print(dlg.get_margin_pos())

@@ -14,33 +14,6 @@ os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2, 42).__str__()
 import cv2
 
 
-def find_edge_margin(img):
-    samples = 100
-    margin_th = 220
-    hist_th = samples * 0.8
-    h, w = img.shape[:2]
-    sample_ys = np.linspace(w, img.shape[0] - w, 100, dtype=int)  # avoid padding of start/end
-    # center of left margin
-    sx = 5
-    ex = img.shape[1] // 4
-    left_sample = img[sample_ys, sx: ex, 0]  # enough with first ch
-    left_hist = (left_sample > margin_th).sum(axis=0) > hist_th
-    left_margin_idx = left_hist.nonzero()[0]
-    left_margin_center = None
-    if left_margin_idx.size > 0:
-        left_margin_center = int(np.median(left_margin_idx))
-    # center of right margin
-    sx = 3 * img.shape[1] // 4
-    ex = img.shape[1] - 5
-    right_sample = img[sample_ys, sx: ex, 0]  # enough with first ch
-    right_hist = (right_sample > margin_th).sum(axis=0) > hist_th
-    right_margin_idx = right_hist.nonzero()[0]
-    right_margin_center = None
-    if right_margin_idx.size > 0:
-        right_margin_center = int(np.median(right_margin_idx) + sx)
-
-    return left_margin_center, right_margin_center
-
 
 def load_scan(path, default_tempo, force_manual_adjust=False):
     def _img_load(path, default_tempo):
@@ -63,6 +36,33 @@ def load_scan(path, default_tempo, force_manual_adjust=False):
         tempo = int(val.group(1)) if val is not None else default_tempo
         return img, tempo
 
+    def _find_edge_margin(img):
+        samples = 100
+        margin_th = 220
+        hist_th = samples * 0.8
+        h, w = img.shape[:2]
+        sample_ys = np.linspace(w, img.shape[0] - w, 100, dtype=int)  # avoid padding of start/end
+        # center of left margin
+        sx = 5
+        ex = img.shape[1] // 4
+        left_sample = img[sample_ys, sx: ex, 0]  # enough with first ch
+        left_hist = (left_sample > margin_th).sum(axis=0) > hist_th
+        left_margin_idx = left_hist.nonzero()[0]
+        left_margin_center = None
+        if left_margin_idx.size > 0:
+            left_margin_center = int(np.median(left_margin_idx))
+        # center of right margin
+        sx = 3 * img.shape[1] // 4
+        ex = img.shape[1] - 5
+        right_sample = img[sample_ys, sx: ex, 0]  # enough with first ch
+        right_hist = (right_sample > margin_th).sum(axis=0) > hist_th
+        right_margin_idx = right_hist.nonzero()[0]
+        right_margin_center = None
+        if right_margin_idx.size > 0:
+            right_margin_center = int(np.median(right_margin_idx) + sx)
+
+        return left_margin_center, right_margin_center
+
     def _cis_load(path, default_tempo, force_manual_adjust):
         # load
         obj = CisImage()
@@ -70,7 +70,7 @@ def load_scan(path, default_tempo, force_manual_adjust=False):
             if not obj.load(path):
                 return None, default_tempo
         # find center of roll margin or manually set if not found
-        left_edge, right_edge = find_edge_margin(obj.img)
+        left_edge, right_edge = _find_edge_margin(obj.img)
         if left_edge is None or right_edge is None or force_manual_adjust:
             with ImgEditDlg(obj) as dlg:
                 if dlg.ShowModal() == wx.ID_OK:
@@ -107,6 +107,16 @@ class FPScounter():
             self.start = cur
 
 
+def deco_start_end(func):
+    def wrapper(*args, **kwargs):
+        print("start", func.__name__)
+        ret = func(*args, **kwargs)
+        print("end", func.__name__)
+        return ret
+
+    return wrapper
+
+
 class InputVideo(wx.Panel):
     def __init__(self, parent, path, disp_size=(800, 600), callback=None):
         wx.Panel.__init__(self, parent, size=parent.FromDIP(wx.Size(disp_size)))
@@ -120,7 +130,7 @@ class InputVideo(wx.Panel):
         self.scale = self.GetDPIScaleFactor() if platform.system() == "Windows" else 1
 
         self.start_play = False
-        self.worker_thread_quit = False
+        self.thread_enable = True
         self.thread_worker = threading.Thread(target=self.load_thread)
         self.worker_fps = 60
         self.cnt_worker_fps = FPScounter("worker fps")
@@ -135,19 +145,13 @@ class InputVideo(wx.Panel):
         self._load_next_frame()
         self.thread_worker.start()
 
-    def release_src(self):
-        self.worker_thread_quit = True
+    def on_destroy(self, event=None):
+        self.thread_enable = False
         if self.thread_worker.is_alive():
             self.thread_worker.join(timeout=3)
-
-    def on_destroy(self, event):
-        self.worker_thread_quit = True
-        if self.thread_worker.is_alive():
-            self.thread_worker.join(timeout=3)
-        # wx.GetApp().Yield(onlyIfNeeded=True)
+        wx.GetApp().Yield(onlyIfNeeded=True)
 
     def on_paint(self, event):
-        # no need for BufferedPaintDC since SetDoubleBuffered(True)
         dc = wx.PaintDC(self)
         dc.SetUserScale(self.scale, self.scale)
 
@@ -199,7 +203,7 @@ class InputVideo(wx.Panel):
 
     def load_thread(self):
         t_disp_slowcpu = 0
-        while not self.worker_thread_quit:
+        while self.thread_enable:
             t1 = time.perf_counter()
 
             if self.start_play:
@@ -229,7 +233,7 @@ class InputVideo(wx.Panel):
                 elapsed_time = time.perf_counter() - t1
 
             self.cnt_worker_fps()
-        print("end thread")
+        print(f"end {self.__class__.__name__}.load_thread")
 
 
 class InputWebcam(InputVideo):
@@ -390,8 +394,8 @@ if __name__ == "__main__":
 
     midobj = MidiWrap()
     midobj.open_port(None)
-
-    panel1 = InputScanImg(frame, path="../sample_scans/Ampico B 68361 Dancing Tambourine tempo95.png")
+    img, tempo = load_scan("../sample_scans/Ampico B 68361 Dancing Tambourine tempo95.png", 80)
+    panel1 = InputScanImg(frame, img)
     panel1.start_worker()
     # print(InputWebcam.list_camera())
     # panel1 = InputWebcam(frame, webcam_no=0)

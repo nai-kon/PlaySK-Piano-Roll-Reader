@@ -71,7 +71,7 @@ class MainFrame(wx.Frame):
         self.adjust_btn.Bind(wx.EVT_BUTTON, self.adjust_image)
         self.adjust_btn.Disable()
 
-        self.obj = CallBack(None, self.tracking, self.bass_vacuum_lv, self.treble_vacuum_lv)
+        self.callback = CallBack(None, self.tracking, self.bass_vacuum_lv, self.treble_vacuum_lv)
         self.midiobj = MidiWrap()
         self.conf = ConfigMng()
         self.player_mng = PlayerMng()
@@ -140,8 +140,10 @@ class MainFrame(wx.Frame):
     def on_close(self, event):
         print("on_close called")
         self.conf.save_config()
-        self.spool.release_src()
         self.midiobj.all_off()
+        self.spool.on_destroy()
+        self.bass_vacuum_lv.destroy()
+        self.treble_vacuum_lv.destroy()
         self.Destroy()
 
     def change_midi_port(self, event=None):
@@ -159,15 +161,15 @@ class MainFrame(wx.Frame):
             self.midi_btn.SetLabel("MIDI On")
             player_tmp.tracker_offset = self.tracking.offset
             player_tmp.auto_tracking = self.tracking.auto_tracking
-            self.obj.player = player_tmp
+            self.callback.player = player_tmp
 
     def midi_onoff(self, event):
         obj = event.GetEventObject()
         if obj.GetLabel() == "MIDI On":
-            self.obj.player.emulate_on()
+            self.callback.player.emulate_on()
             obj.SetLabel("MIDI Off")
         else:
-            self.obj.player.emulate_off()
+            self.callback.player.emulate_off()
             obj.SetLabel("MIDI On")
 
     def load_file(self, path, force_manual_adjust=False):
@@ -176,7 +178,7 @@ class MainFrame(wx.Frame):
             wx.MessageBox("Supported image formats are .cis .jpg, .png, .tif, .bmp", "Unsupported file")
             return
 
-        img, tempo = load_scan(path, self.obj.player.default_tempo, force_manual_adjust)
+        img, tempo = load_scan(path, self.callback.player.default_tempo, force_manual_adjust)
         if img is None:
             return
         self.img_path = path
@@ -184,10 +186,10 @@ class MainFrame(wx.Frame):
             self.adjust_btn.Enable()
         else:
             self.adjust_btn.Disable()
-        self.obj.player.emulate_off()
-        self.spool.release_src()
+        self.callback.player.emulate_off()
+        self.spool.on_destroy()
         tmp = self.spool
-        self.spool = InputScanImg(self, img, self.obj.player.spool_diameter, self.obj.player.roll_width, callback=self.obj)
+        self.spool = InputScanImg(self, img, self.callback.player.spool_diameter, self.callback.player.roll_width, callback=self.callback)
         self.spool.start_worker()
         self.Title = os.path.basename(path)
         self.sizer3.Replace(tmp, self.spool)
@@ -253,6 +255,7 @@ class SingleInstWin():
                     if msg.startswith(self.message_path):
                         path = msg.replace(self.message_path, "", 1)
                         wx.CallAfter(self.app_frame.load_file, path=path)
+                        wx.CallAfter(self.app_frame.Raise)
                     elif msg.startswith(self.message_notify):
                         wx.CallAfter(self.app_frame.Raise)
 
