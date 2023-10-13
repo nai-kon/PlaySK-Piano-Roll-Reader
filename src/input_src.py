@@ -14,7 +14,6 @@ os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2, 42).__str__()
 import cv2
 
 
-
 def load_scan(path, default_tempo, force_manual_adjust=False):
     def _img_load(path, default_tempo):
         with wx.BusyCursor():
@@ -137,7 +136,7 @@ class InputVideo(wx.Panel):
         self.thread_lock = threading.Lock()
 
         self.Bind(wx.EVT_PAINT, self.on_paint)
-        self.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
+        # self.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
         self.Bind(wx.EVT_LEFT_DOWN, self.on_start)
 
     def start_worker(self):
