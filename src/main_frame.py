@@ -189,7 +189,7 @@ class MainFrame(wx.Frame):
         tmp = self.spool
         self.spool = InputScanImg(self, img, self.callback.player.spool_diameter, self.callback.player.roll_width, callback=self.callback)
         self.spool.start_worker()
-        self.Title = os.path.basename(path)
+        self.Title = APP_TITLE + " - " + os.path.basename(path)
         self.sizer3.Replace(tmp, self.spool)
         tmp.Destroy()
 

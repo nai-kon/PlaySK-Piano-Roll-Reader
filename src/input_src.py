@@ -168,8 +168,8 @@ class InputVideo(wx.Panel):
         dc = wx.GCDC(dc)  # for anti-aliasing
 
         # draw circle
-        dc.SetBrush(wx.Brush("#888888"))
-        dc.SetPen(wx.Pen("#888888"))
+        dc.SetBrush(wx.Brush("#05A2C2"))
+        dc.SetPen(wx.Pen("#05A2C2"))
         center_x, center_y = self.disp_w // 2, self.disp_h // 2
         rad = self.disp_h // 14
         dc.DrawCircle(center_x, center_y, rad)

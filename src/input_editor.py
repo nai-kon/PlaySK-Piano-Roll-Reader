@@ -15,7 +15,7 @@ class ImgEditDlg(wx.Dialog):
         border_size = self.FromDIP(5)
         sizer1 = wx.BoxSizer(wx.VERTICAL)
         sizer1.Add(wx.StaticText(self, label=self.get_show_text()), 1, wx.EXPAND | wx.ALL, border=border_size)
-        sizer1.Add(wx.Button(self, wx.ID_OK, label="OK"), 1, wx.EXPAND | wx.ALL, border=border_size) 
+        sizer1.Add(wx.Button(self, wx.ID_OK, label="OK"), 1, wx.EXPAND | wx.ALL, border=border_size)
         sizer1.Add(wx.Button(self, wx.ID_CANCEL, label="Cancel"), 1, wx.EXPAND | wx.ALL, border=border_size)
 
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
