@@ -38,7 +38,7 @@ Support image formats are `.cis`, `.jpg`, `.tif`, `.png`, `.bmp`.
 
 ## Tips
 * The program picks up lighted holes of image.
-* 関連付けの話
+* Associate the program with .cis on right-click menu, you can run app by double-clicking .cis file.
 * The roll scrolling direction is downward. So the Welte T-100 image should be inverted.
 * The roll acceleration emulating is done by spool diameter and roll thickness.
 * Automatically set the tempo if the input filename has the tempo keyword (except .cis)

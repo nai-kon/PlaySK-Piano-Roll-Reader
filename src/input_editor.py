@@ -34,11 +34,11 @@ class ImgEditDlg(wx.Dialog):
         if self.cis.bicolor:
             out.append("Bi-Color scan")
         out.append(f"Tempo: {self.cis.tempo}")
-        out.append(f"Horizontal: {self.cis.hol_dpi} Dots/inch")
+        out.append(f"Horizontal: {self.cis.hol_dpi} Dots / inch")
         if self.cis.scanner_type in [ScannerType.WHEELRUN, ScannerType.SHAFTRUN]:
-            out.append(f"Vertical: {self.cis.vert_res} Ticks/inch (Re-clocked)")
+            out.append(f"Vertical: {self.cis.vert_res} Ticks / inch (Re-clocked)")
         else:
-            out.append(f"Vertical: {self.cis.vert_res} Lines/inch")
+            out.append(f"Vertical: {self.cis.vert_res} Lines / inch")
 
         return "\n".join(out)
 
@@ -64,9 +64,14 @@ class SetEdgePane(wx.Panel):
         self.norm_cursor = wx.Cursor()
         self.adjust_cursor = wx.Cursor(wx.CURSOR_SIZEWE)
         self.adjust_cursor_slip = self.FromDIP(20)
-        self.guide_base_text = "Set this line to the center of the white margin"
+        self.guide_base_text = "Set this line to the edge of the roll"
         self.guide_font = wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD)
         self.scale = self.GetDPIScaleFactor() if platform.system() == "Windows" else 1
+
+        text = "If there is a margin, set it roughly in the center of the margin. It will be adjusted automatically.\n" \
+            "If there is no margin, set it strictly to the edge."
+        guidance = wx.StaticText(self, label=text, size=wx.Size(self.frame_w, 0), style=wx.ALIGN_CENTRE_HORIZONTAL)
+        guidance.SetFont(wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
 
         self.Bind(wx.EVT_PAINT, self.on_paint)
         self.Bind(wx.EVT_MOUSEWHEEL, self.on_scroll)
@@ -135,7 +140,7 @@ if __name__ == '__main__':
     app = wx.App()
 
     obj = CisImage()
-    if obj.load("../Dinner Music # 5 (1925) 65163A.CIS"):
+    if obj.load("../sample_scans/Ampico B 2551 If God Left Only You.CIS"):
         with ImgEditDlg(obj) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 print(dlg.get_margin_pos())
