@@ -47,7 +47,7 @@ class CisImage:
             self._load_inner(path)
             return True
         except Exception as e:
-            wx.MessageBox(f"Failed to load a CIS image\n{e}", ".CIS Load error", style=wx.ICON_ERROR)
+            wx.MessageBox(f"Failed to load the CIS image\n{e}", ".CIS Load error", style=wx.ICON_ERROR)
 
         return False
 
@@ -194,6 +194,9 @@ class CisImage:
         scanner_idx = int(status_flags[0] & 15)
         scanner_idx = scanner_idx if scanner_idx < len(scanner_types) else 0
         self.scanner_type = scanner_types[scanner_idx]
+        if self.scanner_type == ScannerType.UNKNOWN:
+            raise NotImplementedError("Scanner type is unknown")
+
         self.need_reclock = self.scanner_type in [ScannerType.WHEELRUN, ScannerType.SHAFTRUN]
         self.doubler = bool(status_flags[0] & 16)
         self.twin_array = bool(status_flags[0] & 32)
