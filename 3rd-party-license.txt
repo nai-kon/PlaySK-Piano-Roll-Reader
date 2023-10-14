@@ -1,5 +1,5 @@
 Cython
-3.0.2
+3.0.3
 Apache Software License
 The original Pyrex code as of 2006-04 is licensed under the following
 license: "Copyright stuff: Pyrex is free of restrictions. You may use,
@@ -759,7 +759,7 @@ the FAQ for more information on the distribution of modified source versions.
 
 
 altgraph
-0.17.3
+0.17.4
 MIT License
 Copyright (c) 2004 Istvan Albert unless otherwise noted.
 Copyright (c) 2006-2010 Bob Ippolito
@@ -810,7 +810,7 @@ SOFTWARE.
 
 
 macholib
-1.16.2
+1.16.3
 MIT License
 Copyright 2006-2010 - Bob Ippolito
 Copyright 2010-2020 - Ronald Oussoren
@@ -889,7 +889,7 @@ BSD License
 
 
 opencv-python-headless
-4.8.0.76
+4.8.1.78
 Apache Software License
 OpenCV library is redistributed within opencv-python package.
 This license applies to OpenCV binary in the directory cv2/.
@@ -3881,7 +3881,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 packaging
-23.1
+23.2
 Apache Software License; BSD License
 This software is made available under the terms of *either* of the licenses
 found in LICENSE.APACHE or LICENSE.BSD. Contributions to this software is made
@@ -3919,7 +3919,7 @@ SOFTWARE.
 
 
 pyinstaller
-5.13.2
+6.0.0
 GNU General Public License v2 (GPLv2)
 ================================
  The PyInstaller licensing terms
@@ -4560,7 +4560,7 @@ SOFTWARE.
 
 
 pyinstaller-hooks-contrib
-2023.8
+2023.9
 Apache Software License; GNU General Public License v2 (GPLv2)
 ============================================
 PyInstaller Community Hooks: License details

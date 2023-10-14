@@ -5,7 +5,7 @@ import time
 import numpy as np
 import wx
 
-from input_src import FPScounter, deco_start_end
+from input_src import FPScounter
 
 
 class VacuumGauge(wx.Panel):
