@@ -4,7 +4,7 @@ import sys
 import wx
 
 sys.path.append("../src/")
-from main import MainFrame
+from main_frame import MainFrame
 
 faulthandler.enable()
 
@@ -17,7 +17,7 @@ class Aging(MainFrame):
     def aging(self, path):
         print(path)
         self.load_file(path)
-        self.obj.player.emulate_on()
+        self.callback.player.emulate_on()
         self.spool.start_play = True
         # close app every 10 seconds and re-launch
         wx.CallLater(1000 * 10, self.on_close, event=None)
@@ -33,13 +33,7 @@ if __name__ == "__main__":
     if pf == "Windows":
         from ctypes import windll
         windll.winmm.timeBeginPeriod(1)
-
-    # high DPI awareness
-    try:
-        import ctypes
-        ctypes.windll.shcore.SetProcessDpiAwareness(True)
-    except Exception as e:
-        print(e)
+        windll.shcore.SetProcessDpiAwareness(True)
 
     paths = list(glob.glob("../sample_scans/*Ampico*"))
 

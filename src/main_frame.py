@@ -138,7 +138,7 @@ class MainFrame(wx.Frame):
     def on_close(self, event):
         print("on_close called")
         self.conf.save_config()
-        self.midiobj.all_off()
+        self.midiobj.close_port()
         self.spool.on_destroy()
         self.bass_vacuum_lv.destroy()
         self.treble_vacuum_lv.destroy()
