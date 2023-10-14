@@ -1,9 +1,11 @@
 import faulthandler
+import os
 import sys
 
 import wx
 
 sys.path.append("../src/")
+os.chdir("../src/")
 from main_frame import MainFrame
 
 faulthandler.enable()
