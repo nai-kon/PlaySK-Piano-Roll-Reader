@@ -20,7 +20,7 @@ class SingleInstWin():
         self.message_path = "PlaySK_msg_path:"
         self.port = 58583
         try:
-            with socket.create_connection(("localhost", self.port), timeout=0.1) as sock:
+            with socket.create_connection(("localhost", self.port), timeout=0.01) as sock:
                 if len(sys.argv) > 1:
                     sock.sendall(f"{self.message_path}{sys.argv[1]}".encode())
                 else:
@@ -68,15 +68,15 @@ class AppMain(wx.App):
 if __name__ == "__main__":
     pf = platform.system()
     if pf == "Windows":
-        from ctypes import windll
         single_inst = SingleInstWin()
+        from ctypes import windll
         windll.winmm.timeBeginPeriod(1)
         windll.shcore.SetProcessDpiAwareness(True)
         # drop file to .exe changes current dir and causes errors, so fix current dir
         os.chdir(os.path.dirname(sys.argv[0]))
 
-    from midi_controller import MidiWrap
     app = AppMain()
+    from midi_controller import MidiWrap
     if not MidiWrap().port_list:
         wx.MessageBox("No any midi out port found. Exit software.", "Midi port error")
         exit(-1)

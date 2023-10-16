@@ -133,12 +133,12 @@ class WelteT100(Player):
         elif self.holes["sustain_off"]["is_open"]:
             self.midi.sustain_off()
 
-        # hammer rail lift emulation
+        # soft pedal
         if self.holes["soft_on"]["is_open"]:
-            self.midi.hammer_lift_on()
+            self.midi.soft_on()
 
         elif self.holes["soft_off"]["is_open"]:
-            self.midi.hammer_lift_off()
+            self.midi.soft_off()
 
     def draw_tracker(self, wxdc: wx.PaintDC):
         # need override for drawing lock hole

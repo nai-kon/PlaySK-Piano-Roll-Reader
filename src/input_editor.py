@@ -28,7 +28,7 @@ class ImgEditDlg(wx.Dialog):
         self.SetPosition((x, 0))
 
     def get_show_text(self):
-        out = [f"type: {self.cis.scanner_type.value}"]
+        out = [f"Type: {self.cis.scanner_type.value}"]
         if self.cis.twin_array:
             out.append("Twin Array scan")
         if self.cis.bicolor:

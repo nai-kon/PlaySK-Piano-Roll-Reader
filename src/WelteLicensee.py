@@ -18,6 +18,21 @@ class WelteLicensee(WelteT100):
         self.bass_vacuum = self.min_vacuum
         self.treble_vacuum = self.min_vacuum
 
+    def emulate_pedals(self):
+        # sustain pedal
+        if self.holes["sustain_on"]["is_open"]:
+            self.midi.sustain_on()
+
+        elif self.holes["sustain_off"]["is_open"]:
+            self.midi.sustain_off()
+
+        # licensee uses hammer lift
+        if self.holes["soft_on"]["is_open"]:
+            self.midi.hammer_lift_on()
+
+        elif self.holes["soft_off"]["is_open"]:
+            self.midi.hammer_lift_off()
+
 
 if __name__ == "__main__":
     import numpy as np
