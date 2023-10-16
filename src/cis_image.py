@@ -195,18 +195,18 @@ class CisImage:
         scanner_idx = scanner_idx if scanner_idx < len(scanner_types) else 0
         self.scanner_type = scanner_types[scanner_idx]
         if self.scanner_type == ScannerType.UNKNOWN:
-            raise NotImplementedError("Scanner type is unknown")
+            self.hol_dpi = 200  # most of unknown type scanner is 200DPI
+        else:
+            self.need_reclock = self.scanner_type in [ScannerType.WHEELRUN, ScannerType.SHAFTRUN]
+            self.doubler = bool(status_flags[0] & 16)
+            self.twin_array = bool(status_flags[0] & 32)
 
-        self.need_reclock = self.scanner_type in [ScannerType.WHEELRUN, ScannerType.SHAFTRUN]
-        self.doubler = bool(status_flags[0] & 16)
-        self.twin_array = bool(status_flags[0] & 32)
-
-        self.bicolor = bool(status_flags[0] & 64)
-        self.encoder_division = 2 ** int(status_flags[1] & 15)
-        self.mirror = bool(status_flags[1] & 16)
-        self.reverse = bool(status_flags[1] & 32)
-        self.vert_sep_twin = int.from_bytes(bytes[36:38], byteorder="little")
-        self.hol_dpi = int.from_bytes(bytes[38:40], byteorder="little")
+            self.bicolor = bool(status_flags[0] & 64)
+            self.encoder_division = 2 ** int(status_flags[1] & 15)
+            self.mirror = bool(status_flags[1] & 16)
+            self.reverse = bool(status_flags[1] & 32)
+            self.vert_sep_twin = int.from_bytes(bytes[36:38], byteorder="little")
+            self.hol_dpi = int.from_bytes(bytes[38:40], byteorder="little")
         self.hol_px = int.from_bytes(bytes[40:42], byteorder="little")
         self.overlap_twin = int.from_bytes(bytes[42:44], byteorder="little")
         self.tempo = int.from_bytes(bytes[44:46], byteorder="little")
