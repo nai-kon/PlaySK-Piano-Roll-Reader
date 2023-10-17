@@ -17,4 +17,5 @@ call deactivate
 
 rem copy files
 xcopy /i /y "3rd-party-license.txt" ".\dist\PlaySK Piano Roll Reader\"
+xcopy /i /y ".\docs\How to use.png" ".\dist\PlaySK Piano Roll Reader\"
 xcopy /s /i /y ".\src\config\" ".\dist\PlaySK Piano Roll Reader\config\"

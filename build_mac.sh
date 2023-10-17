@@ -20,5 +20,6 @@ pip-licenses --format=plain-vertical --with-license-file --no-license-path --out
 deactivate
 
 # copy files
-cp -p 3rd-party-license.txt dist/
+cp -p "3rd-party-license.txt" dist/
+cp -p "docs/How to use.png" dist/
 cp -pr src/config/ dist/config/

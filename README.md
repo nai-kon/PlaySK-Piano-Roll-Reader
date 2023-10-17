@@ -4,7 +4,7 @@ Optically reading a piano roll image, emulates expression and output midi signal
 
 ![Overall System](./docs/Overall_System.jpg)
 
-The "virtual tracker bar" optically picks up the roll holes then emulates note, pedal and expression.
+The "virtual tracker bar" optically picks up roll holes then emulates note, pedal and expression.
 Currently, 6 virtual tracker bars are available.
 - Standard 88-note
 - Ampico B
@@ -16,6 +16,7 @@ Currently, 6 virtual tracker bars are available.
 In the future, Ampico A, Recordo, Welte T-98 will be supported.
 
 Support image formats are `.cis`, `.jpg`, `.tif`, `.png`, `.bmp`. 
+
 `.cis` supports various scanners such as stepper, wheel/shaft encoder, bi-color, twin-array.
 
 
@@ -50,7 +51,7 @@ Support image formats are `.cis`, `.jpg`, `.tif`, `.png`, `.bmp`.
 
 ## Requirements
 
-* Python 3.11.5
+* Python 3.11.6
 * Poetry
 
 Quick Start
