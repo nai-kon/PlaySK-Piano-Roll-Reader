@@ -1,4 +1,5 @@
 import numpy as np
+import wx
 
 from player import Player
 
@@ -132,20 +133,20 @@ class WelteT100(Player):
         elif self.holes["sustain_off"]["is_open"]:
             self.midi.sustain_off()
 
-        # hammer rail lift emulation
+        # soft pedal
         if self.holes["soft_on"]["is_open"]:
-            self.midi.hammer_lift_on()
+            self.midi.soft_on()
 
         elif self.holes["soft_off"]["is_open"]:
-            self.midi.hammer_lift_off()
+            self.midi.soft_off()
 
-    def draw_tracker(self, frame):
+    def draw_tracker(self, wxdc: wx.PaintDC):
         # need override for drawing lock hole
         # self.holes["bass_mf_on"]["is_open"] = self.bass_mf_hook
         # self.holes["bass_intensity"]["is_open"][:] = self.bass_intensity_lock[:]
         # self.holes["treble_intensity"]["is_open"][:] = self.treble_intensity_lock[::-1]
         # self.holes["subintensity"]["is_open"][0] = self.bass_sub_intensity_lock or self.treble_sub_intensity_lock
-        super().draw_tracker(frame)
+        super().draw_tracker(wxdc)
 
 
 if __name__ == "__main__":

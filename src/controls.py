@@ -11,21 +11,25 @@ class WelcomeMsg(wx.Panel):
         self.SetForegroundColour("white")
 
         dummy = wx.StaticText(self, wx.ID_ANY, "")
-        msg1 = wx.StaticText(self, wx.ID_ANY, "SELECT FILE and PLAY!")
+        msg1 = wx.StaticText(self, wx.ID_ANY, "SELECT or DROP FILE here!")
         msg1.SetFont(wx.Font(30, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
 
-        msg2 = wx.StaticText(self, wx.ID_ANY, APP_TITLE)
-        msg3 = wx.StaticText(self, wx.ID_ANY, f"Version {APP_VERSION}")
+        msg2 = wx.StaticText(self, wx.ID_ANY, "Tip: Associate this app with .cis file, you can run app by double-clicking .cis")
+        msg2.SetFont(wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
+
+        msg3 = wx.StaticText(self, wx.ID_ANY, APP_TITLE)
+        msg4 = wx.StaticText(self, wx.ID_ANY, f"Version {APP_VERSION}")
         lnk = HyperLinkCtrl(self, wx.ID_ANY, "Project page on GitHub", URL="https://github.com/nai-kon/PlaySK-Piano-Roll-Reader")
-        msg4 = wx.StaticText(self, wx.ID_ANY, COPY_RIGHT)
+        msg5 = wx.StaticText(self, wx.ID_ANY, COPY_RIGHT)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(dummy, 1, wx.ALIGN_CENTER)
-        sizer.Add(msg1, 1, wx.ALIGN_CENTER)
-        sizer.Add(msg2, 0, wx.ALIGN_CENTER)
+        sizer.Add(dummy, 4, wx.ALIGN_CENTER)
+        sizer.Add(msg1, 2, wx.ALIGN_CENTER)
+        sizer.Add(msg2, 2, wx.ALIGN_CENTER)
         sizer.Add(msg3, 0, wx.ALIGN_CENTER)
-        sizer.Add(lnk, 0, wx.ALIGN_CENTER)
         sizer.Add(msg4, 0, wx.ALIGN_CENTER)
+        sizer.Add(lnk, 0, wx.ALIGN_CENTER)
+        sizer.Add(msg5, 0, wx.ALIGN_CENTER)
         self.SetSizer(sizer)
         self.SetBackgroundColour("#555555")
         lnk.SetBackgroundColour("#555555")
@@ -35,7 +39,7 @@ class WelcomeMsg(wx.Panel):
         # compatible with InputVideo classes
         pass
 
-    def release_src(self):
+    def on_destroy(self):
         # compatible with InputVideo classes
         pass
 
@@ -95,8 +99,9 @@ class TrackerCtrl(wx.Panel):
         sizer = wx.GridBagSizer(vgap=2, hgap=2)
         sizer.Add(self.auto_tracking, (0, 0), (1, 3), flag=wx.EXPAND)
         sizer.Add(self.label, (1, 0), (1, 1), flag=wx.EXPAND)
-        sizer.Add(self.left, (1, 1), (1, 1), flag=wx.EXPAND | wx.LEFT, border=5)
-        sizer.Add(self.right, (1, 2), (1, 1), flag=wx.EXPAND | wx.LEFT, border=5)
+        border_size = parent.FromDIP(5)
+        sizer.Add(self.left, (1, 1), (1, 1), flag=wx.EXPAND | wx.LEFT, border=border_size)
+        sizer.Add(self.right, (1, 2), (1, 1), flag=wx.EXPAND | wx.LEFT, border=border_size)
         self.SetSizer(sizer)
         self.Fit()
 

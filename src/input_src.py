@@ -1,14 +1,92 @@
-import gc
 import math
 import os
 import platform
+import re
 import threading
 import time
+import numpy as np
+import wx
+
+from cis_image import CisImage
+from input_editor import ImgEditDlg
 
 os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2, 42).__str__()
 import cv2
-import numpy as np
-import wx
+
+
+def load_scan(path, default_tempo, force_manual_adjust=False):
+    def _img_load(path, default_tempo):
+        with wx.BusyCursor():
+            # cv2.imread erros with multi-byte path
+            n = np.fromfile(path, np.uint8)
+            img = cv2.imdecode(n, cv2.IMREAD_COLOR)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        # search tempo from ANN file
+        ann_path = path.rsplit(".", 1)[0] + ".ANN"
+        if os.path.exists(ann_path):
+            with open(ann_path) as f:
+                for line in f.readlines():
+                    val = re.search(r"^/roll_tempo:\s+(\d{2,3})", line)
+                    if val is not None:
+                        return img, int(val.group(1))
+        # search tempo from file name
+        val = re.search(r"tempo:?\s*(\d{2,3})", path)
+        tempo = int(val.group(1)) if val is not None else default_tempo
+        return img, tempo
+
+    def _find_edge_margin(img):
+        samples = 100
+        margin_th = 220
+        hist_th = samples * 0.8
+        h, w = img.shape[:2]
+        sample_ys = np.linspace(w, img.shape[0] - w, 100, dtype=int)  # avoid padding of start/end
+        # center of left margin
+        sx = 5
+        ex = img.shape[1] // 4
+        left_sample = img[sample_ys, sx: ex, 0]  # enough with first ch
+        left_hist = (left_sample > margin_th).sum(axis=0) > hist_th
+        left_margin_idx = left_hist.nonzero()[0]
+        left_margin_center = None
+        if left_margin_idx.size > 0:
+            left_margin_center = int(np.median(left_margin_idx))
+        # center of right margin
+        sx = 3 * img.shape[1] // 4
+        ex = img.shape[1] - 5
+        right_sample = img[sample_ys, sx: ex, 0]  # enough with first ch
+        right_hist = (right_sample > margin_th).sum(axis=0) > hist_th
+        right_margin_idx = right_hist.nonzero()[0]
+        right_margin_center = None
+        if right_margin_idx.size > 0:
+            right_margin_center = int(np.median(right_margin_idx) + sx)
+
+        return left_margin_center, right_margin_center
+
+    def _cis_load(path, default_tempo, force_manual_adjust):
+        # load
+        obj = CisImage()
+        with wx.BusyCursor():
+            if not obj.load(path):
+                return None, default_tempo
+        # find center of roll margin or manually set if not found
+        left_edge, right_edge = _find_edge_margin(obj.img)
+        if left_edge is None or right_edge is None or force_manual_adjust:
+            with ImgEditDlg(obj) as dlg:
+                if dlg.ShowModal() == wx.ID_OK:
+                    left_edge, right_edge = dlg.get_margin_pos()
+                else:
+                    return None, default_tempo
+        # cut off edge
+        obj.img[:, :left_edge] = (255, 255, 255)
+        obj.img[:, right_edge:] = (255, 255, 255)
+        tempo = default_tempo if obj.tempo == 0 else obj.tempo
+        return obj.img, tempo
+
+    basename = os.path.basename(path)
+    if basename.lower().endswith(".cis"):
+        return _cis_load(path, default_tempo, force_manual_adjust)
+    else:
+        return _img_load(path, default_tempo)
 
 
 class FPScounter():
@@ -28,6 +106,16 @@ class FPScounter():
             self.start = cur
 
 
+def deco_start_end(func):
+    def wrapper(*args, **kwargs):
+        print("start", func.__name__)
+        ret = func(*args, **kwargs)
+        print("end", func.__name__)
+        return ret
+
+    return wrapper
+
+
 class InputVideo(wx.Panel):
     def __init__(self, parent, path, disp_size=(800, 600), callback=None):
         wx.Panel.__init__(self, parent, size=parent.FromDIP(wx.Size(disp_size)))
@@ -41,14 +129,14 @@ class InputVideo(wx.Panel):
         self.scale = self.GetDPIScaleFactor() if platform.system() == "Windows" else 1
 
         self.start_play = False
-        self.worker_thread_quit = False
+        self.thread_enable = True
         self.thread_worker = threading.Thread(target=self.load_thread)
         self.worker_fps = 60
         self.cnt_worker_fps = FPScounter("worker fps")
         self.thread_lock = threading.Lock()
 
         self.Bind(wx.EVT_PAINT, self.on_paint)
-        self.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
+        # self.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
         self.Bind(wx.EVT_LEFT_DOWN, self.on_start)
 
     def start_worker(self):
@@ -56,25 +144,21 @@ class InputVideo(wx.Panel):
         self._load_next_frame()
         self.thread_worker.start()
 
-    def release_src(self):
-        self.worker_thread_quit = True
-        self.thread_worker.join(timeout=3)
-        if self.src is not None:
-            self.src = None
-            gc.collect()
-
-    def on_destroy(self, event):
-        self.worker_thread_quit = True
-        self.thread_worker.join(timeout=3)
+    def on_destroy(self, event=None):
+        self.thread_enable = False
+        if self.thread_worker.is_alive():
+            self.thread_worker.join(timeout=3)
         wx.GetApp().Yield(onlyIfNeeded=True)
 
     def on_paint(self, event):
-        # no need for BufferedPaintDC since SetDoubleBuffered(True)
         dc = wx.PaintDC(self)
         dc.SetUserScale(self.scale, self.scale)
 
         with self.thread_lock:
             dc.DrawBitmap(self.bmp, 0, 0)
+
+        if self.callback is not None:
+            self.callback.player.draw_tracker(dc)
 
         # draw play button
         if not self.start_play:
@@ -84,8 +168,8 @@ class InputVideo(wx.Panel):
         dc = wx.GCDC(dc)  # for anti-aliasing
 
         # draw circle
-        dc.SetBrush(wx.Brush("#888888"))
-        dc.SetPen(wx.Pen("#888888"))
+        dc.SetBrush(wx.Brush("#05A2C2"))
+        dc.SetPen(wx.Pen("#05A2C2"))
         center_x, center_y = self.disp_w // 2, self.disp_h // 2
         rad = self.disp_h // 14
         dc.DrawCircle(center_x, center_y, rad)
@@ -94,8 +178,8 @@ class InputVideo(wx.Panel):
         dc.SetBrush(wx.Brush("white"))
         dc.SetPen(wx.Pen("white"))
         rad = self.disp_h // 20
-        dc.DrawPolygon([(center_x - rad // 2, center_y - math.sqrt(3) * rad // 2),
-                        (center_x - rad // 2, center_y + math.sqrt(3) * rad // 2),
+        dc.DrawPolygon([(center_x - rad // 2, center_y - int(math.sqrt(3) * rad) // 2),
+                        (center_x - rad // 2, center_y + int(math.sqrt(3) * rad) // 2),
                         (center_x + rad, center_y)])
 
     def on_start(self, event):
@@ -118,7 +202,7 @@ class InputVideo(wx.Panel):
 
     def load_thread(self):
         t_disp_slowcpu = 0
-        while not self.worker_thread_quit:
+        while self.thread_enable:
             t1 = time.perf_counter()
 
             if self.start_play:
@@ -148,7 +232,7 @@ class InputVideo(wx.Panel):
                 elapsed_time = time.perf_counter() - t1
 
             self.cnt_worker_fps()
-        print("end thread")
+        print(f"end {self.__class__.__name__}.load_thread")
 
 
 class InputWebcam(InputVideo):
@@ -168,9 +252,10 @@ class InputWebcam(InputVideo):
         return camera_list
 
 
-class InputScanImg(InputVideo):
-    def __init__(self, parent, path, spool_diameter=2.72, roll_width=11.25, tempo=80, disp_size=(800, 600), callback=None):
-        super().__init__(parent, path, disp_size, callback)
+class InputScanImg_v0(InputVideo):
+    def __init__(self, parent, img, spool_diameter=2.72, roll_width=11.25, tempo=80, disp_size=(800, 600), callback=None):
+        super().__init__(parent, None, disp_size, callback)
+        self.src = img
         self.skip_px = 1
         self.spool_rps = 0
         self.cur_spool_diameter = self.org_spool_diameter = spool_diameter
@@ -180,12 +265,9 @@ class InputScanImg(InputVideo):
         self.tempo = tempo
 
     def start_worker(self):
-        with wx.BusyCursor():
-            self.src = cv2.imread(self.src_path)
-            self.src = cv2.cvtColor(self.src, cv2.COLOR_BGR2RGB)
         # load initial frame
         self.cur_y = self.src.shape[0] - 1
-        self.left_side, self.right_side = self.__find_roll_edge()
+        self.left_side, self.right_side = self._find_roll_edge()
         margin = 7 * (self.right_side - self.left_side + 1) // (self.disp_w - 7 * 2)  # 7px on both edge @800x600
         self.crop_x1 = self.left_side - margin
         self.crop_x2 = self.right_side + margin
@@ -205,9 +287,10 @@ class InputScanImg(InputVideo):
             # calc skip pixels to be less than 200fps
             if (px_per_sec / i) < 200:
                 self.skip_px = i
+                print("self.skip_px", self.skip_px, ", fps", px_per_sec / i)
                 break
 
-    def __find_roll_edge(self):
+    def _find_roll_edge(self):
         roll_h, roll_w = self.src.shape[:2]
         edges = []
         edge_th = 220
@@ -263,6 +346,39 @@ class InputScanImg(InputVideo):
         return 1 / self.worker_fps
 
 
+class InputScanImg(InputScanImg_v0):
+    def start_worker(self):
+        # load initial frame
+        self.left_side, self.right_side = self._find_roll_edge()
+        margin = 7 * (self.right_side - self.left_side + 1) // (self.disp_w - 7 * 2)  # 7px on both edge @800x600
+        # crop and resize image
+        crop_x1 = max(self.left_side - margin, 0)
+        crop_x2 = min(self.right_side + margin, self.src.shape[1])
+        self.src = self.src[:, crop_x1:crop_x2 + 1]
+        resize_ratio = self.disp_w / self.src.shape[1]
+        resize_h = int(self.src.shape[0] * resize_ratio)
+        self.src = cv2.resize(self.src, dsize=(self.disp_w, resize_h))
+        self.cur_y = self.src.shape[0] - 1
+
+        self.crop_h = self.disp_h
+        self.roll_dpi = resize_ratio * (self.right_side - self.left_side + 1) / self.roll_width
+        self.set_tempo(self.tempo)
+        self._load_next_frame()
+        self.thread_worker.start()
+
+    def _load_next_frame(self):
+        crop_y2 = self.cur_y
+        crop_y1 = crop_y2 - self.crop_h
+        if crop_y1 < 0:
+            return
+        self.frame = self.src[crop_y1:crop_y2]
+        self.cur_y -= self.skip_px
+
+        # update take-up spool round
+        spool_rpf = self.spool_rps / self.worker_fps
+        self.cur_spool_pos += spool_rpf
+
+
 if __name__ == "__main__":
     from midi_controller import MidiWrap
 
@@ -277,8 +393,8 @@ if __name__ == "__main__":
 
     midobj = MidiWrap()
     midobj.open_port(None)
-
-    panel1 = InputScanImg(frame, path="../sample_scans/Popular Hits of the Day 71383A_tempo75.png")
+    img, tempo = load_scan("../sample_scans/Ampico B 68361 Dancing Tambourine tempo95.png", 80)
+    panel1 = InputScanImg(frame, img)
     panel1.start_worker()
     # print(InputWebcam.list_camera())
     # panel1 = InputWebcam(frame, webcam_no=0)

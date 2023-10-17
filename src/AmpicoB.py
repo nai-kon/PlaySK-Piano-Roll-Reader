@@ -1,3 +1,5 @@
+import wx
+
 from player import Player
 
 
@@ -153,18 +155,20 @@ class AmpicoB(Player):
         self.bass_vacuum = calc_vacuum(self.bass_intensity_lock, self.bass_sub_intensity_lock)
         self.treble_vacuum = calc_vacuum(self.treble_intensity_lock, self.treble_sub_intensity_lock)
 
-    def draw_tracker(self, frame):
+    def draw_tracker(self, wxdc: wx.PaintDC):
         # need override for drawing intensity lock
         self.holes["bass_intensity"]["is_open"][:] = self.bass_intensity_lock[:]
         self.holes["treble_intensity"]["is_open"][:] = self.treble_intensity_lock[::-1]
         self.holes["subintensity"]["is_open"][0] = self.bass_sub_intensity_lock or self.treble_sub_intensity_lock
-        super().draw_tracker(frame)
+        super().draw_tracker(wxdc)
 
 
 if __name__ == "__main__":
-    import numpy as np
-    import time
     import os
+    import time
+
+    import numpy as np
+
     from midi_controller import MidiWrap
     midiobj = MidiWrap()
     player = AmpicoB(os.path.join("config", "Ampico B white background.json"), midiobj)

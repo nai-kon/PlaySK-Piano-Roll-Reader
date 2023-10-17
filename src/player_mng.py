@@ -7,6 +7,7 @@ from DuoArt import DuoArt
 from player import Player
 from WelteLicensee import WelteLicensee
 from WelteT100 import WelteT100
+from PhilippsDuca import PhilippsDuca
 
 
 class PlayerMng():
@@ -34,20 +35,19 @@ class PlayerMng():
         cls_name = self._player_conf_map.get(player_name, None)
         if cls_name is not None:
             confpath = os.path.join("config", f"{player_name}.json")
-            if cls_name == "Player":
-                return Player(confpath, midiobj)
-
-            elif cls_name == "AmpicoB":
-                return AmpicoB(confpath, midiobj)
-
-            elif cls_name == "Duo-Art":
-                return DuoArt(confpath, midiobj)
-
-            elif cls_name == "WelteT100":
-                return WelteT100(confpath, midiobj)
-
-            elif cls_name == "WelteLicensee":
-                return WelteLicensee(confpath, midiobj)
+            match cls_name:
+                case "Player":
+                    return Player(confpath, midiobj)
+                case "AmpicoB":
+                    return AmpicoB(confpath, midiobj)
+                case "Duo-Art":
+                    return DuoArt(confpath, midiobj)
+                case "WelteT100":
+                    return WelteT100(confpath, midiobj)
+                case "WelteLicensee":
+                    return WelteLicensee(confpath, midiobj)
+                case "PhillipsDuca":
+                    return PhilippsDuca(confpath, midiobj)
 
         return None
 
