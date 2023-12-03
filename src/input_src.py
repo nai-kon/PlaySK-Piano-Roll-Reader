@@ -49,7 +49,7 @@ def load_scan(path, default_tempo, force_manual_adjust=False):
         left_margin_idx = left_hist.nonzero()[0]
         left_margin_center = None
         if left_margin_idx.size > 0:
-            left_margin_center = int(np.median(left_margin_idx))
+            left_margin_center = int(left_margin_idx[-1])
         # center of right margin
         sx = 3 * img.shape[1] // 4
         ex = img.shape[1] - 5
@@ -58,7 +58,7 @@ def load_scan(path, default_tempo, force_manual_adjust=False):
         right_margin_idx = right_hist.nonzero()[0]
         right_margin_center = None
         if right_margin_idx.size > 0:
-            right_margin_center = int(np.median(right_margin_idx) + sx)
+            right_margin_center = int(right_margin_idx[0] + sx)
 
         return left_margin_center, right_margin_center
 
@@ -393,7 +393,7 @@ if __name__ == "__main__":
 
     midobj = MidiWrap()
     midobj.open_port(None)
-    img, tempo = load_scan("../sample_scans/Ampico B 68361 Dancing Tambourine tempo95.png", 80)
+    img, tempo = load_scan("Duo-Art 74856 Popular Hits of the Day .CIS", 80)
     panel1 = InputScanImg(frame, img)
     panel1.start_worker()
     # print(InputWebcam.list_camera())
