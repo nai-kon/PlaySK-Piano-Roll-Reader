@@ -1,5 +1,5 @@
 Cython
-3.0.3
+3.0.5
 Apache Software License
 The original Pyrex code as of 2006-04 is licensed under the following
 license: "Copyright stuff: Pyrex is free of restrictions. You may use,
@@ -23,7 +23,7 @@ output with any license restrictions.
 
 
 Pillow
-10.0.1
+10.1.0
 Historical Permission Notice and Disclaimer (HPND)
 The Python Imaging Library (PIL) is
 
@@ -56,7 +56,7 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
  
-===== brotli-1.0.9 ===== 
+===== brotli-1.1.0 ===== 
  
 Copyright (c) 2009, 2010, 2013-2016 by the Brotli Authors.
 
@@ -78,7 +78,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  
-===== freetype-2.13.1 ===== 
+===== freetype-2.13.2 ===== 
  
 FREETYPE LICENSES
 -----------------
@@ -636,7 +636,7 @@ consider it more useful to permit linking proprietary applications with the
 library.  If this is what you want to do, use the GNU Library General
 Public License instead of this License.
  
-===== harfbuzz-7.3.0 ===== 
+===== harfbuzz-8.2.1 ===== 
  
 HarfBuzz is licensed under the so-called "Old MIT" license.  Details follow.
 For parts of HarfBuzz that are licensed under different licenses see individual
@@ -705,7 +705,7 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  
-===== libjpeg-turbo-2.1.5.1 ===== 
+===== libjpeg-turbo-3.0.0 ===== 
  
 LEGAL ISSUES
 ============
@@ -1101,7 +1101,7 @@ be appreciated.
  * POSSIBILITY OF SUCH DAMAGE.
  */
  
-===== tiff-4.5.1 ===== 
+===== tiff-4.6.0 ===== 
  
 # LibTIFF license
 
@@ -1127,7 +1127,7 @@ WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
 LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
 OF THIS SOFTWARE.
  
-===== xz-5.4.3 ===== 
+===== xz-5.4.4 ===== 
  
 
 XZ Utils Licensing
@@ -1321,7 +1321,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 numpy
-1.26.0
+1.26.1
 BSD License
   zlib License
   ------------
@@ -4373,7 +4373,7 @@ SOFTWARE.
 
 
 pycodestyle
-2.11.0
+2.11.1
 MIT License
 Copyright © 2006-2009 Johann C. Rocholl <johann@rocholl.net>
 Copyright © 2009-2014 Florent Xicluna <florent.xicluna@gmail.com>
@@ -4403,7 +4403,7 @@ SOFTWARE.
 
 
 pyinstaller
-6.0.0
+6.1.0
 GNU General Public License v2 (GPLv2)
 ================================
  The PyInstaller licensing terms
@@ -5044,7 +5044,7 @@ SOFTWARE.
 
 
 pyinstaller-hooks-contrib
-2023.9
+2023.10
 Apache Software License; GNU General Public License v2 (GPLv2)
 ============================================
 PyInstaller Community Hooks: License details
@@ -5072,7 +5072,7 @@ These generally reside in "src/_pyinstaller_hooks_contrib/hooks/rthooks".
 
 
 python-rtmidi
-1.5.6
+1.5.7
 MIT License
 Copyright & License
 ===================

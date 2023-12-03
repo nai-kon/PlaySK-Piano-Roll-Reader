@@ -219,6 +219,7 @@ if __name__ == "__main__":
     midiobj = MidiWrap()
     player = Player(os.path.join("config", "88 Note white background.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)
+    player.emulate_on()
     start = time.perf_counter()
     for _ in range(10000):
         player.emulate(frame, time.perf_counter())

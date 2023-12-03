@@ -36,6 +36,8 @@ class DuoArt(Player):
         self.treble_vacuum = self.accomp_min
         self.theme_vacuum_pre = self.theme_min
         self.accomp_vacuum_pre = self.accomp_min
+        self.accomp_delay_que = deque([self.accomp_min] * 10, maxlen=10)
+        self.theme_delay_que = deque([self.theme_min] * 10, maxlen=10)
 
     def emulate_expression(self, curtime):
 
