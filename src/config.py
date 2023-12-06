@@ -8,6 +8,7 @@ class ConfigMng():
     def __init__(self):
         self.last_midi_port = ""
         self.last_tracker = ""
+        self.skip_notify_ver = ""
 
         self.load_config()
 
@@ -19,6 +20,7 @@ class ConfigMng():
             v = json.load(f)
             self.last_midi_port = v.get("last_midi_port", "")
             self.last_tracker = v.get("last_tracker", "")
+            self.skip_notify_ver = v.get("skip_notify_ver", "")
 
     def save_config(self):
         with open(ConfigMng._path, "w", encoding="utf-8") as f:

@@ -5,7 +5,7 @@ import sys
 import wx
 
 from config import ConfigMng
-from controls import SpeedSlider, TrackerCtrl, WelcomeMsg
+from controls import SpeedSlider, TrackerCtrl, WelcomeMsg, notify_update
 from input_src import InputScanImg, load_scan
 from midi_controller import MidiWrap
 from player_mng import PlayerMng
@@ -103,9 +103,12 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.on_close)
         self.Show()
 
-        # app was opened with file
         if len(sys.argv) > 1:
+            # app was opened with file
             wx.CallAfter(self.load_file, path=sys.argv[1])
+        else:
+            # notify update
+            notify_update(self)
 
     def create_status_bar(self):
         self.sbar = self.CreateStatusBar(5)  # midi-port, tracker-bar

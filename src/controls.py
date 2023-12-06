@@ -1,4 +1,9 @@
+import json
+import threading
+import urllib.request
+
 import wx
+import wx.adv
 from wx.lib.agw.hyperlink import HyperLinkCtrl
 
 from version import APP_TITLE, APP_VERSION, COPY_RIGHT
@@ -120,6 +125,48 @@ class TrackerCtrl(wx.Panel):
         if self.offset != val:
             self.offset = val
             wx.CallAfter(self.label.SetLabel, f"{self.offset:+}")
+
+
+class NotifyDialog(wx.Dialog):
+    def __init__(self, parent, version):
+        super(NotifyDialog, self).__init__(parent, title="New Release", style=wx.CAPTION)
+
+        panel = wx.Panel(self)
+        message = wx.StaticText(panel, label=f"New ver{version} has been released!")
+        message.SetFont(wx.Font(12, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        url = "https://github.com/nai-kon/PlaySK-Piano-Roll-Reader/releases/"
+        lnk = HyperLinkCtrl(panel, label=url, URL=url)
+        ok_button = wx.Button(panel, label="OK")
+        ok_button.Bind(wx.EVT_BUTTON, self.on_ok)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(message, flag=wx.ALL | wx.ALIGN_CENTER, border=5)
+        sizer.Add(lnk, flag=wx.ALL, border=10)
+        sizer.Add(ok_button, flag=wx.ALL | wx.ALIGN_CENTER, border=10)
+
+        panel.SetSizerAndFit(sizer)
+        self.Fit()
+        self.Center(wx.BOTH)
+        self.ShowModal()
+
+    def on_ok(self, event):
+        self.Destroy()
+
+
+def notify_update(parent):
+    def fetch_update():
+        url = "https://api.github.com/repos/nai-kon/PlaySK-Piano-Roll-Reader/releases/latest"
+        with urllib.request.urlopen(url, timeout=10) as res:
+            latest_ver = json.loads(res.read().decode("utf8")).get("tag_name", "")
+            if latest_ver is not None:
+                latest_ver = latest_ver.lstrip("Ver")
+                if latest_ver != parent.conf.skip_notify_ver:
+                    # once notify, no notify until next release
+                    parent.conf.skip_notify_ver = latest_ver
+                    wx.CallAfter(NotifyDialog, parent, latest_ver)
+
+    th = threading.Thread(target=fetch_update)
+    th.start()
 
 
 if __name__ == "__main__":
