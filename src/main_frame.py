@@ -103,12 +103,11 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.on_close)
         self.Show()
 
+        notify_update(self, self.conf)
+
         if len(sys.argv) > 1:
             # app was opened with file
             wx.CallAfter(self.load_file, path=sys.argv[1])
-        else:
-            # notify update
-            notify_update(self)
 
     def create_status_bar(self):
         self.sbar = self.CreateStatusBar(5)  # midi-port, tracker-bar

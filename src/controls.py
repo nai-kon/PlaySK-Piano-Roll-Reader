@@ -153,18 +153,22 @@ class NotifyDialog(wx.Dialog):
         self.Destroy()
 
 
-def notify_update(parent):
+def notify_update(parent, conf):
     def fetch_update():
         url = "https://api.github.com/repos/nai-kon/PlaySK-Piano-Roll-Reader/releases/latest"
-        with urllib.request.urlopen(url, timeout=10) as res:
-            latest_ver = json.loads(res.read().decode("utf8")).get("tag_name", "")
-            if latest_ver is not None:
-                latest_ver = latest_ver.lstrip("Ver")
-                if latest_ver != parent.conf.skip_notify_ver:
-                    # once notify, no notify until next release
-                    parent.conf.skip_notify_ver = latest_ver
-                    wx.CallAfter(NotifyDialog, parent, latest_ver)
+        try:
+            with urllib.request.urlopen(url, timeout=10) as res:
+                latest_ver = json.loads(res.read().decode("utf8")).get("tag_name", None)
+        except Exception:
+            latest_ver = None
 
+        if latest_ver is not None:
+            latest_ver = latest_ver.lstrip("Ver")
+            if latest_ver not in (conf.uddate_notified_version, APP_VERSION):
+                # once notify, no notify until next release
+                conf.uddate_notified_version = latest_ver
+                wx.CallAfter(NotifyDialog, parent, latest_ver)
+        print("checked")
     th = threading.Thread(target=fetch_update)
     th.start()
 
@@ -179,4 +183,5 @@ if __name__ == "__main__":
 
     frame.Fit()
     frame.Show()
+    notify_update(panel1)
     app.MainLoop()
