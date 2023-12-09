@@ -150,6 +150,7 @@ class NotifyDialog(wx.Dialog):
         self.ShowModal()
 
     def on_ok(self, event):
+        self.Close()
         self.Destroy()
 
 
@@ -168,10 +169,9 @@ def notify_update(parent, conf):
                 # once notify, no notify until next release
                 conf.uddate_notified_version = latest_ver
                 wx.CallAfter(NotifyDialog, parent, latest_ver)
-        print("checked")
+
     th = threading.Thread(target=fetch_update)
     th.start()
-
 
 if __name__ == "__main__":
     app = wx.App()
@@ -183,5 +183,7 @@ if __name__ == "__main__":
 
     frame.Fit()
     frame.Show()
-    notify_update(panel1)
+    from config import ConfigMng
+    mngr = ConfigMng()
+    notify_update(panel1, mngr)
     app.MainLoop()
