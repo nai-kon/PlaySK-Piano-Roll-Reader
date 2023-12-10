@@ -10,7 +10,7 @@ class ImgEditDlg(wx.Dialog):
     def __init__(self, cis: CisImage):
         wx.Dialog.__init__(self, None, title="Adjust roll image")
         self.cis = cis
-        self.panel = SetEdgePane(self, cis.img)
+        self.panel = SetEdgePane(self, cis.decode_img)
 
         border_size = self.FromDIP(5)
         sizer1 = wx.BoxSizer(wx.VERTICAL)
@@ -29,13 +29,13 @@ class ImgEditDlg(wx.Dialog):
 
     def get_show_text(self):
         out = [f"Type: {self.cis.scanner_type.value}"]
-        if self.cis.twin_array:
+        if self.cis.is_twin_array:
             out.append("Twin Array scan")
-        if self.cis.bicolor:
+        if self.cis.is_bicolor:
             out.append("Bi-Color scan")
         out.append(f"Tempo: {self.cis.tempo}")
         out.append(f"Horizontal: {self.cis.hol_dpi} Dots / inch")
-        if self.cis.scanner_type in [ScannerType.WHEELRUN, ScannerType.SHAFTRUN]:
+        if self.cis.scanner_type in [ScannerType.WHEELENCODER, ScannerType.SHAFTENCODER]:
             out.append(f"Vertical: {self.cis.vert_res} Ticks / inch (Re-clocked)")
         else:
             out.append(f"Vertical: {self.cis.vert_res} Lines / inch")

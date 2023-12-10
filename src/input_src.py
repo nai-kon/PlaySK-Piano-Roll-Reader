@@ -4,6 +4,8 @@ import platform
 import re
 import threading
 import time
+from pathlib import Path
+
 import numpy as np
 import wx
 
@@ -23,7 +25,7 @@ def load_scan(path, default_tempo, force_manual_adjust=False):
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # search tempo from ANN file
-        ann_path = path.rsplit(".", 1)[0] + ".ANN"
+        ann_path = Path(path).with_suffix(".ANN")
         if os.path.exists(ann_path):
             with open(ann_path) as f:
                 for line in f.readlines():
@@ -69,7 +71,7 @@ def load_scan(path, default_tempo, force_manual_adjust=False):
             if not obj.load(path):
                 return None, default_tempo
         # find center of roll margin or manually set if not found
-        left_edge, right_edge = _find_edge_margin(obj.img)
+        left_edge, right_edge = _find_edge_margin(obj.decode_img)
         if left_edge is None or right_edge is None or force_manual_adjust:
             with ImgEditDlg(obj) as dlg:
                 if dlg.ShowModal() == wx.ID_OK:
@@ -77,10 +79,10 @@ def load_scan(path, default_tempo, force_manual_adjust=False):
                 else:
                     return None, default_tempo
         # cut off edge
-        obj.img[:, :left_edge] = (255, 255, 255)
-        obj.img[:, right_edge:] = (255, 255, 255)
+        obj.decode_img[:, :left_edge] = (255, 255, 255)
+        obj.decode_img[:, right_edge:] = (255, 255, 255)
         tempo = default_tempo if obj.tempo == 0 else obj.tempo
-        return obj.img, tempo
+        return obj.decode_img, tempo
 
     basename = os.path.basename(path)
     if basename.lower().endswith(".cis"):

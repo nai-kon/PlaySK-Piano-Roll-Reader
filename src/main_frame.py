@@ -1,6 +1,7 @@
 import os
 import platform
 import sys
+from pathlib import Path
 
 import wx
 
@@ -173,7 +174,7 @@ class MainFrame(wx.Frame):
             obj.SetLabel("MIDI On")
 
     def load_file(self, path, force_manual_adjust=False):
-        ext = os.path.splitext(path)[-1]
+        ext = Path(path).suffix.lower()
         if ext.lower() not in (".cis", ".jpg", ".png", ".tif", ".bmp"):
             wx.MessageBox("Supported image formats are .cis .jpg, .png, .tif, .bmp", "Unsupported file")
             return

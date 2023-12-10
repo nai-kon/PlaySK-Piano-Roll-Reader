@@ -38,7 +38,7 @@ class SingleInstWin():
             sock.bind(("localhost", self.port))
             sock.listen(1)
             while True:
-                conn, addr = sock.accept()
+                conn, _ = sock.accept()
                 msg = conn.recv(1024).decode()
                 if self.app_frame is not None:
                     if msg.startswith(self.message_path):

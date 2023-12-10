@@ -165,9 +165,9 @@ def notify_update(parent, conf):
 
         if latest_ver is not None:
             latest_ver = latest_ver.lstrip("Ver")
-            if latest_ver not in (conf.uddate_notified_version, APP_VERSION):
+            if latest_ver not in (conf.update_notified_version, APP_VERSION):
                 # once notify, no notify until next release
-                conf.uddate_notified_version = latest_ver
+                conf.update_notified_version = latest_ver
                 wx.CallAfter(NotifyDialog, parent, latest_ver)
 
     th = threading.Thread(target=fetch_update)
