@@ -11,9 +11,9 @@ cdef enum CurColor:
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def get_outimg_size(cnp.ndarray[cnp.uint16_t, ndim=1] data, 
+def _get_decode_params(cnp.ndarray[cnp.uint16_t, ndim=1] data, 
                     int vert_px, int hol_px, int overlap_twin, int lpt, 
-                    bint bicolor, bint twin, bint need_reclock):
+                    bint is_bicolor, bint is_twin_array, bint is_clocked):
 
     cdef:
         int width = hol_px
@@ -30,7 +30,7 @@ def get_outimg_size(cnp.ndarray[cnp.uint16_t, ndim=1] data,
         int pre_encoder_state = -1
         float src_line
         float step
-        int chs = 1 + int(twin) + int(bicolor)
+        int chs = 1 + int(is_twin_array) + int(is_bicolor)
         list buf_lines = []
         list reclock_map = []
 
@@ -38,11 +38,11 @@ def get_outimg_size(cnp.ndarray[cnp.uint16_t, ndim=1] data,
         double rint(double x)
 
     # width
-    if twin:
+    if is_twin_array:
         width = hol_px * 2 - overlap_twin
 
     # height
-    if need_reclock:
+    if is_clocked:
         # recalc height after reposition
         height = 0
         for cur_line in range(vert_px - 1, 0, -1):
@@ -85,10 +85,10 @@ def get_outimg_size(cnp.ndarray[cnp.uint16_t, ndim=1] data,
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data, 
+def _decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data, 
                 cnp.ndarray[cnp.uint8_t, ndim=3] out_img, 
                 int vert_px, int hol_px, int twin_overlap, int twin_vsep, int end_padding_y,
-                bint bicolor, bint twin, bint need_reclock, list reclock_map):
+                bint is_bicolor, bint is_twin_array, bint is_clocked, list reclock_map):
 
     # CIS file format
     # http://semitone440.co.uk/rolls/utils/cisheader/cis-format.htm#scantype
@@ -125,8 +125,8 @@ def decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
             cur_idx += 1
             last_pos += change_len
 
-        # decode twin-array right
-        if twin:
+        # decode is_twin_array-array right
+        if is_twin_array:
             last_pos = 0
             cur_pix = ROLL
             cur_line_twin = cur_line + twin_vsep
@@ -147,7 +147,7 @@ def decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
                 last_pos += change_len
 
         # decode lyrics
-        if bicolor:
+        if is_bicolor:
             last_pos = 0
             cur_pix = MARK
             while last_pos != hol_px:
@@ -166,7 +166,7 @@ def decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
         # encoder_val = data[cur_idx]  # not used
         cur_idx += 1
 
-    if need_reclock:
+    if is_clocked:
         # reposition lines
         for sx, ex in reclock_map:
             out_img[ex + end_padding_y] = out_img[sx + end_padding_y]
