@@ -1,5 +1,9 @@
 {
     "cSpell.ignoreWords": [
         "Colour"
-    ]
+    ],
+    "flake8.args": [
+        "--ignore=E501"
+    ],
+    "python.analysis.autoImportCompletions": false
 }
