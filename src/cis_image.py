@@ -43,7 +43,7 @@ class CisImage:
         self.decode_img = None
         self.lpt = 0  # lines per tick. only for re-clock
 
-    def load(self, path):
+    def load(self, path: str) -> bool:
         try:
             self._load_file(path)
             self._decode()
@@ -53,7 +53,7 @@ class CisImage:
 
         return False
 
-    def _get_decode_params_py(self, data: np.array) -> tuple[int, int, list[int, int]]:
+    def _get_decode_params_py(self, data: np.ndarray) -> tuple[int, int, list[int, int]]:
         """
         Experimentally decode file and get output image size and re-clock position map.
         Python version.
@@ -113,7 +113,7 @@ class CisImage:
         return width, height, reclock_map
 
     # slow python version. only used for debugging
-    def _decode_cis_py(self, data, out_img, vert_px, hol_px, twin_overlap, twin_vsep, end_padding_y, bicolor, twin, reclock_map):
+    def _decode_cis_py(self, data, out_img, vert_px, hol_px, twin_overlap, twin_vsep, end_padding_y, bicolor, twin, reclock_map) -> None:
         class CurColor(IntEnum):
             BG = auto()
             ROLL = auto()
@@ -180,7 +180,7 @@ class CisImage:
             for src, dest in reclock_map:
                 out_img[dest + end_padding_y] = out_img[src + end_padding_y]
 
-    def _load_file(self, path):
+    def _load_file(self, path: str) -> None:
         # CIS file format
         # http://semitone440.co.uk/rolls/utils/cisheader/cis-format.htm#scantype
 
@@ -226,7 +226,7 @@ class CisImage:
             self.lpt = round(self.hol_dpi / division)
             self.vert_res = round(self.lpt * division)
 
-    def _decode(self):
+    def _decode(self) -> None:
         # get output image params
         out_w, out_h, reclock_map = _get_decode_params(self.raw_img, self.vert_px, self.hol_px, self.overlap_twin, self.lpt, self.is_bicolor, self.is_twin_array, self.is_clocked)
         # out_w, out_h, reclock_map = self.get_decode_params_py(self.raw_img)

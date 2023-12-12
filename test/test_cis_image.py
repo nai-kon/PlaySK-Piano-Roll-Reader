@@ -49,7 +49,6 @@ def test_get_decoded_params(cis_path, expect):
     assert (width, height) == expect
 
 
-
 @pytest.mark.parametrize("cis_path, gt_path", [
     # expect is (decoded_width, decoded_height)
     ("clocked_single.CIS", "clocked_single_gt.png"),
