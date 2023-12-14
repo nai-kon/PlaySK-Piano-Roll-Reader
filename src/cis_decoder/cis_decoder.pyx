@@ -11,6 +11,7 @@ cdef enum CurColor:
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+@cython.cdivision(True)
 def _get_decode_params(cnp.ndarray[cnp.uint16_t, ndim=1] data, 
                     int vert_px, int hol_px, int overlap_twin, int lpt, 
                     bint is_bicolor, bint is_twin_array, bint is_clocked):
@@ -28,7 +29,6 @@ def _get_decode_params(cnp.ndarray[cnp.uint16_t, ndim=1] data,
         int encoder_val
         int encoder_state
         int pre_encoder_state = -1
-        float src_line
         float step
         int chs = 1 + int(is_twin_array) + int(is_bicolor)
         list buf_lines = []
@@ -59,7 +59,7 @@ def _get_decode_params(cnp.ndarray[cnp.uint16_t, ndim=1] data,
                     ei = min(buf_lines)
                     si = max(buf_lines)
                     # make re-clock map
-                    step = (ei - si) / (lpt - 1)
+                    step = (ei - si) / float(lpt - 1)
                     for val in range(lpt):
                         val = int(rint(si + val * step))
                         reclock_map.append([val, height])  # [src line, dest line]

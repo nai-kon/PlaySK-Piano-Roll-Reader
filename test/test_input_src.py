@@ -11,7 +11,7 @@ from src.input_src import _find_roll_edge, _load_img
     ("Welte Licensee 7005 Etude Japonaise.tif", (True, 80)),
 ])
 def test_load_img(img_path, expect):
-    img, tempo = _load_img("test/general_format_scans/" + img_path, 80)
+    img, tempo = _load_img("test/test_images/" + img_path, 80)
     assert (img is not None) == expect[0]
     assert tempo == expect[1]
 
@@ -24,6 +24,6 @@ def test_load_img(img_path, expect):
     ("find_edge_test_too_little_padding.png", (None, None)),
 ])
 def test__find_roll_edge(img_path, expect):
-    img, _ = _load_img("test/general_format_scans/" + img_path, 80)
+    img, _ = _load_img("test/test_images/" + img_path, 80)
     left, right = _find_roll_edge(img)
     assert (left, right) == expect

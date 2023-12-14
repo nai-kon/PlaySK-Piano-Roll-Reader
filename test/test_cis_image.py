@@ -19,7 +19,7 @@ from cis_image import CisImage, ScannerType
 ])
 def test_load_file(cis_path, expect):
     obj = CisImage()
-    obj._load_file("test/cis_test_scans/" + cis_path)
+    obj._load_file("test/test_images/" + cis_path)
     res = (obj.tempo, obj.scanner_type, obj.hol_dpi, obj.hol_px, obj.vert_res, obj.vert_px, obj.is_clocked,
            obj.is_twin_array, obj.is_bicolor, obj.encoder_division, obj.vert_sep_twin, obj.overlap_twin, obj.lpt)
     assert res == expect
@@ -36,14 +36,14 @@ def test_load_file(cis_path, expect):
 def test_get_decoded_params(cis_path, expect):
     # python version
     obj = CisImage()
-    obj._load_file("test/cis_test_scans/" + cis_path)
+    obj._load_file("test/test_images/" + cis_path)
     # reclock map will be checked in output image comparesion test
     width, height, _ = obj._get_decode_params_py(obj.raw_img)
     assert (width, height) == expect
 
     # cython version
     obj = CisImage()
-    obj._load_file("test/cis_test_scans/" + cis_path)
+    obj._load_file("test/test_images/" + cis_path)
     # reclock map will be checked in output image comparesion test
     width, height, _ = _get_decode_params(obj.raw_img, obj.vert_px, obj.hol_px, obj.overlap_twin, obj.lpt, obj.is_bicolor, obj.is_twin_array, obj.is_clocked)
     assert (width, height) == expect
@@ -59,9 +59,9 @@ def test_get_decoded_params(cis_path, expect):
 ])
 def test_decode_cis(cis_path, gt_path):
     # check pixel values are same to gt
-    gt_img = cv2.imread("test/cis_test_scans/" + gt_path)
+    gt_img = cv2.imread("test/test_images/" + gt_path)
     obj = CisImage()
-    obj._load_file("test/cis_test_scans/" + cis_path)
+    obj._load_file("test/test_images/" + cis_path)
     obj._decode()
 
     assert np.array_equal(obj.decode_img, gt_img)
@@ -69,12 +69,12 @@ def test_decode_cis(cis_path, gt_path):
 
 def test_decode_error_cis():
     obj = CisImage()
-    obj._load_file("test/cis_test_scans/broken_data.CIS")
+    obj._load_file("test/test_images/broken_data.CIS")
     with pytest.raises(BufferError):
         obj._decode()
 
     obj = CisImage()
-    obj._load_file("test/cis_test_scans/no_encoder_signal.CIS")
+    obj._load_file("test/test_images/no_encoder_signal.CIS")
     with pytest.raises(ValueError) as e:
         obj._decode()
     assert str(e.value) == "No encoder clock signal found"
