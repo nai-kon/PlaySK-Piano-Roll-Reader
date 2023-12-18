@@ -59,7 +59,7 @@ class TrackerHoles():
             hole_list = frame[v["pos_ys"], v["pos_xs"] + self.xoffset]  # more elegant way
 
             if self.is_dark_hole:
-                open_ratios = (hole_list < self.th_bright).all(axis=3).mean(axis=(2, 1))
+                open_ratios = (hole_list <= self.th_bright).all(axis=3).mean(axis=(2, 1))
                 # open_ratios = (hole_list < self.th_bright).mean(axis=(3, 2, 1))
             else:
                 open_ratios = (hole_list > self.th_bright).all(axis=3).mean(axis=(2, 1))
@@ -145,11 +145,11 @@ class Player():
         # find roll edge
         roi = np.array([frame[250:350:5, 0:7], frame[250:350:5, 793:800]])
         if self.is_dark_hole:
-            left_end, right_end = (roi < self.on_bright).all(axis=3).sum(axis=2).mean(axis=1)
-        else:
             left_end, right_end = (roi > self.on_bright).all(axis=3).sum(axis=2).mean(axis=1)
+        else:
+            left_end, right_end = (roi <= self.on_bright).all(axis=3).sum(axis=2).mean(axis=1)
 
-        self.tracker_offset = int(left_end - right_end) + 1
+        self.tracker_offset = int(right_end - left_end)
 
     @final
     def emulate(self, frame, curtime):
