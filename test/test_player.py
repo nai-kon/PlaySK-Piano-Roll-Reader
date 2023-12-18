@@ -93,11 +93,11 @@ class TestPlayer():
         assert player.velocity[-1] - 1 < bass_velo < player.velocity[-1] + 1
         assert player.velocity[0] - 1 < treble_velo < player.velocity[0] + 1
 
-    def test_emulte_off(self, player):
+    def test_emulate_off(self, player):
         player.emulate_on()
         player.do_test_th = True
 
-        # check emulate off works while emultes() is called from another thread 
+        # check emulate off works while emulates() is called from another thread 
         th = player.holes.th_bright - 1 if player.holes.is_dark_hole else player.holes.th_bright + 1
         frame = np.full((600, 800, 3), th, np.uint8)
         th = threading.Thread(target=self.call_emulate_th, args=(player, frame))
@@ -121,7 +121,7 @@ class TestPlayer():
             player.do_test_th = False
             th.join()
 
-    def test_emulte_off_timeout(self, monkeypatch, player):
+    def test_emulate_off_timeout(self, monkeypatch, player):
         # test emulate_off will timeout in 1sec
         def heavy_emulate_notes(self):
             time.sleep(2)
@@ -155,3 +155,39 @@ class TestPlayer():
         else:
             player.do_test_th = False
             th.join()
+
+    def test_auto_track(self, monkeypatch, player):
+        player.tracker_offset = 0
+        player.auto_tracking = True
+        roll = 130
+        bg = player.holes.th_bright - 1 if player.holes.is_dark_hole else player.holes.th_bright + 1
+
+        # no offset
+        frame = np.full((600, 800, 3), bg, np.uint8)
+        frame[:, 10:790] = roll
+        pre_offset = player.tracker_offset
+        player.auto_track(frame)
+        assert pre_offset == player.tracker_offset
+
+        # right offset
+        frame = np.full((600, 800, 3), bg, np.uint8)
+        frame[:, 15:798] = roll
+
+        player.auto_track(frame)
+        print(player.tracker_offset)
+        assert player.tracker_offset == 5
+
+        # left offset
+        frame = np.full((600, 800, 3), bg, np.uint8)
+        frame[:, 2:785] = roll
+        player.auto_track(frame)
+        print(player.tracker_offset)
+        assert player.tracker_offset == -5
+
+        # auto tracking off
+        player.auto_tracking = False
+        frame = np.full((600, 800, 3), bg, np.uint8)
+        frame[:, 15:798] = roll
+        pre_offset = player.tracker_offset
+        player.auto_track(frame)
+        assert pre_offset == player.tracker_offset
