@@ -1,6 +1,7 @@
 import math
 import time
 from enum import Enum, IntEnum, auto
+
 import cv2
 import numpy as np
 import wx
@@ -226,7 +227,7 @@ class CisImage:
             self.lpt = round(self.hol_dpi / division)
             self.vert_res = round(self.lpt * division)
 
-    def _decode(self) -> None:
+    def _decode(self, use_cython=True) -> None:
         # get output image params
         out_w, out_h, reclock_map = _get_decode_params(self.raw_img, self.vert_px, self.hol_px, self.overlap_twin, self.lpt, self.is_bicolor, self.is_twin_array, self.is_clocked)
         # out_w, out_h, reclock_map = self.get_decode_params_py(self.raw_img)
@@ -241,8 +242,10 @@ class CisImage:
         self.decode_img[out_h + end_padding_y:] = 255
 
         # decode
-        _decode_cis(self.raw_img, self.decode_img, self.vert_px, self.hol_px, twin_overlap, twin_vsep, end_padding_y, self.is_bicolor, self.is_twin_array, self.is_clocked, reclock_map)
-        # self._decode_cis_py(self.raw_img, self.img, self.vert_px, self.hol_px, twin_overlap, twin_vsep, end_padding_y, self.bicolor, self.twin_array, reclock_map)
+        if use_cython:
+            _decode_cis(self.raw_img, self.decode_img, self.vert_px, self.hol_px, twin_overlap, twin_vsep, end_padding_y, self.is_bicolor, self.is_twin_array, self.is_clocked, reclock_map)
+        else:
+            self._decode_cis_py(self.raw_img, self.decode_img, self.vert_px, self.hol_px, twin_overlap, twin_vsep, end_padding_y, self.is_bicolor, self.is_twin_array, reclock_map)
 
         if len(self.decode_img) == 0:
             raise BufferError

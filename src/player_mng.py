@@ -12,11 +12,12 @@ from PhilippsDuca import PhilippsDuca
 
 class PlayerMng():
     def __init__(self):
-        self._player_conf_map = self.init_player_map()
+        self.conf_dir = "config/"
+        self.player_conf_map = self.init_player_map()
 
     def init_player_map(self):
         conf_map = {}
-        for path in glob.glob(os.path.join("config", "*.json")):
+        for path in glob.glob(self.conf_dir + "*.json"):
             with open(path, encoding="utf-8") as f:
                 conf = json.load(f)
 
@@ -29,10 +30,10 @@ class PlayerMng():
 
     @property
     def player_list(self):
-        return list(self._player_conf_map.keys())
+        return list(self.player_conf_map.keys())
 
     def get_player_obj(self, player_name, midiobj):
-        cls_name = self._player_conf_map.get(player_name, None)
+        cls_name = self.player_conf_map.get(player_name, None)
         cls_map = {
             "Player": Player,
             "AmpicoB": AmpicoB,
@@ -43,7 +44,7 @@ class PlayerMng():
         }
         clsobj = cls_map.get(cls_name, None)
         if clsobj is not None:
-            confpath = os.path.join("config", f"{player_name}.json")
+            confpath = os.path.join(self.conf_dir, f"{player_name}.json")
             return clsobj(confpath, midiobj)
         else:
             return None
@@ -52,6 +53,7 @@ class PlayerMng():
 if __name__ == "__main__":
     obj = PlayerMng()
     print(obj.player_list)
+    print(type(obj.get_player_obj("88 Note white background", None)))
     assert obj.get_player_obj("not exists", None) is None
     assert type(obj.get_player_obj("88 Note white background", None)) is Player
     assert type(obj.get_player_obj("Ampico B white background", None)) is AmpicoB

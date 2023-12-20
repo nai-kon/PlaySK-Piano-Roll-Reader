@@ -23,7 +23,7 @@ def test_load_img(img_path, expect):
     ("find_edge_test_no_padding.png", (None, None)),
     ("find_edge_test_too_little_padding.png", (None, None)),
 ])
-def test__find_roll_edge(img_path, expect):
+def test_find_roll_edge(img_path, expect):
     img, _ = _load_img("test/test_images/" + img_path, 80)
     left, right = _find_roll_edge(img)
     assert (left, right) == expect

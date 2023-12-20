@@ -59,22 +59,23 @@ def test_get_decoded_params(cis_path, expect):
 ])
 def test_decode_cis(cis_path, gt_path):
     # check pixel values are same to gt
-    gt_img = cv2.imread("test/test_images/" + gt_path)
-    obj = CisImage()
-    obj._load_file("test/test_images/" + cis_path)
-    obj._decode()
-
-    assert np.array_equal(obj.decode_img, gt_img)
+    for use_cython in (True, False):
+        gt_img = cv2.imread("test/test_images/" + gt_path)
+        obj = CisImage()
+        obj._load_file("test/test_images/" + cis_path)
+        obj._decode(use_cython)
+        assert np.array_equal(obj.decode_img, gt_img)
 
 
 def test_decode_error_cis():
-    obj = CisImage()
-    obj._load_file("test/test_images/broken_data.CIS")
-    with pytest.raises(BufferError):
-        obj._decode()
+    for use_cython in (True, False):
+        obj = CisImage()
+        obj._load_file("test/test_images/broken_data.CIS")
+        with pytest.raises(BufferError):
+            obj._decode(use_cython)
 
-    obj = CisImage()
-    obj._load_file("test/test_images/no_encoder_signal.CIS")
-    with pytest.raises(ValueError) as e:
-        obj._decode()
-    assert str(e.value) == "No encoder clock signal found"
+        obj = CisImage()
+        obj._load_file("test/test_images/no_encoder_signal.CIS")
+        with pytest.raises(ValueError) as e:
+            obj._decode(use_cython)
+        assert str(e.value) == "No encoder clock signal found"

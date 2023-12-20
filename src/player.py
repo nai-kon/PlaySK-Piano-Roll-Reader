@@ -5,6 +5,8 @@ from typing import final
 import numpy as np
 import wx
 
+from midi_controller import MidiWrap
+
 
 class TrackerHoles():
     def __init__(self, conf):
@@ -96,7 +98,7 @@ class TrackerHoles():
 
 
 class Player():
-    def __init__(self, confpath, midiobj):
+    def __init__(self, confpath, midiobj: MidiWrap):
         self.midi = midiobj
 
         # load tracker config
@@ -215,7 +217,6 @@ if __name__ == "__main__":
     import os
     import time
 
-    from midi_controller import MidiWrap
     midiobj = MidiWrap()
     player = Player(os.path.join("config", "88 Note white background.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)

@@ -3,13 +3,13 @@ import sys
 import pytest
 
 sys.path.append("src/")
-from src.AmpicoB import AmpicoB
-from src.DuoArt import DuoArt
-from src.PhilippsDuca import PhilippsDuca
-from src.player import Player
-from src.player_mng import PlayerMng
-from src.WelteLicensee import WelteLicensee
-from src.WelteT100 import WelteT100
+from AmpicoB import AmpicoB
+from DuoArt import DuoArt
+from PhilippsDuca import PhilippsDuca
+from player import Player
+from player_mng import PlayerMng
+from WelteLicensee import WelteLicensee
+from WelteT100 import WelteT100
 
 
 class TestPlayerMng():
@@ -33,11 +33,11 @@ class TestPlayerMng():
         print(player_names)
         assert player_names == gt_names
 
-    # def test_get_player_obj(self, player_mng):
-    #     assert player_mng.get_player_obj("not exists player", None) is None
-    #     assert isinstance(player_mng.get_player_obj("Ampico B white background", None), AmpicoB)
-    #     assert type(player_mng.get_player_obj("Duo-Art white background", None)) is DuoArt
-    #     assert type(player_mng.get_player_obj("Philipps Duca (no expression)", None)) is PhilippsDuca
-    #     assert type(player_mng.get_player_obj("88 Note white background", None)) is Player
-    #     assert type(player_mng.get_player_obj("Welte Licensee white back", None)) is WelteLicensee
-    #     assert type(player_mng.get_player_obj("Welte T100 white back", None)) is WelteT100
+    def test_get_player_obj(self, player_mng):
+        assert player_mng.get_player_obj("not exists player", None) is None
+        assert type(player_mng.get_player_obj("Ampico B white background", None)) is AmpicoB
+        assert type(player_mng.get_player_obj("Duo-Art white background", None)) is DuoArt
+        assert type(player_mng.get_player_obj("Philipps Duca (no expression)", None)) is PhilippsDuca
+        assert type(player_mng.get_player_obj("88 Note white background", None)) is Player
+        assert type(player_mng.get_player_obj("Welte Licensee white back", None)) is WelteLicensee
+        assert type(player_mng.get_player_obj("Welte T100 white back", None)) is WelteT100

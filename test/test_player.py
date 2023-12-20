@@ -9,7 +9,7 @@ import pytest
 
 sys.path.append("src/")
 from midi_controller import MidiWrap
-from src.player import Player, TrackerHoles
+from player import Player, TrackerHoles
 
 
 class TestTrackerHoles():
@@ -156,7 +156,7 @@ class TestPlayer():
             player.do_test_th = False
             th.join()
 
-    def test_auto_track(self, monkeypatch, player):
+    def test_auto_track(self, player):
         player.tracker_offset = 0
         player.auto_tracking = True
         roll = 130
@@ -172,7 +172,6 @@ class TestPlayer():
         # right offset
         frame = np.full((600, 800, 3), bg, np.uint8)
         frame[:, 15:798] = roll
-
         player.auto_track(frame)
         print(player.tracker_offset)
         assert player.tracker_offset == 5
