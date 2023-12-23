@@ -1,23 +1,18 @@
 {
-  "note": "88-note setting for white background roll image",
-  "base_class": "Player",
+  "note": "Duo-Art setting for white background roll image",
+  "base_class": "Duo-Art",
   "roll_width": 11.25,
-  "spool_diameter": 1.90,
+  "spool_diameter": 1.9,
   "default_tempo": 80,
   "expression": {
-    "vacuum": 6,
     "stack_split_point": 43
   },
   "tracker_holes": {
     "is_dark_hole": false,
     "on_brightness": 220,
-    "lowest_note": 0,
+    "lowest_note": 4,
     "note": {
       "x": [
-        59,
-        67,
-        75,
-        82,
         90,
         98,
         106,
@@ -97,31 +92,27 @@
         681,
         688,
         696,
-        704,
-        712,
-        719,
-        727,
-        735             
+        704
       ],
-      "y": 297,
+      "y": 302,
       "w": 5,
       "h": 5,
-      "on_apature": 0.25,
+      "on_apature": 0.3,
       "off_apature": 0.1
     },
     "soft": {
-      "x": 774,
-      "y": 294,
-      "w": 8,
-      "h": 10,
+      "x": 772,
+      "y": 298,
+      "w": 10,
+      "h": 13,
       "on_apature": 0.1,
       "off_apature": 0.05
     },
     "sustain": {
-      "x": 34,
-      "y": 294,
-      "w": 8,
-      "h": 10,
+      "x": 32,
+      "y": 298,
+      "w": 10,
+      "h": 13,
       "on_apature": 0.1,
       "off_apature": 0.05
     }

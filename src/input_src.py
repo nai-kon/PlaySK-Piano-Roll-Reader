@@ -250,7 +250,7 @@ class InputWebcam(InputVideo):
         return camera_list
 
 
-class InputScanImg_v0(InputVideo):
+class InputScanImg(InputVideo):
     def __init__(self, parent, img, spool_diameter=2.72, roll_width=11.25, tempo=80, disp_size=(800, 600), callback=None):
         super().__init__(parent, None, disp_size, callback)
         self.src = img
@@ -264,13 +264,19 @@ class InputScanImg_v0(InputVideo):
 
     def start_worker(self):
         # load initial frame
-        self.cur_y = self.src.shape[0] - 1
         self.left_side, self.right_side = self._find_roll_edge()
         margin = 7 * (self.right_side - self.left_side + 1) // (self.disp_w - 7 * 2)  # 7px on both edge @800x600
-        self.crop_x1 = self.left_side - margin
-        self.crop_x2 = self.right_side + margin
-        self.crop_h = (self.crop_x2 - self.crop_x1) * self.disp_h // self.disp_w
-        self.roll_dpi = (self.right_side - self.left_side + 1) / self.roll_width
+        # crop and resize image
+        crop_x1 = max(self.left_side - margin, 0)
+        crop_x2 = min(self.right_side + margin, self.src.shape[1])
+        self.src = self.src[:, crop_x1:crop_x2 + 1]
+        resize_ratio = self.disp_w / self.src.shape[1]
+        resize_h = int(self.src.shape[0] * resize_ratio)
+        self.src = cv2.resize(self.src, dsize=(self.disp_w, resize_h))
+        self.cur_y = self.src.shape[0] - 1
+
+        self.crop_h = self.disp_h
+        self.roll_dpi = resize_ratio * (self.right_side - self.left_side + 1) / self.roll_width
         self.set_tempo(self.tempo)
         self._load_next_frame()
         self.thread_worker.start()
@@ -319,9 +325,7 @@ class InputScanImg_v0(InputVideo):
         crop_y1 = crop_y2 - self.crop_h
         if crop_y1 < 0:
             return
-
-        frame = self.src[crop_y1:crop_y2 + 1, self.crop_x1:self.crop_x2 + 1]
-        self.frame = cv2.resize(frame, (self.disp_w, self.disp_h), interpolation=cv2.INTER_NEAREST)
+        self.frame = self.src[crop_y1:crop_y2]
         self.cur_y -= self.skip_px
 
         # update take-up spool round
@@ -329,7 +333,6 @@ class InputScanImg_v0(InputVideo):
         self.cur_spool_pos += spool_rpf
 
     def _get_one_frame_time(self):
-
         # spool diameter will increase per 1 round. this causes acceleration.
         if self.cur_spool_pos > 1:
             self.cur_spool_pos -= 1  # don't reset to 0.
@@ -341,39 +344,6 @@ class InputScanImg_v0(InputVideo):
         # increase fps to emulating acceleration
         self.worker_fps = takeup_px / self.skip_px
         return 1 / self.worker_fps
-
-
-class InputScanImg(InputScanImg_v0):
-    def start_worker(self):
-        # load initial frame
-        self.left_side, self.right_side = self._find_roll_edge()
-        margin = 7 * (self.right_side - self.left_side + 1) // (self.disp_w - 7 * 2)  # 7px on both edge @800x600
-        # crop and resize image
-        crop_x1 = max(self.left_side - margin, 0)
-        crop_x2 = min(self.right_side + margin, self.src.shape[1])
-        self.src = self.src[:, crop_x1:crop_x2 + 1]
-        resize_ratio = self.disp_w / self.src.shape[1]
-        resize_h = int(self.src.shape[0] * resize_ratio)
-        self.src = cv2.resize(self.src, dsize=(self.disp_w, resize_h))
-        self.cur_y = self.src.shape[0] - 1
-
-        self.crop_h = self.disp_h
-        self.roll_dpi = resize_ratio * (self.right_side - self.left_side + 1) / self.roll_width
-        self.set_tempo(self.tempo)
-        self._load_next_frame()
-        self.thread_worker.start()
-
-    def _load_next_frame(self):
-        crop_y2 = self.cur_y
-        crop_y1 = crop_y2 - self.crop_h
-        if crop_y1 < 0:
-            return
-        self.frame = self.src[crop_y1:crop_y2]
-        self.cur_y -= self.skip_px
-
-        # update take-up spool round
-        spool_rpf = self.spool_rps / self.worker_fps
-        self.cur_spool_pos += spool_rpf
 
 
 if __name__ == "__main__":

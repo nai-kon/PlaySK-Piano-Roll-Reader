@@ -30,6 +30,10 @@ class CallBack():
             self.treble_vac_meter.vacuum = self.player.treble_vacuum
             self.tracker.changed(self.player.tracker_offset)
 
+    def key_event(self, key, keydown):
+        if self.player is not None:
+            self.player.expression_key_event(key, keydown)
+
 
 class FileDrop(wx.FileDropTarget):
     def __init__(self, parent):
@@ -147,6 +151,16 @@ class MainFrame(wx.Frame):
         self.treble_vacuum_lv.destroy()
         self.Destroy()
 
+    def on_keydown(self, event):
+        keycode = event.GetUnicodeKey()
+        self.callback.key_event(keycode, True)
+        event.Skip()
+
+    def on_keyup(self, event):
+        keycode = event.GetUnicodeKey()
+        self.callback.key_event(keycode, False)
+        event.Skip()
+
     def change_midi_port(self, event=None):
         idx = self.port_sel.GetSelection()
         port = self.port_sel.GetString(idx)
@@ -192,6 +206,8 @@ class MainFrame(wx.Frame):
         tmp = self.spool
         self.spool = InputScanImg(self, img, self.callback.player.spool_diameter, self.callback.player.roll_width, callback=self.callback)
         self.spool.start_worker()
+        self.spool.Bind(wx.EVT_KEY_DOWN, self.on_keydown)
+        self.spool.Bind(wx.EVT_KEY_UP, self.on_keyup)
         self.Title = APP_TITLE + " - " + os.path.basename(path)
         self.sizer3.Replace(tmp, self.spool)
         tmp.Destroy()
