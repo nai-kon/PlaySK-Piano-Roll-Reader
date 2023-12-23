@@ -92,6 +92,7 @@ class TrackerCtrl(wx.Panel):
 
         # tracker offset buttons
         self.offset = 0
+        self.auto_track = True
         self.label = wx.StaticText(self, wx.ID_ANY, "+0")
         self.label.SetFont(wx.Font(20, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
         self.left = wx.Button(self, wx.ID_ANY, label="Left")
@@ -112,14 +113,16 @@ class TrackerCtrl(wx.Panel):
 
     def _on_auto_checked(self, event):
         if event.GetEventObject().IsChecked():
+            self.auto_track = True
             self.right.Disable()
             self.left.Disable()
         else:
+            self.auto_track = False
             self.right.Enable()
             self.left.Enable()
 
     def is_auto_tracking(self):
-        return self.auto_tracking.IsChecked()
+        return self.auto_track
 
     def changed(self, val):
         if self.offset != val:

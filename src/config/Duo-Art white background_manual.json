@@ -1,6 +1,6 @@
 {
   "note": "Duo-Art setting for white background roll image",
-  "base_class": "Duo-Art",
+  "base_class": "Player",
   "roll_width": 11.25,
   "spool_diameter": 1.9,
   "default_tempo": 80,

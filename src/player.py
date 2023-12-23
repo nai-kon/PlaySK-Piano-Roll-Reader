@@ -122,18 +122,18 @@ class Player():
         self.emulate_enable = False
 
         # vacuum to velocity map
-        vacuum = list(range(5, 41))
+        self.max_vacuum = 40
+        vacuum = list(range(5, self.max_vacuum + 1))
         self.velocity = [37, 42, 46.5, 50.5, 54, 57, 59.5, 61.7, 63.7, 65.5, 67.1, 68.6, 70, 71.3, 72.5, 73.6, 74.6, 75.6, 76.5, 77.4, 78.3, 79.1, 79.9, 80.7, 81.4, 82.1, 82.8, 83.4, 84, 84.6, 85.2, 85.8, 86.4, 87, 87.6, 88.2]
         k = np.polyfit(self.velocity, vacuum, 5)
         self.velocity_bins = [np.poly1d(k)(v) for v in range(int(self.velocity[0]), int(self.velocity[-1] + 1))]
 
         # for manual expression by keyboard input
-        self.bass_key_vac_map = {
-            ord("A"): {"press": False, "vacuum": 15},
-            ord("S"): {"press": False, "vacuum": 7},
-            ord("D"): {"press": False, "vacuum": 3},
-        }
-        self.treble_key_vac_map = {
+        self.bass_accent = False
+        self.bass_accent_key = ord("A")
+        self.treble_accent = False
+        self.treble_accent_key = ord("S")
+        self.key_accomp_map = {
             ord("J"): {"press": False, "vacuum": 3},
             ord("K"): {"press": False, "vacuum": 7},
             ord("L"): {"press": False, "vacuum": 15},
@@ -179,23 +179,28 @@ class Player():
             self.during_emulate_evt.set()
 
     def expression_key_event(self, key, keydown):
-        vac_map = self.bass_key_vac_map.get(key, None)
-        if vac_map is not None:
-            if vac_map["press"] and not keydown:
-                vac_map["press"] = False
-            if not vac_map["press"] and keydown:
-                vac_map["press"] = True
+        if key == self.bass_accent_key:
+            self.bass_accent = keydown
 
-        vac_map = self.treble_key_vac_map.get(key, None)
-        if vac_map is not None:
-            if vac_map["press"] and not keydown:
-                vac_map["press"] = False
-            if not vac_map["press"] and keydown:
-                vac_map["press"] = True
+        if key == self.treble_accent_key:
+            self.treble_accent = keydown
+
+        accomp_map = self.key_accomp_map.get(key, None)
+        if accomp_map is not None:
+            if accomp_map["press"] and not keydown:
+                accomp_map["press"] = False
+            if not accomp_map["press"] and keydown:
+                accomp_map["press"] = True
 
     def emulate_expression(self, curtime):
-        self.bass_vacuum = self.base_vacuum + sum((v["vacuum"] for v in self.bass_key_vac_map.values() if v["press"]))
-        self.treble_vacuum = self.base_vacuum + sum((v["vacuum"] for v in self.treble_key_vac_map.values() if v["press"]))
+        accomp_vacuum = self.base_vacuum + sum((v["vacuum"] for v in self.key_accomp_map.values() if v["press"]))
+        self.bass_vacuum = self.treble_vacuum = accomp_vacuum
+
+        if self.bass_accent:
+            self.bass_vacuum = min(self.bass_vacuum + 9, self.max_vacuum)
+
+        if self.treble_accent:
+            self.treble_vacuum = min(self.treble_vacuum + 9, self.max_vacuum)
 
     def emulate_pedals(self):
         # sustain pedal
