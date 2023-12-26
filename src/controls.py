@@ -6,6 +6,7 @@ import wx
 import wx.adv
 from wx.lib.agw.hyperlink import HyperLinkCtrl
 
+from config import ConfigMng
 from version import APP_TITLE, APP_VERSION, COPY_RIGHT
 
 
@@ -157,24 +158,44 @@ class NotifyDialog(wx.Dialog):
         self.Destroy()
 
 
-def notify_update(parent, conf):
-    def fetch_update():
-        url = "https://api.github.com/repos/nai-kon/PlaySK-Piano-Roll-Reader/releases/latest"
+class NotifyUpdate:
+    def __init__(self, parent: wx.Panel, conf: ConfigMng) -> None:
+        self.parent = parent
+        self.conf = conf
+        self.url = "https://api.github.com/repos/nai-kon/PlaySK-Piano-Roll-Reader/releases/latest"
+
+    def fetch_latest_version(self) -> str | None:
         try:
-            with urllib.request.urlopen(url, timeout=10) as res:
-                latest_ver = json.loads(res.read().decode("utf8")).get("tag_name", None)
+            with urllib.request.urlopen(self.url, timeout=10) as res:
+                ver = json.loads(res.read().decode("utf8")).get("tag_name", None).lstrip("Ver")
         except Exception:
-            latest_ver = None
+            ver = None
+        return ver
 
-        if latest_ver is not None:
-            latest_ver = latest_ver.lstrip("Ver")
-            if latest_ver not in (conf.update_notified_version, APP_VERSION):
-                # once notify, no notify until next release
-                conf.update_notified_version = latest_ver
-                wx.CallAfter(NotifyDialog, parent, latest_ver)
+    def need_notify(self, ver: str | None) -> bool:
+        print(ver, self.conf.update_notified_version, APP_VERSION)
+        if ver is not None:
+            if ver not in (self.conf.update_notified_version, APP_VERSION):
+                return True
+        return False
 
-    th = threading.Thread(target=fetch_update)
-    th.start()
+    def notify(self, ver: str) -> None:
+        # once notify, no notify until next release
+        self.conf.update_notified_version = ver
+        wx.CallAfter(NotifyDialog, self.parent, ver)
+
+    @classmethod
+    def check(cls, parent: wx.Panel, conf: ConfigMng) -> threading.Thread:
+        def check_func():
+            obj = cls(parent, conf)
+            latest_ver = obj.fetch_latest_version()
+            if obj.need_notify(latest_ver):
+                obj.notify(latest_ver)
+
+        th = threading.Thread(target=check_func)
+        th.start()
+        return th
+
 
 if __name__ == "__main__":
     app = wx.App()
@@ -186,7 +207,4 @@ if __name__ == "__main__":
 
     frame.Fit()
     frame.Show()
-    from config import ConfigMng
-    mngr = ConfigMng()
-    notify_update(panel1, mngr)
     app.MainLoop()

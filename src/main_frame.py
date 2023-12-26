@@ -6,7 +6,7 @@ from pathlib import Path
 import wx
 
 from config import ConfigMng
-from controls import SpeedSlider, TrackerCtrl, WelcomeMsg, notify_update
+from controls import SpeedSlider, TrackerCtrl, WelcomeMsg, NotifyUpdate
 from input_src import InputScanImg, load_scan
 from midi_controller import MidiWrap
 from player_mng import PlayerMng
@@ -108,7 +108,8 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.on_close)
         self.Show()
 
-        notify_update(self, self.conf)
+        # notify update
+        NotifyUpdate.check(self, self.conf)
 
         if len(sys.argv) > 1:
             # app was opened with file
