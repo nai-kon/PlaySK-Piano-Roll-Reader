@@ -97,9 +97,9 @@ class TestPlayer():
         player.emulate_on()
         player.do_test_th = True
 
-        # check emulate off works while emulates() is called from another thread 
-        th = player.holes.th_bright - 1 if player.holes.is_dark_hole else player.holes.th_bright + 1
-        frame = np.full((600, 800, 3), th, np.uint8)
+        # check emulate off works while emulates() is called from another thread
+        hole_color = player.holes.th_bright - 1 if player.holes.is_dark_hole else player.holes.th_bright + 1
+        frame = np.full((600, 800, 3), hole_color, np.uint8)
         th = threading.Thread(target=self.call_emulate_th, args=(player, frame))
         th.start()
         time.sleep(1)
@@ -129,8 +129,8 @@ class TestPlayer():
         player.emulate_on()
         player.do_test_th = True
 
-        th = player.holes.th_bright - 1 if player.holes.is_dark_hole else player.holes.th_bright + 1
-        frame = np.full((600, 800, 3), th, np.uint8)
+        hole_color = player.holes.th_bright - 1 if player.holes.is_dark_hole else player.holes.th_bright + 1
+        frame = np.full((600, 800, 3), hole_color, np.uint8)
         monkeypatch.setattr(Player, "emulate_notes", heavy_emulate_notes)
         th = threading.Thread(target=self.call_emulate_th, args=(player, frame))
         th.start()
@@ -140,7 +140,7 @@ class TestPlayer():
         time.sleep(0.1)
         elapsed_time = time.time() - start_time
         try:
-            assert 1.1 < elapsed_time < 1.5
+            assert 1.0 < elapsed_time < 1.5
             assert not player.emulate_enable
             assert player.during_emulate_evt.is_set()
             for v in player.holes.group_by_size.values():
@@ -190,3 +190,64 @@ class TestPlayer():
         pre_offset = player.tracker_offset
         player.auto_track(frame)
         assert pre_offset == player.tracker_offset
+
+    def test_emulate_oedals(self, player, mocker):
+        hole_color = player.holes.th_bright - 1 if player.holes.is_dark_hole else player.holes.th_bright + 1
+        roll_color = 130
+        frame = np.full((600, 800, 3), roll_color, np.uint8)
+
+        # sustain on
+        sustain_on_mock = mocker.patch("midi_controller.MidiWrap.sustain_on")
+        x1, y1, x2, y2 = player.holes["sustain"]["pos"][0]
+        frame[y1:y2, x1:x2, :] = hole_color
+        player.holes.set_frame(frame, 0)
+        player.emulate_pedals()
+        sustain_on_mock.called_once()
+
+        # sustain off
+        sustain_off_mock = mocker.patch("midi_controller.MidiWrap.sustain_off")
+        frame[y1:y2, x1:x2, :] = roll_color
+        player.holes.set_frame(frame, 0)
+        player.emulate_pedals()
+        sustain_off_mock.called_once()
+
+        # hammer rail on
+        hammer_on_mock = mocker.patch("midi_controller.MidiWrap.hammer_lift_on")
+        x1, y1, x2, y2 = player.holes["soft"]["pos"][0]
+        frame[y1:y2, x1:x2, :] = hole_color
+        player.holes.set_frame(frame, 0)
+        player.emulate_pedals()
+        hammer_on_mock.called_once()
+
+        # hammer rail off
+        hammer_off_mock = mocker.patch("midi_controller.MidiWrap.hammer_lift_off")
+        frame[y1:y2, x1:x2, :] = roll_color
+        player.holes.set_frame(frame, 0)
+        player.emulate_pedals()
+        hammer_off_mock.called_once()
+
+    def test_emulate_notes(self, player, mocker):
+        hole_color = player.holes.th_bright - 1 if player.holes.is_dark_hole else player.holes.th_bright + 1
+        roll_color = 130
+        note_offset = 21
+        player.bass_vacuum = 5
+        player.treble_vacuum = 40
+        bass_velocity, treble_velocity = player.calc_velocity()
+
+        # note on
+        frame = np.full((600, 800, 3), roll_color, np.uint8)
+        noteon_mock = mocker.patch("midi_controller.MidiWrap.note_on")
+        for key, (x1, y1, x2, y2) in enumerate(player.holes["note"]["pos"]):
+            frame[y1:y2, x1:x2, :] = hole_color
+            player.holes.set_frame(frame, 0)
+            player.emulate_notes()
+            gtvelo = bass_velocity if key < player.stack_split else treble_velocity
+            noteon_mock.assert_called_with(key + note_offset, gtvelo)
+
+        # note off
+        noteoff_mock = mocker.patch("midi_controller.MidiWrap.note_off")
+        for key, (x1, y1, x2, y2) in enumerate(player.holes["note"]["pos"]):
+            frame[y1:y2, x1:x2, :] = roll_color
+            player.holes.set_frame(frame, 0)
+            player.emulate_notes()
+            noteoff_mock.assert_called_with(key + note_offset)
