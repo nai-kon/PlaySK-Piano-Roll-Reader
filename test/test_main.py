@@ -35,3 +35,14 @@ class TestSingleInstWin():
         assert is_exists
         event.set()
         p.join()
+
+    # def test_file_path_receiver(self, mocker, monkeypatch):
+    #     # receiver process
+    #     event = Event()
+    #     reciver, sender = Pipe(False)
+    #     p = Process(target=self.inst_proc, args=(sender, event))
+    #     p.start()
+
+    #     # sender process
+    #     monkeypatch.setattr(sys, "argv", [])
+    #     p2 = Process(target=self.inst_proc, args=(sender, None))

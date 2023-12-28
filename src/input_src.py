@@ -229,7 +229,7 @@ class InputVideo(wx.Panel):
                 time.sleep(sleep)
                 elapsed_time = time.perf_counter() - t1
 
-            self.cnt_worker_fps()
+            # self.cnt_worker_fps()
         print(f"end {self.__class__.__name__}.load_thread")
 
 
@@ -315,7 +315,7 @@ class InputScanImg(InputVideo):
 
             edges.append((left_side, right_side))
 
-        #  sort by width, and get a middle point
+        # sort by width, and get a middle point
         edges.sort(key=lambda x: x[1] - x[0])
         middle = len(edges) // 2
         return edges[middle]

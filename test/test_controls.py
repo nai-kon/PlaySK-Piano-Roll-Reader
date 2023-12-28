@@ -14,7 +14,7 @@ class TestNotifyUpdate:
         conf = ConfigMng()
         obj = NotifyUpdate(None, conf)
 
-        # return "VerX.Y"
+        # return "X.Y"
         ver = obj.fetch_latest_version()
         assert re.match(r"\d\.\d", ver) is not None
 
@@ -40,7 +40,7 @@ class TestNotifyUpdate:
         # already notified this version. skip
         conf.update_notified_version = "3.1"
         assert not obj.need_notify("3.1")
-        # more new version is comming. notify
+        # more new version is coming. notify
         assert obj.need_notify("3.2")
 
     def test_notify(self, mocker):
@@ -55,7 +55,6 @@ class TestNotifyUpdate:
         wxcallafter_mock.assert_called_once_with(NotifyDialog, None, "3.1")
 
     def test_check(self, mocker, monkeypatch):
-
         # integration testing
         conf = ConfigMng()
         conf.update_notified_version = "3.0"

@@ -20,7 +20,7 @@ class SingleInstWin():
         self.message_path = "PlaySK_msg_path:"
         self.port = 58583
 
-    def run_socket_server(self) -> None:
+    def file_path_receiver(self) -> None:
         # receive file path from later launched instance
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.bind(("localhost", self.port))
@@ -47,7 +47,7 @@ class SingleInstWin():
             return True
         except socket.error:
             # app is not exists. run socket server as a daemon
-            th = threading.Thread(target=self.run_socket_server, daemon=True)
+            th = threading.Thread(target=self.file_path_receiver, daemon=True)
             th.start()
             return False
 
