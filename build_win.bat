@@ -5,6 +5,10 @@ call .venv\Scripts\activate
 rem build cython code
 pushd .\src\cis_decoder\
 python setup.py build_ext --inplace
+if %errorlevel% neq 0 (
+    echo failed to build cython code
+    exit /b
+)
 popd
 
 rem build exe
