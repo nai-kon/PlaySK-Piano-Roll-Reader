@@ -1,6 +1,9 @@
+import sys
+
 import pytest
 
-from src.input_src import _find_roll_edge, _load_img
+sys.path.append("src/")
+from input_src import _find_roll_edge, _load_cis, _load_img
 
 
 @pytest.mark.parametrize("img_path, expect", [
@@ -12,8 +15,20 @@ from src.input_src import _find_roll_edge, _load_img
 ])
 def test_load_img(img_path, expect):
     img, tempo = _load_img("test/test_images/" + img_path, 80)
-    assert (img is not None) == expect[0]
-    assert tempo == expect[1]
+    assert (img is not None, tempo) == expect
+
+
+@pytest.mark.parametrize("img_path, expect", [
+    # expect is (Image is not None, tempo)
+    ("broken_data.CIS", (False, 80)),
+    ("clocked_single.CIS", (True, 90)),
+])
+def test_load_cis(img_path, expect, mocker):
+    mocker.patch("wx.MessageBox")  # ignore msg box
+    img, tempo = _load_cis("test/test_images/" + img_path, 80, False)
+    assert (img is not None, tempo) == expect
+
+    # Test case of using ImgEditDlg is not implemented yet
 
 
 @pytest.mark.parametrize("img_path, expect", [

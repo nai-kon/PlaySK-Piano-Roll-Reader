@@ -191,7 +191,7 @@ class TestPlayer():
         player.auto_track(frame)
         assert pre_offset == player.tracker_offset
 
-    def test_emulate_oedals(self, player, mocker):
+    def test_emulate_pedals(self, player, mocker):
         hole_color = player.holes.th_bright - 1 if player.holes.is_dark_hole else player.holes.th_bright + 1
         roll_color = 130
         frame = np.full((600, 800, 3), roll_color, np.uint8)

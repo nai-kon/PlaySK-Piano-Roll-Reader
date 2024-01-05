@@ -20,6 +20,12 @@ class TestPlayerMng():
         obj.player_conf_map = obj.init_player_map()
         return obj
 
+    def test_init_player_map(self):
+        obj = PlayerMng()
+        obj.conf_dir = "test/dummy_player_json/"  # includes two file, but one has no base_class key
+        player_map = obj.init_player_map()
+        assert player_map == {"Ampico B white background": "AmpicoB"}
+
     def test_player_list(self, player_mng):
         player_names = sorted(player_mng.player_list)
         gt_names = sorted([
@@ -30,7 +36,6 @@ class TestPlayerMng():
             "Welte Licensee white back",
             "Welte T100 white back"
         ])
-        print(player_names)
         assert player_names == gt_names
 
     def test_get_player_obj(self, player_mng):
