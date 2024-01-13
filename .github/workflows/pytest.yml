@@ -38,6 +38,9 @@ jobs:
       
     - name: Install dependencies
       run: poetry install
-  
+
+    - name: Build cython code
+      run:  pushd src/cis_decoder/; poetry run python setup.py build_ext --inplace; popd;
+
     - name: Test with pytest
       run: poetry run pytest
