@@ -1,0 +1,37 @@
+name: linting
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: 
+        python-ver:
+        - 3.11
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Set up Python ${{ matrix.python-ver }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-ver }}
+        
+    - name: Install poetry
+      uses: abatilo/actions-poetry@v2
+      
+    - name: Install dependencies
+      run: poetry install
+
+    - name: Ruff linting
+      run: poetry run ruff src/
