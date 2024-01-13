@@ -1,0 +1,43 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: pytest
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: 
+        - windows-latest
+        - macos-latest    
+        python-ver:
+        - 3.11
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Set up Python ${{ matrix.python-ver }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-ver }}
+        
+    - name: Install poetry
+      uses: abatilo/actions-poetry@v2
+      
+    - name: Install dependencies
+      run: poetry install
+  
+    - name: Test with pytest
+      run: poetry run pytest
