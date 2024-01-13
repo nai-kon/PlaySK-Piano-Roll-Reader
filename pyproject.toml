@@ -17,12 +17,21 @@ cython = "^3.0.2"
 
 [tool.poetry.group.dev.dependencies]
 pyinstaller = "^6.0.0"
-autopep8 = "^2.0.4"
 pip-licenses = "^4.3.3"
 pytest = "^7.4.3"
 pytest-cov = "^4.1.0"
 pytest-mock = "^3.12.0"
+ruff = "^0.1.13"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+select = ["E", "F", "B", "I", "COM", "A", "UP", "Q", "SIM"]
+ignore = [
+    "E402",
+    "E501",
+    "SIM300",
+    "UP008"
+]
