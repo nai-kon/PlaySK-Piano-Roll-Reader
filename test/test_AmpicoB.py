@@ -3,8 +3,8 @@ import sys
 import pytest
 
 sys.path.append("src/")
-from midi_controller import MidiWrap
 from AmpicoB import AmpicoB
+from midi_controller import MidiWrap
 
 
 class TestAmpicoB:

@@ -3,7 +3,6 @@ import sys
 import pytest
 
 sys.path.append("src/")
-from collections import deque
 
 from midi_controller import MidiWrap
 from WelteT100 import WelteT100

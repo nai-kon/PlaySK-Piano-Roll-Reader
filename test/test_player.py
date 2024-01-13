@@ -12,7 +12,7 @@ from midi_controller import MidiWrap
 from player import Player, TrackerHoles
 
 
-class TestTrackerHoles():
+class TestTrackerHoles:
     def test_tracker_holes(self):
         for path in glob.glob("src/config/*.json"):
             if path.endswith("config.json"):
@@ -65,7 +65,7 @@ class TestTrackerHoles():
                 assert (~v["is_open"]).all()
 
 
-class TestPlayer():
+class TestPlayer:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()

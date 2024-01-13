@@ -1,13 +1,11 @@
 import sys
 from multiprocessing import Event, Pipe, Process
 
-import pytest
-
 sys.path.append("src/")
 from main import SingleInstWin
 
 
-class TestSingleInstWin():
+class TestSingleInstWin:
     def inst_proc(self, sender, event):
         single_inst = SingleInstWin()
         is_exists = single_inst.is_exists()

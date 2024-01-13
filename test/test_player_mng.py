@@ -12,7 +12,7 @@ from WelteLicensee import WelteLicensee
 from WelteT100 import WelteT100
 
 
-class TestPlayerMng():
+class TestPlayerMng:
     @pytest.fixture
     def player_mng(self):
         obj = PlayerMng()
@@ -34,7 +34,7 @@ class TestPlayerMng():
             "Duo-Art white background",
             "Philipps Duca (no expression)",
             "Welte Licensee white back",
-            "Welte T100 white back"
+            "Welte T100 white back",
         ])
         assert player_names == gt_names
 

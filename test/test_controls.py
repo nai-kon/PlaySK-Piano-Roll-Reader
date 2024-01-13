@@ -2,8 +2,6 @@ import re
 import sys
 import time
 
-import pytest
-
 sys.path.append("src/")
 from config import ConfigMng
 from controls import NotifyDialog, NotifyUpdate
