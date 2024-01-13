@@ -1,6 +1,5 @@
 import numpy as np
 import wx
-
 from player import Player
 
 

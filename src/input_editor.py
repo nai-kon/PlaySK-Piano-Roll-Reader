@@ -2,7 +2,6 @@ import platform
 
 import cv2
 import wx
-
 from cis_image import CisImage, ScannerType
 
 
@@ -127,7 +126,7 @@ class SetEdgePane(wx.Panel):
         return int(left), int(right)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from cis_image import CisImage
 
     # high DPI awareness

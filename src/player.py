@@ -4,11 +4,10 @@ from typing import final
 
 import numpy as np
 import wx
-
 from midi_controller import MidiWrap
 
 
-class TrackerHoles():
+class TrackerHoles:
     def __init__(self, conf):
         self.xoffset = 0
         holes = conf["tracker_holes"]
@@ -81,7 +80,7 @@ class TrackerHoles():
         wxdc.SetBrush(wx.TRANSPARENT_BRUSH)
         open_color = wx.Pen((200, 0, 0))
         close_color = wx.Pen((0, 0, 200))
-        pens = [open_color if open else close_color for v in self.group_by_size.values() for open in v["is_open"]]
+        pens = [open_color if is_open else close_color for v in self.group_by_size.values() for is_open in v["is_open"]]
         wxdc.SetLogicalOrigin(self.xoffset * -1, 0)
         wxdc.DrawRectangleList(self.draw_rects, pens)
         wxdc.SetLogicalOrigin(0, 0)
@@ -97,7 +96,7 @@ class TrackerHoles():
         return ret
 
 
-class Player():
+class Player:
     def __init__(self, confpath, midiobj: MidiWrap):
         self.midi = midiobj
 
@@ -193,7 +192,7 @@ class Player():
                 accomp_map["press"] = True
 
     def emulate_expression(self, curtime):
-        accomp_vacuum = self.base_vacuum + sum((v["vacuum"] for v in self.key_accomp_map.values() if v["press"]))
+        accomp_vacuum = self.base_vacuum + sum([v["vacuum"] for v in self.key_accomp_map.values() if v["press"]])
         self.bass_vacuum = self.treble_vacuum = accomp_vacuum
 
         if self.bass_accent:

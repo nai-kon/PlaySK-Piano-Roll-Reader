@@ -8,7 +8,6 @@ from pathlib import Path
 
 import numpy as np
 import wx
-
 from cis_image import CisImage
 from input_editor import ImgEditDlg
 
@@ -97,7 +96,7 @@ def load_scan(path: str, default_tempo: int, force_manual_adjust: bool = False) 
             return _load_img(path, default_tempo)
 
 
-class FPScounter():
+class FPScounter:
     def __init__(self, name="fps"):
         self.name = name
         self.start = None

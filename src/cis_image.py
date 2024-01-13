@@ -5,7 +5,6 @@ from enum import Enum, IntEnum, auto
 import cv2
 import numpy as np
 import wx
-
 from cis_decoder.cis_decoder import _decode_cis, _get_decode_params
 
 
@@ -86,15 +85,14 @@ class CisImage:
                 encoder_val = data[cur_idx]
                 # clock = bool(encoder_val & 32)
                 state = bool(encoder_val & 128)
-                if pre_state != state or cur_line == 0:
-                    if buf_lines:
-                        si = min(buf_lines)
-                        ei = max(buf_lines)
-                        # make re-clock map
-                        for i in np.linspace(ei, si, self.lpt):
-                            reclock_map.append([round(i), height])
-                            height += 1
-                        buf_lines = []
+                if (pre_state != state or cur_line == 0) and buf_lines:
+                    si = min(buf_lines)
+                    ei = max(buf_lines)
+                    # make re-clock map
+                    for i in np.linspace(ei, si, self.lpt):
+                        reclock_map.append([round(i), height])
+                        height += 1
+                    buf_lines = []
 
                 buf_lines.append(cur_line)
                 pre_state = state
@@ -186,10 +184,10 @@ class CisImage:
         # http://semitone440.co.uk/rolls/utils/cisheader/cis-format.htm#scantype
 
         with open(path, "rb") as f:
-            bytes = f.read()
+            data = f.read()
 
-        self.desc = bytes[:32]
-        status_flags = bytes[34:36]
+        self.desc = data[:32]
+        status_flags = data[34:36]
         scanner_types = [
             ScannerType.UNKNOWN,
             ScannerType.FREERUN,
@@ -211,15 +209,15 @@ class CisImage:
             # self.clock_doubler = bool(status_flags[0] & 16)  # not used now
             # self.mirror = bool(status_flags[1] & 16)
             # self.reverse = bool(status_flags[1] & 32)
-            self.vert_sep_twin = int.from_bytes(bytes[36:38], byteorder="little")
-            self.hol_dpi = int.from_bytes(bytes[38:40], byteorder="little")
+            self.vert_sep_twin = int.from_bytes(data[36:38], byteorder="little")
+            self.hol_dpi = int.from_bytes(data[38:40], byteorder="little")
 
-        self.hol_px = int.from_bytes(bytes[40:42], byteorder="little")
-        self.overlap_twin = int.from_bytes(bytes[42:44], byteorder="little")
-        self.tempo = int.from_bytes(bytes[44:46], byteorder="little")
-        self.vert_res = int.from_bytes(bytes[46:48], byteorder="little")
-        self.vert_px = int.from_bytes(bytes[48:52], byteorder="little")
-        self.raw_img = np.frombuffer(bytes[52:], np.uint16)
+        self.hol_px = int.from_bytes(data[40:42], byteorder="little")
+        self.overlap_twin = int.from_bytes(data[42:44], byteorder="little")
+        self.tempo = int.from_bytes(data[44:46], byteorder="little")
+        self.vert_res = int.from_bytes(data[46:48], byteorder="little")
+        self.vert_px = int.from_bytes(data[48:52], byteorder="little")
+        self.raw_img = np.frombuffer(data[52:], np.uint16)
 
         # reclock parameters
         if self.is_clocked:

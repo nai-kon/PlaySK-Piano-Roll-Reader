@@ -1,5 +1,4 @@
 import wx
-
 from player import Player
 
 
@@ -61,17 +60,14 @@ class AmpicoB(Player):
 
         # cancel intensity
         if bass_cancel["is_open"]:
-            # print("bass cancel")
             self.bass_intensity_lock[:] = [False, False, False]
             self.bass_sub_intensity_lock = False
 
         if treble_cancel["is_open"]:
-            # print("treble cancel")
             self.treble_intensity_lock[:] = [False, False, False]
             self.treble_sub_intensity_lock = False
 
         if sub_intensity["is_open"]:
-            # print("sub-zero intensity triggered")
             self.treble_sub_intensity_lock = True
             self.bass_sub_intensity_lock = True
 
@@ -106,9 +102,7 @@ class AmpicoB(Player):
             self.amp_lock_range = [0.3, 0.85]  # 1st amplifier
         elif amplifier["to_close"] and 0.85 < self.amp_cres_pos:
             self.amp_lock_range = [0.85, 1.0]  # 2nd amplifier
-        elif amplifier["to_close"] and self.amp_cres_pos < 0.3:
-            self.amp_lock_range = [0, 1.0]
-        elif amplifier["to_open"]:
+        elif (amplifier["to_close"] and self.amp_cres_pos < 0.3) or amplifier["to_open"]:
             self.amp_lock_range = [0, 1.0]
 
         if amplifier["to_close"]:
@@ -149,8 +143,8 @@ class AmpicoB(Player):
             if sub_intensity_lock:
                 opcode += "-sub"
 
-            min, max = self.intensity_range.get(opcode, [10, 20])
-            return min + self.amp_cres_pos * (max - min)
+            vac_min, vac_max = self.intensity_range.get(opcode, [10, 20])
+            return vac_min + self.amp_cres_pos * (vac_max - vac_min)
 
         self.bass_vacuum = calc_vacuum(self.bass_intensity_lock, self.bass_sub_intensity_lock)
         self.treble_vacuum = calc_vacuum(self.treble_intensity_lock, self.treble_sub_intensity_lock)
@@ -168,7 +162,6 @@ if __name__ == "__main__":
     import time
 
     import numpy as np
-
     from midi_controller import MidiWrap
     midiobj = MidiWrap()
     player = AmpicoB(os.path.join("config", "Ampico B white background.json"), midiobj)

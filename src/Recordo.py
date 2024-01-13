@@ -85,7 +85,7 @@ class WelteT100(Player):
             self.bass_cres_pos += (curtime - self.pre_time) * (1 / self.bass_slow_cres_sec)
         elif self.bass_cres_state == "slow_decres":
             self.bass_cres_pos -= (curtime - self.pre_time) * (1 / self.bass_slow_decres_sec)
-        
+
         if self.holes["bass_forz_forte"]["is_open"]:
             self.bass_cres_pos += (curtime - self.pre_time) * (1 / self.bass_fast_cres_sec)
         elif self.holes["bass_forz_piano"]["is_open"]:
@@ -107,7 +107,7 @@ class WelteT100(Player):
             self.treble_cres_pos += (curtime - self.pre_time) * (1 / self.treble_slow_cres_sec)
         elif self.treble_cres_state == "slow_decres":
             self.treble_cres_pos -= (curtime - self.pre_time) * (1 / self.treble_slow_decres_sec)
-        
+
         if self.holes["treble_forz_forte"]["is_open"]:
             self.treble_cres_pos += (curtime - self.pre_time) * (1 / self.treble_fast_cres_sec)
         elif self.holes["treble_forz_piano"]["is_open"]:
@@ -141,10 +141,12 @@ class WelteT100(Player):
             self.midi.hammer_lift_off()
 
 if __name__ == "__main__":
-    import numpy as np
-    import time
     import os
+    import time
+
+    import numpy as np
     from midi_controller import MidiWrap
+
     midiobj = MidiWrap()
     player = WelteT100(os.path.join("config", "Ampico B white background.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)

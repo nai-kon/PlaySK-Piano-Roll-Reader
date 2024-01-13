@@ -4,13 +4,13 @@ import os
 
 from AmpicoB import AmpicoB
 from DuoArt import DuoArt
+from PhilippsDuca import PhilippsDuca
 from player import Player
 from WelteLicensee import WelteLicensee
 from WelteT100 import WelteT100
-from PhilippsDuca import PhilippsDuca
 
 
-class PlayerMng():
+class PlayerMng:
     def __init__(self):
         self.conf_dir = "config/"
         self.player_conf_map = self.init_player_map()

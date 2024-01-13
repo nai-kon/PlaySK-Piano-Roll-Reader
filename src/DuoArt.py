@@ -42,11 +42,11 @@ class DuoArt(Player):
     def emulate_expression(self, curtime):
 
         # accomp 1->2->4->8
-        accomp_pos = sum([v * l for v, l in zip((1, 2, 4, 8), self.holes["accomp"]["is_open"])])
+        accomp_pos = sum([v * b for v, b in zip((1, 2, 4, 8), self.holes["accomp"]["is_open"])])
         accomp_vacuum = self.accomp_min + (self.accomp_max - self.accomp_min) * (accomp_pos / 15)
 
         # theme 8->4->2->1
-        theme_pos = sum([v * l for v, l in zip((8, 4, 2, 1), self.holes["theme"]["is_open"])])
+        theme_pos = sum([v * b for v, b in zip((8, 4, 2, 1), self.holes["theme"]["is_open"])])
         theme_vacuum = self.theme_min + (self.theme_max - self.theme_min) * (theme_pos / 15)
 
         # crash valve
@@ -73,9 +73,10 @@ class DuoArt(Player):
 
 
 if __name__ == "__main__":
-    import numpy as np
-    import time
     import os
+    import time
+
+    import numpy as np
     from midi_controller import MidiWrap
     midiobj = MidiWrap()
     player = DuoArt(os.path.join("config", "Duo-Art white background.json"), midiobj)

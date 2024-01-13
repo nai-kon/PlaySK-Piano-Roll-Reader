@@ -4,10 +4,9 @@ import urllib.request
 
 import wx
 import wx.adv
-from wx.lib.agw.hyperlink import HyperLinkCtrl
-
 from config import ConfigMng
 from version import APP_TITLE, APP_VERSION, COPY_RIGHT
+from wx.lib.agw.hyperlink import HyperLinkCtrl
 
 
 class WelcomeMsg(wx.Panel):
@@ -51,12 +50,12 @@ class WelcomeMsg(wx.Panel):
 
 
 class SpeedSlider(wx.Panel):
-    def __init__(self, parent, pos=(0, 0), label="Tempo", range=(50, 140), val=80, callback=None):
+    def __init__(self, parent, pos=(0, 0), label="Tempo", tempo_range=(50, 140), val=80, callback=None):
         wx.Panel.__init__(self, parent, wx.ID_ANY, pos)
         self.callback = callback
         self.label = label
         self.caption = wx.StaticText(self, wx.ID_ANY, f"{self.label} {val}")
-        self.slider = wx.Slider(self, wx.ID_ANY, val, range[0], range[1], style=wx.SL_HORIZONTAL)
+        self.slider = wx.Slider(self, wx.ID_ANY, val, tempo_range[0], tempo_range[1], style=wx.SL_HORIZONTAL)
         self.slider.SetPageSize(5)
         self.slider.Bind(wx.EVT_SLIDER, self._slider_changed)
 
@@ -71,9 +70,9 @@ class SpeedSlider(wx.Panel):
         if self.callback is not None:
             self.callback(val)
 
-    def set(self, label, range, val):
+    def set(self, label, tempo_range, val):
         self.label = label
-        self.slider.SetRange(range[0], range[1])
+        self.slider.SetRange(tempo_range[0], tempo_range[1])
         self.slider.SetValue(val)
         wx.CallAfter(self._value_changed, val)
 
@@ -174,9 +173,8 @@ class NotifyUpdate:
 
     def need_notify(self, ver: str | None) -> bool:
         print(ver, self.conf.update_notified_version, APP_VERSION)
-        if ver is not None:
-            if ver not in (self.conf.update_notified_version, APP_VERSION):
-                return True
+        if ver is not None and ver not in (self.conf.update_notified_version, APP_VERSION):
+            return True
         return False
 
     def notify(self, ver: str) -> None:

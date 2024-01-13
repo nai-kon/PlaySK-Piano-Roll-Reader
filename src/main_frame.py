@@ -4,9 +4,8 @@ import sys
 from pathlib import Path
 
 import wx
-
 from config import ConfigMng
-from controls import SpeedSlider, TrackerCtrl, WelcomeMsg, NotifyUpdate
+from controls import NotifyUpdate, SpeedSlider, TrackerCtrl, WelcomeMsg
 from input_src import InputScanImg, load_scan
 from midi_controller import MidiWrap
 from player_mng import PlayerMng
@@ -14,7 +13,7 @@ from vacuum_gauge import VacuumGauge
 from version import APP_TITLE
 
 
-class CallBack():
+class CallBack:
     def __init__(self, player, tracker, bass_vac_lv, treble_vac_lv):
         self.player = player
         self.bass_vac_meter = bass_vac_lv
@@ -233,7 +232,7 @@ class MainFrame(wx.Frame):
     def adjust_image(self, event):
         if self.img_path is not None:
             # re-open with manually adjust dialog
-            self.load_file(self.img_path, True)
+            self.load_file(self.img_path, force_manual_adjust=True)
 
 
 if __name__ == "__main__":

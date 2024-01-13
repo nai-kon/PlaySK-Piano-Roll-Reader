@@ -35,10 +35,12 @@ class WelteLicensee(WelteT100):
 
 
 if __name__ == "__main__":
-    import numpy as np
-    import time
     import os
+    import time
+
+    import numpy as np
     from midi_controller import MidiWrap
+
     midiobj = MidiWrap()
     player = WelteLicensee(os.path.join("config", "Ampico B white background.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)

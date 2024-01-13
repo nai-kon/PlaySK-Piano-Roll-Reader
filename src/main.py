@@ -7,7 +7,7 @@ import threading
 import wx
 
 
-class SingleInstWin():
+class SingleInstWin:
     """
     Check app is single instance on Windows.
     If already exists, send command line arg path(sys.argv[1]) to exist app then close myself.
@@ -45,7 +45,7 @@ class SingleInstWin():
                     sock.sendall(self.message_notify.encode())
             print("app is already exists.")
             return True
-        except socket.error:
+        except OSError:
             # app is not exists. run socket server as a daemon
             th = threading.Thread(target=self.file_path_receiver, daemon=True)
             th.start()
