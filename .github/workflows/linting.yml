@@ -1,4 +1,4 @@
-name: pytest
+name: linting
 
 on:
   push:
@@ -11,14 +11,11 @@ permissions:
   contents: read
 
 jobs:
-  pytest:
-    runs-on: ${{ matrix.os }}
+  linting:
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        os: 
-        - windows-latest
-        - macos-latest    
+      matrix: 
         python-ver:
         - 3.11
     steps:
@@ -36,8 +33,5 @@ jobs:
     - name: Install dependencies
       run: poetry install
 
-    - name: Build cython code
-      run:  pushd src/cis_decoder/; poetry run python setup.py build_ext --inplace; popd;
-
-    - name: Test with pytest
-      run: poetry run pytest
+    - name: Ruff linting
+      run: poetry run ruff src/
