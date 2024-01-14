@@ -38,6 +38,9 @@ jobs:
 
     - name: Build cython code
       run:  pushd src/cis_decoder/; poetry run python setup.py build_ext --inplace; popd;
+    
+    - name: Ruff linting
+      run: poetry run ruff src/
 
     - name: Test with pytest
       run: poetry run pytest
