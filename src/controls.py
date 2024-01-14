@@ -1,4 +1,5 @@
 import json
+import re
 import threading
 import urllib.request
 
@@ -164,9 +165,12 @@ class NotifyUpdate:
         self.url = "https://api.github.com/repos/nai-kon/PlaySK-Piano-Roll-Reader/releases/latest"
 
     def fetch_latest_version(self) -> str | None:
+        # get from release title. If title is not format in "VerX.X", not released yet
         try:
             with urllib.request.urlopen(self.url, timeout=10) as res:
-                ver = json.loads(res.read().decode("utf8")).get("tag_name", None).lstrip("Ver")
+                title = json.loads(res.read().decode("utf8")).get("name", None)
+                matched = re.findall(r"^Ver(\d.\d)$", title)
+                ver = matched[0] if matched else None
         except Exception:
             ver = None
         return ver

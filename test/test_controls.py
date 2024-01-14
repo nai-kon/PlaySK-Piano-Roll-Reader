@@ -1,3 +1,4 @@
+import json
 import re
 import sys
 import time
@@ -8,7 +9,7 @@ from controls import NotifyDialog, NotifyUpdate
 
 
 class TestNotifyUpdate:
-    def test_fetch_latest_version(self):
+    def test_fetch_latest_version(self, monkeypatch):
         conf = ConfigMng()
         obj = NotifyUpdate(None, conf)
 
@@ -16,7 +17,12 @@ class TestNotifyUpdate:
         ver = obj.fetch_latest_version()
         assert re.match(r"\d\.\d", ver) is not None
 
-        # return None
+        # invalid release title return None
+        monkeypatch.setattr(json, "loads", lambda self: {"name": "Draft"})
+        ver = obj.fetch_latest_version()
+        assert ver is None
+
+        # network error return None
         obj.url = "https://NOTEXISTS.gov"
         start = time.time()
         ver = obj.fetch_latest_version()
