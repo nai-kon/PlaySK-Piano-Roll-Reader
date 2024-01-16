@@ -65,10 +65,10 @@ $ python main.py
 ## Build binary
 
 - Windows (x64)
-    - `./build_win.bat`
+    - `poetry run ./build_win.bat`
     - tested on Windows10
 - macOS (x64/ARM)
-    - `./build_mac.sh`
+    - `poetry run ./build_mac.sh`
     - tested on macOS Venture (both Intel and M1 cpu)
 
 ## Notes

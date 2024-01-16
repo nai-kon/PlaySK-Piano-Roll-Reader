@@ -1,0 +1,90 @@
+name: release
+
+on:
+  push:
+    tags:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # test:
+  #   uses: ./.github/workflows/pytest.yml
+
+  build:
+    # needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, macos-latest-xlarge]
+        python-ver: [3.11]
+        include: 
+          - os: windows-latest
+            build_cmd: build_win.bat
+            zip_name: PlaySK-PianoRoll-Reader-Win.x64.zip
+          - os: macos-latest
+            build_cmd: bash build_mac.sh
+            zip_name: PlaySK-PianoRoll-Reader-Mac.x64.zip
+          - os: macos-latest-xlarge
+            build_cmd: bash build_mac.sh
+            zip_name: PlaySK-PianoRoll-Reader-Mac.ARM.zip
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Set up Python ${{ matrix.python-ver }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-ver }}
+        
+    - name: Install poetry
+      uses: abatilo/actions-poetry@v2
+      
+    - name: Install dependencies
+      run: poetry install
+
+    - name: build binary
+      run: poetry run ${{ matrix.build_cmd }}
+
+    - name: Windows x64, collect release files
+      if: startsWith( matrix.os , 'windows' )
+      run: Compress-Archive -Path "dist/PlaySK Piano Roll Reader/*","sample_scans/" -DestinationPath ${{ matrix.zip_name }}
+
+    - name: Mac arm/x64, collect release files
+      if: startsWith( matrix.os, 'mac' )
+      run: |
+        mkdir release_files
+        cp -pr dist/* release_files/
+        cp -pr sample_scans release_files/
+        pushd release_files/
+        zip -r -q ../${{ matrix.zip_name }} *
+        popd
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.zip_name }}
+        path: ${{ matrix.zip_name }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions: 
+      contents: write
+
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: assets
+
+    - name: Display structure of downloaded files
+      run: ls -la
+
+    - name: create release
+      uses: softprops/action-gh-release@v1
+      with:
+        draft: true
+        files: ./assets/*/*
