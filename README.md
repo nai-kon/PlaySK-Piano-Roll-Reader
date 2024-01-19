@@ -73,3 +73,62 @@ $ python main.py
 
 ## Notes
 * Windows dark mode is not working due to the wxpython.
+
+
+## Sequence diagram
+```mermaid
+sequenceDiagram
+    participant user
+    participant appmain
+    participant update check thread
+    participant image scroll thread
+    participant emulator as roll view &<br>player emulation
+    participant midi port
+
+    user->>+appmain: start app
+    appmain->>appmain: load last config
+    appmain->>+update check thread: start update check thread
+    update check thread->>appmain: 
+    update check thread->>-update check thread: check update
+    user->>appmain: open file
+    appmain->>+image scroll thread: start image scroll thread
+    image scroll thread->>appmain: 
+    image scroll thread->>image scroll thread: load file
+    loop over 100hz
+        image scroll thread->>+emulator: roll image
+        emulator->>+midi port: migi signal
+        midi port->>-emulator: 
+        emulator->>-image scroll thread: 
+        image scroll thread->>+emulator: roll image
+        emulator->>+midi port: migi signal
+        midi port->>-emulator: 
+        emulator->>-image scroll thread: 
+    end
+    user->>appmain: change tempo
+    appmain->>image scroll thread: 
+    image scroll thread->>image scroll thread: change scroll speed
+    user->>appmain: change tracker bar
+    appmain->>emulator: 
+    emulator->>emulator: change tracker bar
+    
+    
+    user->>appmain: open file
+    appmain->>image scroll thread: end request
+    image scroll thread->>-appmain: 
+    appmain->>+image scroll thread: start image scroll thread
+    image scroll thread->>image scroll thread: load file
+    loop over 100hz
+        image scroll thread->>+emulator: roll image
+        emulator->>+midi port: migi signal
+        midi port->>-emulator: 
+        emulator->>-image scroll thread: 
+        image scroll thread->>+emulator: roll image
+        emulator->>+midi port: migi signal
+        midi port->>-emulator: 
+        emulator->>-image scroll thread: 
+    end
+    user->>appmain: select close button
+    appmain->>image scroll thread: end request
+    image scroll thread->>-appmain: 
+    appmain->>-user: end app
+```
