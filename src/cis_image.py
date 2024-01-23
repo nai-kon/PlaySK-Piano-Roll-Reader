@@ -5,8 +5,14 @@ from enum import Enum, IntEnum, auto
 import cv2
 import numpy as np
 import wx
-
-from cis_decoder.cis_decoder import decode_cis, get_outimg_size
+try:
+    from cis_decoder.cis_decoder import decode_cis, get_outimg_size
+except ModuleNotFoundError:
+    raise ModuleNotFoundError("""
+        Can't import cis_decoder. Did you build cis_decoder?
+        1. cd cis_decoder/
+        2. python setup.py build_ext --inplace
+    """)
 
 
 class ScannerType(Enum):

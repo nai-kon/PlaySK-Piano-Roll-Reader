@@ -1,156 +1,65 @@
+import numpy as np
 from player import Player
 
 
-class WelteT100(Player):
+class Recordo(Player):
     def __init__(self, confpath, midiobj):
         super().__init__(confpath, midiobj)
 
-        self.bass_cres_pos = 0
-        self.bass_cres_state = "slow_decres"
-        self.bass_mf_hook = False
-        self.bass_slow_cres_sec = 4.76   # min to max
-        self.bass_slow_decres_sec = 4.76  # max to min
-        self.bass_fast_cres_sec = 0.65
-        self.bass_fast_decres_sec = 0.150
+        # from original notebook from Robert Billings of US Music Co
+        self.intensities = {
+            "pp": 9,
+            "p": 11.25,
+            "mf": 15.5,
+            "f": 19.5,
+            "ff": 35,
+        }
 
-        self.treble_cres_pos = 0
-        self.treble_cres_state = "slow_decres"
-        self.treble_mf_hook = False
-        self.treble_slow_cres_sec = 4.76   # min to max
-        self.treble_slow_decres_sec = 4.76  # max to min
-        self.treble_fast_cres_sec = 0.65
-        self.treble_fast_decres_sec = 0.156
-
-        self.mf_hook_pos = 0.47
-        self.pre_time = None
-        self.min_vacuum = 6     # in W.G
-        self.max_vacuum = 35    # in W.G
-
-        self.bass_vacuum = self.min_vacuum
-        self.treble_vacuum = self.min_vacuum
+        self.delay_ratio = 0.15
+        self.vacuum_pre = self.intensities["pp"]
+        self.bass_vacuum = self.treble_vacuum = self.intensities["pp"]
 
     def emulate_off(self):
         super().emulate_off()
-        self.bass_cres_pos = 0
-        self.bass_cres_state = "slow_decres"
-        self.bass_mf_hook = False
-        self.treble_cres_pos = 0
-        self.treble_cres_state = "slow_decres"
-        self.treble_mf_hook = False
-        self.bass_vacuum = self.min_vacuum
-        self.treble_vacuum = self.min_vacuum
+        self.vacuum_pre = self.intensities["pp"]
+        self.bass_vacuum = self.treble_vacuum = self.intensities["pp"]
 
-    def emulate_expression(self, curtime):
+    def calc_velocity(self):
+        idx = np.digitize([self.bass_vacuum, self.treble_vacuum], bins=self.velocity_bins)
+        bass_velo, treble_velo = self.velocity[0] + idx
 
-        # Check bass expression holes
-        if self.holes["bass_mf_on"]["to_open"]:
-            self.bass_mf_hook = True
-        elif self.holes["bass_mf_off"]["to_open"]:
-            self.bass_mf_hook = False
-
-        if self.holes["bass_cresc_forte"]["to_open"]:
-            self.bass_cres_state = "slow_cres"
-        elif self.holes["bass_cresc_piano"]["to_open"]:
-            self.bass_cres_state = "slow_decres"
-
-
-        # Check treble expression holes
-        if self.holes["treble_mf_on"]["to_open"]:
-            self.treble_mf_hook = True
-        elif self.holes["treble_mf_off"]["to_open"]:
-            self.treble_mf_hook = False
-
-        if self.holes["treble_cresc_forte"]["to_open"]:
-            self.treble_cres_state = "slow_cres"
-        elif self.holes["treble_cresc_piano"]["to_open"]:
-            self.treble_cres_state = "slow_decres"
-
-        self.calc_crescendo(curtime)
-        self.calc_expression()
-
-    def calc_crescendo(self, curtime):
-        if self.pre_time is None:
-            self.pre_time = curtime
-
-        # bass
-        cres_pos_min = 0
-        cres_pos_max = 1
-        if self.bass_mf_hook:
-            if self.bass_cres_pos < self.mf_hook_pos:
-                cres_pos_max = self.mf_hook_pos - 0.01
-            else:
-                cres_pos_min = self.mf_hook_pos + 0.01
-
-        if self.bass_cres_state == "slow_cres":
-            self.bass_cres_pos += (curtime - self.pre_time) * (1 / self.bass_slow_cres_sec)
-        elif self.bass_cres_state == "slow_decres":
-            self.bass_cres_pos -= (curtime - self.pre_time) * (1 / self.bass_slow_decres_sec)
+        # emulate bass/treble hammer rail
+        if self.holes["bass_hammer_rail"]["is_open"]:
+            bass_velo = int(bass_velo * 0.8)
+        if self.holes["treble_hammer_rail"]["is_open"]:
+            treble_velo = int(treble_velo * 0.8)
         
-        if self.holes["bass_forz_forte"]["is_open"]:
-            self.bass_cres_pos += (curtime - self.pre_time) * (1 / self.bass_fast_cres_sec)
-        elif self.holes["bass_forz_piano"]["is_open"]:
-            self.bass_cres_pos -= (curtime - self.pre_time) * (1 / self.bass_fast_decres_sec)
-
-        self.bass_cres_pos = max(self.bass_cres_pos, cres_pos_min)
-        self.bass_cres_pos = min(self.bass_cres_pos, cres_pos_max)
-
-        # treble
-        cres_pos_min = 0
-        cres_pos_max = 1
-        if self.treble_mf_hook:
-            if self.treble_cres_pos < self.mf_hook_pos:
-                cres_pos_max = self.mf_hook_pos - 0.01
-            else:
-                cres_pos_min = self.mf_hook_pos + 0.01
-
-        if self.treble_cres_state == "slow_cres":
-            self.treble_cres_pos += (curtime - self.pre_time) * (1 / self.treble_slow_cres_sec)
-        elif self.treble_cres_state == "slow_decres":
-            self.treble_cres_pos -= (curtime - self.pre_time) * (1 / self.treble_slow_decres_sec)
-        
-        if self.holes["treble_forz_forte"]["is_open"]:
-            self.treble_cres_pos += (curtime - self.pre_time) * (1 / self.treble_fast_cres_sec)
-        elif self.holes["treble_forz_piano"]["is_open"]:
-            self.treble_cres_pos -= (curtime - self.pre_time) * (1 / self.treble_fast_decres_sec)
-
-        self.treble_cres_pos = max(self.treble_cres_pos, cres_pos_min)
-        self.treble_cres_pos = min(self.treble_cres_pos, cres_pos_max)
-
-        self.pre_time = curtime
-
-    def calc_expression(self):
-        def calc_vacuum(cres_pos):
-            return self.min_vacuum + cres_pos * (self.max_vacuum - self.min_vacuum)
-
-        self.bass_vacuum = calc_vacuum(self.bass_cres_pos)
-        self.treble_vacuum = calc_vacuum(self.treble_cres_pos)
-
+        return bass_velo, treble_velo
+    
     def emulate_pedals(self):
         # sustain pedal
-        if self.holes["sustain_on"]["is_open"]:
+        sustain = self.holes["sustain"]
+        if sustain["to_open"]:
             self.midi.sustain_on()
 
-        elif self.holes["sustain_off"]["is_open"]:
+        elif sustain["to_close"]:
             self.midi.sustain_off()
 
-        # hammer rail lift emulation
-        if self.holes["soft_on"]["is_open"]:
-            self.midi.hammer_lift_on()
+        # no soft pedal
 
-        elif self.holes["soft_off"]["is_open"]:
-            self.midi.hammer_lift_off()
+    def emulate_expression(self, curtime):
+        if self.holes["ff"]["is_open"]:
+            target_vac = self.intensities["ff"]
+        elif self.holes["f"]["is_open"]:
+            target_vac = self.intensities["f"]
+        elif self.holes["mf"]["is_open"]:
+            target_vac = self.intensities["mf"]
+        elif self.holes["p"]["is_open"]:
+            target_vac = self.intensities["p"]
+        else:
+            target_vac = self.intensities["pp"]
 
-if __name__ == "__main__":
-    import numpy as np
-    import time
-    import os
-    from midi_controller import MidiWrap
-    midiobj = MidiWrap()
-    player = WelteT100(os.path.join("config", "Ampico B white background.json"), midiobj)
-    frame = np.full((600, 800, 3), 100, np.uint8)
-    start = time.perf_counter()
-    for _ in range(10000):
-        player.emulate(frame, time.perf_counter())
-    end = time.perf_counter()
-    t = end - start
-    print(t, "per", (t / 10000) * 1000, "ms")
+        # delay function
+        vacuum = self.vacuum_pre + (target_vac - self.vacuum_pre) * self.delay_ratio
+        self.vacuum_pre = vacuum
+        self.bass_vacuum = self.treble_vacuum = vacuum

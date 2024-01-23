@@ -8,6 +8,7 @@ from player import Player
 from WelteLicensee import WelteLicensee
 from WelteT100 import WelteT100
 from PhilippsDuca import PhilippsDuca
+from Recordo import Recordo
 
 
 class PlayerMng():
@@ -48,7 +49,8 @@ class PlayerMng():
                     return WelteLicensee(confpath, midiobj)
                 case "PhillipsDuca":
                     return PhilippsDuca(confpath, midiobj)
-
+                case "Recordo":
+                    return Recordo(confpath, midiobj)
         return None
 
 
