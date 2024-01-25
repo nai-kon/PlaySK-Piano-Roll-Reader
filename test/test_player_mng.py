@@ -8,6 +8,7 @@ from DuoArt import DuoArt
 from PhilippsDuca import PhilippsDuca
 from player import Player
 from player_mng import PlayerMng
+from Recordo import Recordo
 from WelteLicensee import WelteLicensee
 from WelteT100 import WelteT100
 
@@ -35,6 +36,7 @@ class TestPlayerMng:
             "Philipps Duca (no expression)",
             "Welte Licensee white back",
             "Welte T100 white back",
+            "Recordo white back",
         ])
         assert player_names == gt_names
 
@@ -46,3 +48,4 @@ class TestPlayerMng:
         assert type(player_mng.get_player_obj("88 Note white background", None)) is Player
         assert type(player_mng.get_player_obj("Welte Licensee white back", None)) is WelteLicensee
         assert type(player_mng.get_player_obj("Welte T100 white back", None)) is WelteT100
+        assert type(player_mng.get_player_obj("Recordo white back", None)) is Recordo
