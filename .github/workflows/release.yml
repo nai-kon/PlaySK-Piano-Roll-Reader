@@ -10,11 +10,11 @@ permissions:
   contents: read
 
 jobs:
-  # test:
-  #   uses: ./.github/workflows/pytest.yml
+  test:
+    uses: ./.github/workflows/pytest.yml
 
   build:
-    # needs: test
+    needs: test
     strategy:
       fail-fast: false
       matrix:
