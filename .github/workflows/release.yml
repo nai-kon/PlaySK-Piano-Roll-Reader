@@ -3,6 +3,7 @@ name: release
 on:
   push:
     tags:
+      - '*'
   workflow_dispatch:
 
 permissions:
@@ -17,26 +18,28 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, macos-latest-xlarge]
         python-ver: [3.11]
+        # only build for Windows. Because Mac needs software notarization but I don't have $99 for it.
+        os: [windows-latest]  
+        # os: [windows-latest, macos-latest, macos-latest-xlarge]
         include: 
           - os: windows-latest
             build_cmd: build_win.bat
             zip_name: PlaySK-PianoRoll-Reader-Win.x64.zip
-          - os: macos-latest
-            build_cmd: bash build_mac.sh
-            zip_name: PlaySK-PianoRoll-Reader-Mac.x64.zip
-          - os: macos-latest-xlarge
-            build_cmd: bash build_mac.sh
-            zip_name: PlaySK-PianoRoll-Reader-Mac.ARM.zip
+          # - os: macos-latest
+          #   build_cmd: bash build_mac.sh
+          #   zip_name: PlaySK-PianoRoll-Reader-Mac.x64.zip
+          # - os: macos-latest-xlarge
+          #   build_cmd: bash build_mac.sh
+          #   zip_name: PlaySK-PianoRoll-Reader-Mac.ARM.zip
 
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       
     - name: Set up Python ${{ matrix.python-ver }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-ver }}
         
