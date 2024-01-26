@@ -169,7 +169,7 @@ class NotifyUpdate:
         try:
             with urllib.request.urlopen(self.url, timeout=10) as res:
                 title = json.loads(res.read().decode("utf8")).get("name", None)
-                matched = re.findall(r"^Ver(\d.\d)$", title)
+                matched = re.findall(r"^Ver(\d.\d.\d)$", title)
                 ver = matched[0] if matched else None
         except Exception:
             ver = None
@@ -177,9 +177,9 @@ class NotifyUpdate:
 
     def need_notify(self, ver: str | None) -> bool:
         print(ver, self.conf.update_notified_version, APP_VERSION)
-        if ver is not None and ver not in (self.conf.update_notified_version, APP_VERSION):
-            return True
-        return False
+        return (ver is not None and 
+            ver > self.conf.update_notified_version and
+            ver > APP_VERSION)
 
     def notify(self, ver: str) -> None:
         # once notify, no notify until next release
