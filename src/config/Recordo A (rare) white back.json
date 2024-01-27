@@ -1,6 +1,6 @@
 {
-  "note": "Recordo setting for white background roll image",
-  "base_class": "Recordo",
+  "note": "Recordo A setting for white background roll image",
+  "base_class": "RecordoA",
   "roll_width": 11.25,
   "spool_diameter": 1.9,
   "default_tempo": 80,
@@ -113,56 +113,56 @@
       "y": 292,
       "w": 5,
       "h": 15,
-      "on_apature": 0.1,
-      "off_apature": 0.05
+      "on_apature": 0.15,
+      "off_apature": 0.1
     },
     "sustain": {
       "x": 36,
       "y": 292,
       "w": 5,
       "h": 15,
-      "on_apature": 0.1,
-      "off_apature": 0.05
+      "on_apature": 0.15,
+      "off_apature": 0.1
     },
     "ff": {
       "x": 742,
       "y": 292,
       "w": 5,
       "h": 15,
-      "on_apature": 0.1,
-      "off_apature": 0.05
+      "on_apature": 0.15,
+      "off_apature": 0.1
     },
     "f": {
       "x": 750,
       "y": 292,
       "w": 5,
       "h": 15,
-      "on_apature": 0.1,
-      "off_apature": 0.05
+      "on_apature": 0.15,
+      "off_apature": 0.1
     },
     "mf": {
       "x": 758,
       "y": 292,
       "w": 5,
       "h": 15,
-      "on_apature": 0.1,
-      "off_apature": 0.05
+      "on_apature": 0.15,
+      "off_apature": 0.1
     },
     "p": {
       "x": 766,
       "y": 292,
       "w": 5,
       "h": 15,
-      "on_apature": 0.1,
-      "off_apature": 0.05
+      "on_apature": 0.15,
+      "off_apature": 0.1
     },
     "treble_hammer_rail": {
       "x": 774,
       "y": 292,
       "w": 5,
       "h": 15,
-      "on_apature": 0.1,
-      "off_apature": 0.05
+      "on_apature": 0.15,
+      "off_apature": 0.1
     }
   }
 }
