@@ -6,7 +6,8 @@ from AmpicoB import AmpicoB
 from DuoArt import DuoArt
 from PhilippsDuca import PhilippsDuca
 from player import Player
-from Recordo import Recordo
+from RecordoA import RecordoA
+from RecordoB import RecordoB
 from WelteLicensee import WelteLicensee
 from WelteT100 import WelteT100
 
@@ -42,7 +43,8 @@ class PlayerMng:
             "WelteT100": WelteT100,
             "WelteLicensee": WelteLicensee,
             "PhillipsDuca": PhilippsDuca,
-            "Recordo": Recordo,
+            "RecordoA": RecordoA,
+            "RecordoB": RecordoB,
         }
         clsobj = cls_map.get(cls_name, None)
         if clsobj is not None:

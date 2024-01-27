@@ -1,15 +1,15 @@
 from player import Player
 
 
-class Recordo(Player):
+class RecordoA(Player):
     def __init__(self, confpath, midiobj):
         super().__init__(confpath, midiobj)
 
         # from Robert Billings's notebook  (US Music Co.)
         # "-hr" with hammer rail
         self.intensities = {
-            "pp-hr": 8, 
-            "pp": 9,
+            "p1-hr": 8, 
+            "": 11,
             "p-hr": 10.125,
             "p": 11.25,
             "mf-hr": 13.375,
