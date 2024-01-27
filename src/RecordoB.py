@@ -6,46 +6,46 @@ class RecordoB(RecordoA):
         super().__init__(confpath, midiobj)
 
         # from Robert Billings's notebook  (US Music Co.)
-        # "-hr" with hammer rail
-        self.intensities = {
-            "pp-hr": 8, 
-            "pp": 9,
-            "p-hr": 10.125,
-            "p": 11.25,
-            "mf-hr": 13.375,
-            "mf": 15.5,
-            "f-hr": 17.5,
-            "f": 19.5,
-            "ff-hr": 27.25,
-            "ff": 35,
-        }
+        self.pp_with_hammer_rail = 8
+        self.intensities = [
+            9,      # pp
+            11.25,  # p
+            15.5,   # mf
+            19.5,   # f
+            35,     # ff
+        ]
 
-        self.delay_ratio = 0.15
-        self.bass_vacuum_pre = self.intensities["pp"]
-        self.treble_vacuum_pre = self.intensities["pp"]
-        self.bass_vacuum = self.treble_vacuum = self.intensities["pp"]
 
     def emulate_expression(self, curtime):
-        
+        vac_lv = 0
         if self.holes["ff"]["is_open"]:
-            vac_lv = "ff"
+            vac_lv = 4
         elif self.holes["f"]["is_open"]:
-            vac_lv = "f"
+            vac_lv = 3
         elif self.holes["mf"]["is_open"]:
-            vac_lv = "mf"
+            vac_lv = 2
         elif self.holes["p"]["is_open"]:
-            vac_lv = "p"
-        else:
-            vac_lv = "pp"
+            vac_lv = 1
 
-        bass_vac_lv = treble_vac_lv = vac_lv
+        # The hammer rail ports reduced the playing level to midway to the next lower intensity
         if self.holes["bass_hammer_rail"]["is_open"]:
-            bass_vac_lv += "-hr"
+            if vac_lv > 0:
+                bass_target_vac = (self.intensities[vac_lv] + self.intensities[vac_lv - 1]) / 2
+            else:
+                bass_target_vac = self.pp_with_hammer_rail
+        else:
+            bass_target_vac = self.intensities[vac_lv]
+
         if self.holes["treble_hammer_rail"]["is_open"]:
-            treble_vac_lv += "-hr"
+            if vac_lv > 0:
+                treble_target_vac = (self.intensities[vac_lv] + self.intensities[vac_lv - 1]) / 2
+            else:
+                treble_target_vac = self.pp_with_hammer_rail
+        else:
+            treble_target_vac = self.intensities[vac_lv]
     
         # delay function
-        self.bass_vacuum = self.bass_vacuum_pre + (self.intensities[bass_vac_lv] - self.bass_vacuum_pre) * self.delay_ratio
-        self.treble_vacuum = self.treble_vacuum_pre + (self.intensities[treble_vac_lv] - self.treble_vacuum_pre) * self.delay_ratio
+        self.bass_vacuum = self.bass_vacuum_pre + (bass_target_vac - self.bass_vacuum_pre) * self.delay_ratio
+        self.treble_vacuum = self.treble_vacuum_pre + (treble_target_vac - self.treble_vacuum_pre) * self.delay_ratio
         self.bass_vacuum_pre = self.bass_vacuum
         self.treble_vacuum_pre = self.treble_vacuum
