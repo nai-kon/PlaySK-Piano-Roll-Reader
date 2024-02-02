@@ -29,9 +29,9 @@ class CallBack:
             self.treble_vac_meter.vacuum = self.player.treble_vacuum
             self.tracker.changed(self.player.tracker_offset)
 
-    def key_event(self, key, keydown):
-        if self.player is not None:
-            self.player.expression_key_event(key, keydown)
+    # def key_event(self, key, keydown):
+    #     if self.player is not None:
+    #         self.player.expression_key_event(key, keydown)
 
 
 class FileDrop(wx.FileDropTarget):
@@ -151,15 +151,15 @@ class MainFrame(wx.Frame):
         self.treble_vacuum_lv.destroy()
         self.Destroy()
 
-    def on_keydown(self, event):
-        keycode = event.GetUnicodeKey()
-        self.callback.key_event(keycode, True)
-        event.Skip()
+    # def on_keydown(self, event):
+    #     keycode = event.GetUnicodeKey()
+    #     self.callback.key_event(keycode, True)
+    #     event.Skip()
 
-    def on_keyup(self, event):
-        keycode = event.GetUnicodeKey()
-        self.callback.key_event(keycode, False)
-        event.Skip()
+    # def on_keyup(self, event):
+    #     keycode = event.GetUnicodeKey()
+    #     self.callback.key_event(keycode, False)
+    #     event.Skip()
 
     def change_midi_port(self, event=None):
         idx = self.port_sel.GetSelection()

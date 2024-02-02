@@ -128,15 +128,15 @@ class Player:
         self.velocity_bins = [np.poly1d(k)(v) for v in range(int(self.velocity[0]), int(self.velocity[-1] + 1))]
 
         # for manual expression by keyboard input
-        self.bass_accent = False
-        self.bass_accent_key = ord("A")
-        self.treble_accent = False
-        self.treble_accent_key = ord("S")
-        self.key_accomp_map = {
-            ord("J"): {"press": False, "vacuum": 3},
-            ord("K"): {"press": False, "vacuum": 7},
-            ord("L"): {"press": False, "vacuum": 15},
-        }
+        # self.bass_accent = False
+        # self.bass_accent_key = ord("A")
+        # self.treble_accent = False
+        # self.treble_accent_key = ord("S")
+        # self.key_accomp_map = {
+        #     ord("J"): {"press": False, "vacuum": 3},
+        #     ord("K"): {"press": False, "vacuum": 7},
+        #     ord("L"): {"press": False, "vacuum": 15},
+        # }
 
     def calc_velocity(self):
         idx = np.digitize([self.bass_vacuum, self.treble_vacuum], bins=self.velocity_bins)
@@ -177,19 +177,19 @@ class Player:
 
             self.during_emulate_evt.set()
 
-    def expression_key_event(self, key, keydown):
-        if key == self.bass_accent_key:
-            self.bass_accent = keydown
+    # def expression_key_event(self, key, keydown):
+    #     if key == self.bass_accent_key:
+    #         self.bass_accent = keydown
 
-        if key == self.treble_accent_key:
-            self.treble_accent = keydown
+    #     if key == self.treble_accent_key:
+    #         self.treble_accent = keydown
 
-        accomp_map = self.key_accomp_map.get(key, None)
-        if accomp_map is not None:
-            if accomp_map["press"] and not keydown:
-                accomp_map["press"] = False
-            if not accomp_map["press"] and keydown:
-                accomp_map["press"] = True
+    #     accomp_map = self.key_accomp_map.get(key, None)
+    #     if accomp_map is not None:
+    #         if accomp_map["press"] and not keydown:
+    #             accomp_map["press"] = False
+    #         if not accomp_map["press"] and keydown:
+    #             accomp_map["press"] = True
 
     def emulate_expression(self, curtime):
         accomp_vacuum = self.base_vacuum + sum([v["vacuum"] for v in self.key_accomp_map.values() if v["press"]])
