@@ -192,14 +192,15 @@ class Player:
     #             accomp_map["press"] = True
 
     def emulate_expression(self, curtime):
-        accomp_vacuum = self.base_vacuum + sum([v["vacuum"] for v in self.key_accomp_map.values() if v["press"]])
-        self.bass_vacuum = self.treble_vacuum = accomp_vacuum
+        pass
+        # accomp_vacuum = self.base_vacuum + sum([v["vacuum"] for v in self.key_accomp_map.values() if v["press"]])
+        # self.bass_vacuum = self.treble_vacuum = accomp_vacuum
 
-        if self.bass_accent:
-            self.bass_vacuum = min(self.bass_vacuum + 9, self.max_vacuum)
+        # if self.bass_accent:
+        #     self.bass_vacuum = min(self.bass_vacuum + 9, self.max_vacuum)
 
-        if self.treble_accent:
-            self.treble_vacuum = min(self.treble_vacuum + 9, self.max_vacuum)
+        # if self.treble_accent:
+        #     self.treble_vacuum = min(self.treble_vacuum + 9, self.max_vacuum)
 
     def emulate_pedals(self):
         # sustain pedal
