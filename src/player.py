@@ -84,7 +84,7 @@ class TrackerHoles:
             self.open_pen = wx.Pen((200, 0, 0))
         if self.close_pen is None:
             self.close_pen = wx.Pen((0, 0, 200))
-            
+
         wxdc.SetBrush(wx.TRANSPARENT_BRUSH)
         pens = [self.open_pen if is_open else self.close_pen for v in self.group_by_size.values() for is_open in v["is_open"]]
         wxdc.SetLogicalOrigin(self.xoffset * -1, 0)
@@ -128,8 +128,8 @@ class Player:
 
         # vacuum to velocity map
         self.max_vacuum = 40
-        vacuum = list(range(5, self.max_vacuum + 1))
-        self.velocity = [37, 42, 46.5, 50.5, 54, 57, 59.5, 61.7, 63.7, 65.5, 67.1, 68.6, 70, 71.3, 72.5, 73.6, 74.6, 75.6, 76.5, 77.4, 78.3, 79.1, 79.9, 80.7, 81.4, 82.1, 82.8, 83.4, 84, 84.6, 85.2, 85.8, 86.4, 87, 87.6, 88.2]
+        vacuum = list(range(4, self.max_vacuum + 1))
+        self.velocity = [33, 37, 42, 46.5, 50.5, 54, 57, 59.5, 61.7, 63.7, 65.5, 67.1, 68.6, 70, 71.3, 72.5, 73.6, 74.6, 75.6, 76.5, 77.4, 78.3, 79.1, 79.9, 80.7, 81.4, 82.1, 82.8, 83.4, 84, 84.6, 85.2, 85.8, 86.4, 87, 87.6, 88.2]
         k = np.polyfit(self.velocity, vacuum, 5)
         self.velocity_bins = [np.poly1d(k)(v) for v in range(int(self.velocity[0]), int(self.velocity[-1] + 1))]
 

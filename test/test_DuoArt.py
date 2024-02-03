@@ -61,7 +61,7 @@ class TestDuoArt:
         for theme_port in theme_ports:
             pos = player.holes["theme"]["pos"][theme_port]
             frame[pos[1]: pos[3], pos[0]: pos[2]] = 255
-        
+
         bass_snake, treble_snake = snake_bites
         if bass_snake:
             pos = player.holes["bass_snakebite"]["pos"][0]
@@ -73,7 +73,7 @@ class TestDuoArt:
         for _ in range(len(player.theme_delay_que) + 1):
             player.holes.set_frame(frame, 0)
             player.emulate_expression(0)
-        
+
         assert expect[0] - 0.1 <  player.bass_vacuum < expect[0] + 0.1
         assert expect[1] - 0.1 <  player.treble_vacuum < expect[1] + 0.1
 

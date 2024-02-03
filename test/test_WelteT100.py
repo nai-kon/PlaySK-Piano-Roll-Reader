@@ -37,14 +37,14 @@ class TestWelteT100:
 
     def test_pedal(self, player, mocker):
         frame = np.full((600, 800, 3), 0, np.uint8)
-        
+
         # sustain on
         sustain_on_mock = mocker.patch("midi_controller.MidiWrap.sustain_on")
         x1, y1, x2, y2 = player.holes["sustain_on"]["pos"][0]
         frame[y1:y2, x1:x2, :] = 255
         player.holes.set_frame(frame, 0)
         player.emulate_pedals()
-        sustain_on_mock.called_once()
+        sustain_on_mock.assert_called_once()
 
         # sustain off
         sustain_off_mock = mocker.patch("midi_controller.MidiWrap.sustain_off")
@@ -52,7 +52,7 @@ class TestWelteT100:
         frame[y1:y2, x1:x2, :] = 255
         player.holes.set_frame(frame, 0)
         player.emulate_pedals()
-        sustain_off_mock.called_once()
+        sustain_off_mock.assert_called_once()
 
         # soft on
         sustain_on_mock = mocker.patch("midi_controller.MidiWrap.soft_on")
@@ -60,7 +60,7 @@ class TestWelteT100:
         frame[y1:y2, x1:x2, :] = 255
         player.holes.set_frame(frame, 0)
         player.emulate_pedals()
-        sustain_on_mock.called_once()
+        sustain_on_mock.assert_called_once()
 
         # soft off
         sustain_off_mock = mocker.patch("midi_controller.MidiWrap.soft_off")
@@ -68,4 +68,4 @@ class TestWelteT100:
         frame[y1:y2, x1:x2, :] = 255
         player.holes.set_frame(frame, 0)
         player.emulate_pedals()
-        sustain_off_mock.called_once()
+        sustain_off_mock.assert_called_once()

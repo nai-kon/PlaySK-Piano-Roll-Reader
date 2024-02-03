@@ -238,14 +238,14 @@ class TestPlayer:
         frame[y1:y2, x1:x2, :] = hole_color
         player.holes.set_frame(frame, 0)
         player.emulate_pedals()
-        sustain_on_mock.called_once()
+        sustain_on_mock.assert_called_once()
 
         # sustain off
         sustain_off_mock = mocker.patch("midi_controller.MidiWrap.sustain_off")
         frame[y1:y2, x1:x2, :] = roll_color
         player.holes.set_frame(frame, 0)
         player.emulate_pedals()
-        sustain_off_mock.called_once()
+        sustain_off_mock.assert_called_once()
 
         # hammer rail on
         hammer_on_mock = mocker.patch("midi_controller.MidiWrap.hammer_lift_on")
@@ -253,14 +253,14 @@ class TestPlayer:
         frame[y1:y2, x1:x2, :] = hole_color
         player.holes.set_frame(frame, 0)
         player.emulate_pedals()
-        hammer_on_mock.called_once()
+        hammer_on_mock.assert_called_once()
 
         # hammer rail off
         hammer_off_mock = mocker.patch("midi_controller.MidiWrap.hammer_lift_off")
         frame[y1:y2, x1:x2, :] = roll_color
         player.holes.set_frame(frame, 0)
         player.emulate_pedals()
-        hammer_off_mock.called_once()
+        hammer_off_mock.assert_called_once()
 
     def test_emulate_notes(self, player, mocker):
         hole_color = player.holes.th_bright - 1 if player.holes.is_dark_hole else player.holes.th_bright + 1

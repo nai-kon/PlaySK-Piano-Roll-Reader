@@ -181,7 +181,7 @@ class NotifyUpdate:
 
     def need_notify(self, ver: str | None) -> bool:
         print(ver, self.conf.update_notified_version, APP_VERSION)
-        return (ver is not None and 
+        return (ver is not None and
             ver > self.conf.update_notified_version and
             ver > APP_VERSION)
 

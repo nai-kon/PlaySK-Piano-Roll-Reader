@@ -43,7 +43,7 @@ class RecordoB(RecordoA):
                 treble_target_vac = self.pp_with_hammer_rail
         else:
             treble_target_vac = self.intensities[vac_lv]
-    
+
         # delay function
         self.bass_vacuum = self.bass_vacuum_pre + (bass_target_vac - self.bass_vacuum_pre) * self.delay_ratio
         self.treble_vacuum = self.treble_vacuum_pre + (treble_target_vac - self.treble_vacuum_pre) * self.delay_ratio
@@ -56,12 +56,12 @@ if __name__ == "__main__":
 
     import numpy as np
     from midi_controller import MidiWrap
-    
+
     midiobj = MidiWrap()
     obj = RecordoB(os.path.join("config", "Recordo B white back.json"), midiobj)
     obj.delay_ratio = 1
 
-    # expression check    
+    # expression check
     for port in [False, "p", "mf", "f", "ff"]:
         for hammer_rail in [True, False]:
             frame = np.full((600, 800, 3), 0, np.uint8)

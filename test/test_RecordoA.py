@@ -24,21 +24,21 @@ class TestRecordoA:
 
     def test_pedal(self, player, mocker):
         frame = np.full((600, 800, 3), 0, np.uint8)
-        
+
         # sustain on
         sustain_on_mock = mocker.patch("midi_controller.MidiWrap.sustain_on")
         x1, y1, x2, y2 = player.holes["sustain"]["pos"][0]
         frame[y1:y2, x1:x2, :] = 255
         player.holes.set_frame(frame, 0)
         player.emulate_pedals()
-        sustain_on_mock.called_once()
+        sustain_on_mock.assert_called_once()
 
         # sustain off
         sustain_off_mock = mocker.patch("midi_controller.MidiWrap.sustain_off")
-        frame[y1:y2, x1:x2, :] = 255
+        frame[y1:y2, x1:x2, :] = 0
         player.holes.set_frame(frame, 0)
         player.emulate_pedals()
-        sustain_off_mock.called_once()
+        sustain_off_mock.assert_called_once()
 
     @pytest.mark.parametrize("open_ports, expect", [
         # ((open port name), (bass_vacuum, treble_vacuum))
