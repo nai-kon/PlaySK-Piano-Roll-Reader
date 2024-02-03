@@ -3,6 +3,7 @@ import json
 import os
 
 from AmpicoB import AmpicoB
+from Artecho import Artecho
 from DuoArt import DuoArt
 from PhilippsDuca import PhilippsDuca
 from player import Player
@@ -45,6 +46,7 @@ class PlayerMng:
             "PhillipsDuca": PhilippsDuca,
             "RecordoA": RecordoA,
             "RecordoB": RecordoB,
+            "Artecho": Artecho,
         }
         clsobj = cls_map.get(cls_name, None)
         if clsobj is not None:
