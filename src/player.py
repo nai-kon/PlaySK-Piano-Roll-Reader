@@ -15,6 +15,9 @@ class TrackerHoles:
         self.th_bright = holes["on_brightness"]
         self.lowest_note = holes["lowest_note"]
 
+        self.open_pen = None
+        self.close_pen = None
+
         # use numpy for fast calculation
         self.group_by_size = {}
         self.group_by_name = {}
@@ -77,10 +80,13 @@ class TrackerHoles:
             v["to_close"] &= False
 
     def draw(self, wxdc: wx.PaintDC):
+        if self.open_pen is None:
+            self.open_pen = wx.Pen((200, 0, 0))
+        if self.close_pen is None:
+            self.close_pen = wx.Pen((0, 0, 200))
+            
         wxdc.SetBrush(wx.TRANSPARENT_BRUSH)
-        open_color = wx.Pen((200, 0, 0))
-        close_color = wx.Pen((0, 0, 200))
-        pens = [open_color if is_open else close_color for v in self.group_by_size.values() for is_open in v["is_open"]]
+        pens = [self.open_pen if is_open else self.close_pen for v in self.group_by_size.values() for is_open in v["is_open"]]
         wxdc.SetLogicalOrigin(self.xoffset * -1, 0)
         wxdc.DrawRectangleList(self.draw_rects, pens)
         wxdc.SetLogicalOrigin(0, 0)

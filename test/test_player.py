@@ -64,6 +64,31 @@ class TestTrackerHoles:
                 assert (~v["to_close"]).all()
                 assert (~v["is_open"]).all()
 
+    def test_getitem(self):
+        with open("src/config/88 Note white background.json", encoding="utf-8") as f:
+            conf = json.load(f)
+        holes = TrackerHoles(conf)
+        frame = np.full((600, 800, 3), 0, np.uint8)
+        holes.set_frame(frame, 0)
+
+        # check sustain hole
+        sustain_hole = holes["sustain"]
+        assert sustain_hole["pos"] == [(34, 294, 42, 304)]
+        assert not sustain_hole["is_open"]
+        assert not sustain_hole["to_open"]
+        assert not sustain_hole["to_close"]
+
+        # open
+        frame = np.full((600, 800, 3), 255, np.uint8)
+        holes.set_frame(frame, 0)
+        sustain_hole = holes["sustain"]
+        assert sustain_hole["is_open"]
+        assert sustain_hole["to_open"]
+        assert not sustain_hole["to_close"]
+
+        with pytest.raises(KeyError):
+            sustain_hole = holes["not exists hole"]
+
 
 class TestPlayer:
     @pytest.fixture
@@ -156,6 +181,11 @@ class TestPlayer:
             player.do_test_th = False
             th.join()
 
+    def test_emulate_on(self, player):
+        player.emulate_off()
+        player.emulate_on()
+        assert player.emulate_enable
+
     def test_auto_track(self, player):
         player.tracker_offset = 0
         player.auto_tracking = True
@@ -190,6 +220,12 @@ class TestPlayer:
         pre_offset = player.tracker_offset
         player.auto_track(frame)
         assert pre_offset == player.tracker_offset
+
+    def test_emulate_expression(self, player):
+        pre_vacuum = [player.bass_vacuum, player.treble_vacuum]
+        player.emulate_expression(0)
+        cur_vacuum  = [player.bass_vacuum, player.treble_vacuum]
+        assert pre_vacuum == cur_vacuum  # nothing changes on 88-notes
 
     def test_emulate_pedals(self, player, mocker):
         hole_color = player.holes.th_bright - 1 if player.holes.is_dark_hole else player.holes.th_bright + 1

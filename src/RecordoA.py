@@ -5,19 +5,18 @@ class RecordoA(Player):
     def __init__(self, confpath, midiobj):
         super().__init__(confpath, midiobj)
 
-        # from Robert Billings's notebook  (US Music Co.)
-        # hammer rail halfway between next level.
-        
-        self.pp_with_hammer_rail = 8
+        # 
+        # hammer rail halfway between next level.        
+        self.pp_with_hammer_rail = 7
         self.intensities = [
-            9,      # no port
-            10,     # port1
-            11,     # port2
-            12.5,   # port1-2
-            14,     # port3
-            15.5,   # port3-1
-            17,     # port3-2
-            18.5,   # port3-2-1
+            8,      # no port
+            9,      # port1
+            10,     # port2
+            11.5,   # port1-2
+            13,     # port3
+            14.5,   # port3-1
+            16,     # port3-2
+            18,     # port3-2-1
             20.5,   # port4
             27,     # port4-1
             35,     # port4-2 above
@@ -84,13 +83,39 @@ class RecordoA(Player):
 
 
 if __name__ == "__main__":
+    import itertools
     import os
 
+    import numpy as np
     from midi_controller import MidiWrap
+
     midiobj = MidiWrap()
     obj = RecordoA(os.path.join("config", "Recordo A (rare) white back.json"), midiobj)
     obj.delay_ratio = 1
 
-    for intensity in [8] + obj.intensities:
-        obj.bass_vacuum = intensity
-        print(obj.calc_velocity()[0], intensity)
+    # expression check
+    ff = [False, True]
+    f = [False, True]
+    mf = [False, True]
+    p = [False, True]
+    hammer_rail = [True, False]
+    res = list(itertools.product(ff, f, mf, p, hammer_rail))
+
+    for ports in itertools.product(ff, f, mf, p, hammer_rail):
+        exp_ports = ports[:-1]
+        hammer_rail = ports[-1]
+        frame = np.full((600, 800, 3), 0, np.uint8)
+
+        for port, is_open in zip(("ff", "f", "mf", "p"), exp_ports):
+            if is_open:
+                pos = obj.holes[port]["pos"][0]
+                frame[pos[1]: pos[3], pos[0]: pos[2]] = 255
+
+        if hammer_rail:
+            pos = obj.holes["bass_hammer_rail"]["pos"][0]
+            frame[pos[1]: pos[3], pos[0]: pos[2]] = 255
+
+        obj.holes.set_frame(frame, 0)
+        obj.emulate_expression(0)
+
+        print(obj.bass_vacuum, ports)
