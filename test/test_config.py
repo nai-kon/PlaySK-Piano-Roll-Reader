@@ -6,7 +6,7 @@ def test_load_config(monkeypatch):
     monkeypatch.setattr(ConfigMng, "_path", exists_path)
     mngr = ConfigMng()
     assert mngr.last_midi_port == "loopMIDI Port 1"
-    assert mngr.last_tracker == "Duo-Art white background"
+    assert mngr.last_tracker == "Duo-Art white back"
     assert mngr.update_notified_version == "3.1"
 
     empty_json_path = "test/dummy_config/empty_config.json"

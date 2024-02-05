@@ -65,7 +65,7 @@ class TestTrackerHoles:
                 assert (~v["is_open"]).all()
 
     def test_getitem(self):
-        with open("src/config/88 Note white background.json", encoding="utf-8") as f:
+        with open("src/config/88 Note white back.json", encoding="utf-8") as f:
             conf = json.load(f)
         holes = TrackerHoles(conf)
         frame = np.full((600, 800, 3), 0, np.uint8)
@@ -94,7 +94,7 @@ class TestPlayer:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = Player("src/config/88 Note white background.json", midiobj)
+        obj = Player("src/config/88 Note white back.json", midiobj)
         return obj
 
     def call_emulate_th(self, obj, frame):
@@ -106,14 +106,14 @@ class TestPlayer:
 
     def test_calc_velocity(self, player):
         # check bass/treble intensity is correct
-        player.bass_vacuum = 5
+        player.bass_vacuum = 4
         player.treble_vacuum = 40
         bass_velo, treble_velo = player.calc_velocity()
         assert player.velocity[0] - 1 < bass_velo < player.velocity[0] + 1
         assert player.velocity[-1] - 1 < treble_velo < player.velocity[-1] + 1
 
         player.bass_vacuum = 40
-        player.treble_vacuum = 5
+        player.treble_vacuum = 4
         bass_velo, treble_velo = player.calc_velocity()
         assert player.velocity[-1] - 1 < bass_velo < player.velocity[-1] + 1
         assert player.velocity[0] - 1 < treble_velo < player.velocity[0] + 1

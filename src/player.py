@@ -111,7 +111,7 @@ class Player:
             conf = json.load(f)
 
         self.stack_split = conf["expression"]["stack_split_point"] - conf["tracker_holes"]["lowest_note"]
-        self.base_vacuum = self.treble_vacuum = self.bass_vacuum = conf["expression"].get("vacuum", 6)
+        self.treble_vacuum = self.bass_vacuum = conf["expression"].get("vacuum", 6)
         self.spool_diameter = conf["spool_diameter"]
         self.roll_width = conf["roll_width"]
         self.default_tempo = conf["default_tempo"]
@@ -257,7 +257,7 @@ if __name__ == "__main__":
     import time
 
     midiobj = MidiWrap()
-    player = Player(os.path.join("config", "88 Note white background.json"), midiobj)
+    player = Player(os.path.join("config", "88 Note white back.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)
     player.emulate_on()
     start = time.perf_counter()

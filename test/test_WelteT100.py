@@ -36,9 +36,9 @@ class TestWelteT100:
         assert player.treble_vacuum == player.min_vacuum
 
     def test_pedal(self, player, mocker):
-        frame = np.full((600, 800, 3), 0, np.uint8)
 
         # sustain on
+        frame = np.full((600, 800, 3), 0, np.uint8)
         sustain_on_mock = mocker.patch("midi_controller.MidiWrap.sustain_on")
         x1, y1, x2, y2 = player.holes["sustain_on"]["pos"][0]
         frame[y1:y2, x1:x2, :] = 255
@@ -47,6 +47,7 @@ class TestWelteT100:
         sustain_on_mock.assert_called_once()
 
         # sustain off
+        frame = np.full((600, 800, 3), 0, np.uint8)
         sustain_off_mock = mocker.patch("midi_controller.MidiWrap.sustain_off")
         x1, y1, x2, y2 = player.holes["sustain_off"]["pos"][0]
         frame[y1:y2, x1:x2, :] = 255
@@ -55,6 +56,7 @@ class TestWelteT100:
         sustain_off_mock.assert_called_once()
 
         # soft on
+        frame = np.full((600, 800, 3), 0, np.uint8)
         sustain_on_mock = mocker.patch("midi_controller.MidiWrap.soft_on")
         x1, y1, x2, y2 = player.holes["soft_on"]["pos"][0]
         frame[y1:y2, x1:x2, :] = 255
@@ -63,6 +65,7 @@ class TestWelteT100:
         sustain_on_mock.assert_called_once()
 
         # soft off
+        frame = np.full((600, 800, 3), 0, np.uint8)
         sustain_off_mock = mocker.patch("midi_controller.MidiWrap.soft_off")
         x1, y1, x2, y2 = player.holes["soft_off"]["pos"][0]
         frame[y1:y2, x1:x2, :] = 255

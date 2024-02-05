@@ -59,7 +59,7 @@ class PlayerMng:
 if __name__ == "__main__":
     obj = PlayerMng()
     print(obj.player_list)
-    print(type(obj.get_player_obj("88 Note white background", None)))
+    print(type(obj.get_player_obj("88 Note white back", None)))
     assert obj.get_player_obj("not exists", None) is None
-    assert type(obj.get_player_obj("88 Note white background", None)) is Player
-    assert type(obj.get_player_obj("Ampico B white background", None)) is AmpicoB
+    assert type(obj.get_player_obj("88 Note white back", None)) is Player
+    assert type(obj.get_player_obj("Ampico B white back", None)) is AmpicoB

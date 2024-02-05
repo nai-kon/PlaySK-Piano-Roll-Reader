@@ -79,7 +79,7 @@ if __name__ == "__main__":
     import numpy as np
     from midi_controller import MidiWrap
     midiobj = MidiWrap()
-    player = DuoArt(os.path.join("config", "Duo-Art white background.json"), midiobj)
+    player = DuoArt(os.path.join("config", "Duo-Art white back.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)
     start = time.perf_counter()
     for _ in range(10000):
