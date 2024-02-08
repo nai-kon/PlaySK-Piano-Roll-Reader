@@ -86,6 +86,10 @@ if __name__ == "__main__":
         wx.MessageBox("No any midi out port found. Exit software.", "Midi port error")
         exit(-1)
 
+    if not os.path.exists("config/"):
+        wx.MessageBox("config directory is not found. Exit software.", "Config error")
+        exit(-1)
+
     from main_frame import MainFrame
     frame = MainFrame()
     if pf == "Windows":
