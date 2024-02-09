@@ -2,6 +2,7 @@
 set -euo pipefail
 
 # Codesign and notarize the built Mac app then create dmg file.
+# Need to get Apple Developer ID in advance and register certificate information in keychain.
 
 pushd dist
 
@@ -13,12 +14,12 @@ codesign --deep --force --options=runtime --entitlements ../entitlements.plist -
 
 # notarize & staple
 echo "~~ notarize & staple ~~"
-mkdir to_zip
-mv "PlaySK Piano Roll Reader.app" playsk_config to_zip/
-ditto -c -k -rsrc --keepParent to_zip archive.zip
+mkdir to_notarize
+mv "PlaySK Piano Roll Reader.app" playsk_config to_notarize/
+ditto -c -k -rsrc --keepParent to_notarize archive.zip
 xcrun notarytool submit archive.zip --keychain-profile "notary_profile" --wait
-mv to_zip/* .
-rm -rf to_zip archive.zip
+mv to_notarize/* .
+rm -rf to_notarize archive.zip
 xcrun stapler staple "PlaySK Piano Roll Reader.app"
 
 # create dmg
@@ -33,6 +34,6 @@ create-dmg --volname "PlaySK Installer" --background ../docs/dmg-bg.tiff \
 
 # archive to zip for distribution
 echo "~~ archive to zip ~~"
-zip -qr "PlaySK-PianoRoll-Reader-v3.2-Mac.ARM.zip" ../sample_scans/ PlaySK-Installer.dmg "How to use.png" "3rd-party-license.txt"
+zip -qr "PlaySK-PianoRoll-Reader-v3.2-Mac.ARM.zip" ../sample_scans/ PlaySK-Installer.dmg "How to use Mac.png" "3rd-party-license.txt"
 
 echo "complete!"

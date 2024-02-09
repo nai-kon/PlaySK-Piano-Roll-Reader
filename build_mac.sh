@@ -17,5 +17,5 @@ pip-licenses --format=plain-vertical --with-license-file --no-license-path --out
 
 # copy files
 cp -p "3rd-party-license.txt" dist/
-cp -p "docs/How to use.png" dist/
+cp -p "docs/How to use Mac.png" dist/
 cp -pr src/playsk_config/ dist/playsk_config/
