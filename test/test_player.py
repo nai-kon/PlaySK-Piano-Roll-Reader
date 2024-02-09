@@ -14,7 +14,7 @@ from player import Player, TrackerHoles
 
 class TestTrackerHoles:
     def test_tracker_holes(self):
-        for path in glob.glob("src/config/*.json"):
+        for path in glob.glob("src/playsk_config/*.json"):
             if path.endswith("config.json"):
                 continue
             with open(path, encoding="utf-8") as f:
@@ -65,7 +65,7 @@ class TestTrackerHoles:
                 assert (~v["is_open"]).all()
 
     def test_getitem(self):
-        with open("src/config/88 Note white back.json", encoding="utf-8") as f:
+        with open("src/playsk_config/88 Note white back.json", encoding="utf-8") as f:
             conf = json.load(f)
         holes = TrackerHoles(conf)
         frame = np.full((600, 800, 3), 0, np.uint8)
@@ -94,7 +94,7 @@ class TestPlayer:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = Player("src/config/88 Note white back.json", midiobj)
+        obj = Player("src/playsk_config/88 Note white back.json", midiobj)
         return obj
 
     def call_emulate_th(self, obj, frame):

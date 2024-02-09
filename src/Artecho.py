@@ -181,7 +181,7 @@ if __name__ == "__main__":
     import numpy as np
     from midi_controller import MidiWrap
     midiobj = MidiWrap()
-    player = Artecho(os.path.join("config", "Artecho white back.json"), midiobj)
+    player = Artecho(os.path.join("playsk_config", "Artecho white back.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)
     start = time.perf_counter()
     for _ in range(10000):

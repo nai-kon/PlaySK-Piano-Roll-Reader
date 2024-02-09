@@ -19,7 +19,7 @@ class TestPlayerMng:
     @pytest.fixture
     def player_mng(self):
         obj = PlayerMng()
-        obj.conf_dir = "src/config/"
+        obj.conf_dir = "src/playsk_config/"
         obj.player_conf_map = obj.init_player_map()
         return obj
 

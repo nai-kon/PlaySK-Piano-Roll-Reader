@@ -47,7 +47,7 @@ class FileDrop(wx.FileDropTarget):
 class MainFrame(wx.Frame):
     def __init__(self):
         super().__init__(parent=None, title=APP_TITLE, style=wx.CAPTION | wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.CLIP_CHILDREN)
-        self.SetIcon(wx.Icon(os.path.join("config", "PlaySK_icon.ico"), wx.BITMAP_TYPE_ICO))
+        self.SetIcon(wx.Icon(os.path.join("playsk_config", "PlaySK_icon.ico"), wx.BITMAP_TYPE_ICO))
         if platform.system() == "Windows":
             # wxpython on Windows does not support Darkmode
             self.SetBackgroundColour("#AAAAAA")

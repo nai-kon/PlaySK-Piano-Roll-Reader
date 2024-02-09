@@ -15,7 +15,7 @@ from WelteT100 import WelteT100
 
 class PlayerMng:
     def __init__(self):
-        self.conf_dir = "config/"
+        self.conf_dir = "playsk_config/"
         self.player_conf_map = self.init_player_map()
 
     def init_player_map(self):

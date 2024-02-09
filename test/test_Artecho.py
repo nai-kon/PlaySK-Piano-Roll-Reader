@@ -12,7 +12,7 @@ class TestArtecho:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = Artecho("src/config/Artecho white back (experimental).json", midiobj)
+        obj = Artecho("src/playsk_config/Artecho white back (experimental).json", midiobj)
         return obj
 
     def test_emulate_off(self, player):

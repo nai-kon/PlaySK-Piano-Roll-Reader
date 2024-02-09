@@ -257,7 +257,7 @@ if __name__ == "__main__":
     import time
 
     midiobj = MidiWrap()
-    player = Player(os.path.join("config", "88 Note white back.json"), midiobj)
+    player = Player(os.path.join("playsk_config", "88 Note white back.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)
     player.emulate_on()
     start = time.perf_counter()

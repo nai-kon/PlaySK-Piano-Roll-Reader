@@ -3,7 +3,7 @@ import os
 
 
 class ConfigMng:
-    _path = os.path.join("config", "config.json")
+    _path = os.path.join("playsk_config", "config.json")
 
     def __init__(self):
         self.last_midi_port = ""

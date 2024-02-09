@@ -11,7 +11,7 @@ class TestAmpicoB:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = AmpicoB("src/config/Ampico B white back.json", midiobj)
+        obj = AmpicoB("src/playsk_config/Ampico B white back.json", midiobj)
         return obj
 
     def test_emulate_off(self, player):
