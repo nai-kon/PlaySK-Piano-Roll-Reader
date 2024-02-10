@@ -39,7 +39,7 @@ https://www.paypal.com/paypalme/KatzSasaki
 ## Usage
 
 1. Download the software and sample scans
-    https://github.com/nai-kon/PlaySK-Piano-Roll-Reader/releases/tag/Ver3.2
+    https://github.com/nai-kon/PlaySK-Piano-Roll-Reader/releases/
 2. Launch the program and Select MIDI output port and Virtual tracker bar
 3. Select scan image from `sample_scans` folder
 4. Enjoy!
