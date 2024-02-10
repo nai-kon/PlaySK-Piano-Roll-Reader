@@ -30,6 +30,12 @@ Support image formats are `.cis`, `.jpg`, `.tif`, `.png`, `.bmp`.
 - Reading a Red Welte T-100 roll with Software Synthesizer  
     https://www.youtube.com/watch?v=WMEPW-UWhSU
 
+## Donation
+
+I personally pay near $100 a year to codesign and notarize software for distribution. Your support greatly contributes to the continuous development and improvement of the Software. Please consider donating.
+
+https://www.paypal.com/paypalme/KatzSasaki
+
 ## Usage
 
 1. Download the software and sample scans
