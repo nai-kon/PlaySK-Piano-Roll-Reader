@@ -1,13 +1,13 @@
 import numpy as np
 from Cython.Build import cythonize
-from setuptools import setup, Extension
+from setuptools import Extension, setup
 
 extensions = [
     Extension(
         "cis_decoder",
         ["cis_decoder.pyx"],
-        extra_compile_args=['-O3'],
-    )
+        extra_compile_args=["-O3"],
+    ),
 ]
 
 setup(

@@ -36,15 +36,17 @@ class DuoArt(Player):
         self.treble_vacuum = self.accomp_min
         self.theme_vacuum_pre = self.theme_min
         self.accomp_vacuum_pre = self.accomp_min
+        self.accomp_delay_que = deque([self.accomp_min] * 10, maxlen=10)
+        self.theme_delay_que = deque([self.theme_min] * 10, maxlen=10)
 
     def emulate_expression(self, curtime):
 
         # accomp 1->2->4->8
-        accomp_pos = sum([v * l for v, l in zip((1, 2, 4, 8), self.holes["accomp"]["is_open"])])
+        accomp_pos = sum([v * b for v, b in zip((1, 2, 4, 8), self.holes["accomp"]["is_open"])])
         accomp_vacuum = self.accomp_min + (self.accomp_max - self.accomp_min) * (accomp_pos / 15)
 
         # theme 8->4->2->1
-        theme_pos = sum([v * l for v, l in zip((8, 4, 2, 1), self.holes["theme"]["is_open"])])
+        theme_pos = sum([v * b for v, b in zip((8, 4, 2, 1), self.holes["theme"]["is_open"])])
         theme_vacuum = self.theme_min + (self.theme_max - self.theme_min) * (theme_pos / 15)
 
         # crash valve
@@ -71,12 +73,13 @@ class DuoArt(Player):
 
 
 if __name__ == "__main__":
-    import numpy as np
-    import time
     import os
+    import time
+
+    import numpy as np
     from midi_controller import MidiWrap
     midiobj = MidiWrap()
-    player = DuoArt(os.path.join("config", "Duo-Art white background.json"), midiobj)
+    player = DuoArt(os.path.join("playsk_config", "Duo-Art white back.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)
     start = time.perf_counter()
     for _ in range(10000):

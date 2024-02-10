@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: [ "master" ]
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -23,10 +24,10 @@ jobs:
         - 3.11
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       
     - name: Set up Python ${{ matrix.python-ver }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-ver }}
         

@@ -1,5 +1,3 @@
-import numpy as np
-
 from player import Player
 
 
@@ -31,10 +29,10 @@ if __name__ == "__main__":
     import time
 
     import numpy as np
-
     from midi_controller import MidiWrap
+
     midiobj = MidiWrap()
-    player = PhilippsDuca(os.path.join("config", "Philipps Duca (no expression).json"), midiobj)
+    player = PhilippsDuca(os.path.join("playsk_config", "Philipps Duca (no expression).json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)
     start = time.perf_counter()
     for _ in range(10000):

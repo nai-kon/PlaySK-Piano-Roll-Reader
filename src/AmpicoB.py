@@ -1,5 +1,4 @@
 import wx
-
 from player import Player
 
 
@@ -38,8 +37,9 @@ class AmpicoB(Player):
             "246": [19.6, 40],
         }
 
-        self.bass_vacuum = self.intensity_range["none"][0]
-        self.treble_vacuum = self.intensity_range["none"][0]
+        self.delay_ratio = 0.6
+        self.bass_vacuum = self.treble_vacuum = self.intensity_range["none"][0]
+        self.bass_vacuum_pre = self.treble_vacuum_pre = self.intensity_range["none"][0]
 
     def emulate_off(self):
         super().emulate_off()
@@ -49,8 +49,8 @@ class AmpicoB(Player):
         self.treble_sub_intensity_lock = False
         self.amp_lock_range = [0, 1.0]
         self.amp_cres_pos = 0
-        self.bass_vacuum = self.intensity_range["none"][0]
-        self.treble_vacuum = self.intensity_range["none"][0]
+        self.bass_vacuum = self.treble_vacuum = self.intensity_range["none"][0]
+        self.bass_vacuum_pre = self.treble_vacuum_pre = self.intensity_range["none"][0]
 
     def emulate_expression(self, curtime):
         bass_cancel = self.holes["bass_cancel"]
@@ -61,17 +61,14 @@ class AmpicoB(Player):
 
         # cancel intensity
         if bass_cancel["is_open"]:
-            # print("bass cancel")
             self.bass_intensity_lock[:] = [False, False, False]
             self.bass_sub_intensity_lock = False
 
         if treble_cancel["is_open"]:
-            # print("treble cancel")
             self.treble_intensity_lock[:] = [False, False, False]
             self.treble_sub_intensity_lock = False
 
         if sub_intensity["is_open"]:
-            # print("sub-zero intensity triggered")
             self.treble_sub_intensity_lock = True
             self.bass_sub_intensity_lock = True
 
@@ -106,9 +103,7 @@ class AmpicoB(Player):
             self.amp_lock_range = [0.3, 0.85]  # 1st amplifier
         elif amplifier["to_close"] and 0.85 < self.amp_cres_pos:
             self.amp_lock_range = [0.85, 1.0]  # 2nd amplifier
-        elif amplifier["to_close"] and self.amp_cres_pos < 0.3:
-            self.amp_lock_range = [0, 1.0]
-        elif amplifier["to_open"]:
+        elif (amplifier["to_close"] and self.amp_cres_pos < 0.3) or amplifier["to_open"]:
             self.amp_lock_range = [0, 1.0]
 
         if amplifier["to_close"]:
@@ -149,11 +144,17 @@ class AmpicoB(Player):
             if sub_intensity_lock:
                 opcode += "-sub"
 
-            min, max = self.intensity_range.get(opcode, [10, 20])
-            return min + self.amp_cres_pos * (max - min)
+            vac_min, vac_max = self.intensity_range.get(opcode, [10, 20])
+            return vac_min + self.amp_cres_pos * (vac_max - vac_min)
 
-        self.bass_vacuum = calc_vacuum(self.bass_intensity_lock, self.bass_sub_intensity_lock)
-        self.treble_vacuum = calc_vacuum(self.treble_intensity_lock, self.treble_sub_intensity_lock)
+        bass_target_vac = calc_vacuum(self.bass_intensity_lock, self.bass_sub_intensity_lock)
+        treble_target_vac = calc_vacuum(self.treble_intensity_lock, self.treble_sub_intensity_lock)
+
+        # delay function
+        self.bass_vacuum = self.bass_vacuum_pre + (bass_target_vac - self.bass_vacuum_pre) * self.delay_ratio
+        self.treble_vacuum = self.treble_vacuum_pre + (treble_target_vac - self.treble_vacuum_pre) * self.delay_ratio
+        self.bass_vacuum_pre = self.bass_vacuum
+        self.treble_vacuum_pre = self.treble_vacuum
 
     def draw_tracker(self, wxdc: wx.PaintDC):
         # need override for drawing intensity lock
@@ -168,10 +169,9 @@ if __name__ == "__main__":
     import time
 
     import numpy as np
-
     from midi_controller import MidiWrap
     midiobj = MidiWrap()
-    player = AmpicoB(os.path.join("config", "Ampico B white background.json"), midiobj)
+    player = AmpicoB(os.path.join("playsk_config", "Ampico B white back.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)
     start = time.perf_counter()
     for _ in range(10000):

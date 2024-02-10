@@ -1,13 +1,14 @@
-import os
 import json
+import os
 
 
-class ConfigMng():
-    _path = os.path.join("config", "config.json")
+class ConfigMng:
+    _path = os.path.join("playsk_config", "config.json")
 
     def __init__(self):
         self.last_midi_port = ""
         self.last_tracker = ""
+        self.update_notified_version = ""
 
         self.load_config()
 
@@ -19,6 +20,7 @@ class ConfigMng():
             v = json.load(f)
             self.last_midi_port = v.get("last_midi_port", "")
             self.last_tracker = v.get("last_tracker", "")
+            self.update_notified_version = v.get("update_notified_version", "")
 
     def save_config(self):
         with open(ConfigMng._path, "w", encoding="utf-8") as f:

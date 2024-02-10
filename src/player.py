@@ -4,15 +4,19 @@ from typing import final
 
 import numpy as np
 import wx
+from midi_controller import MidiWrap
 
 
-class TrackerHoles():
+class TrackerHoles:
     def __init__(self, conf):
         self.xoffset = 0
         holes = conf["tracker_holes"]
         self.is_dark_hole = holes["is_dark_hole"]
         self.th_bright = holes["on_brightness"]
         self.lowest_note = holes["lowest_note"]
+
+        self.open_pen = None
+        self.close_pen = None
 
         # use numpy for fast calculation
         self.group_by_size = {}
@@ -59,7 +63,7 @@ class TrackerHoles():
             hole_list = frame[v["pos_ys"], v["pos_xs"] + self.xoffset]  # more elegant way
 
             if self.is_dark_hole:
-                open_ratios = (hole_list < self.th_bright).all(axis=3).mean(axis=(2, 1))
+                open_ratios = (hole_list <= self.th_bright).all(axis=3).mean(axis=(2, 1))
                 # open_ratios = (hole_list < self.th_bright).mean(axis=(3, 2, 1))
             else:
                 open_ratios = (hole_list > self.th_bright).all(axis=3).mean(axis=(2, 1))
@@ -76,10 +80,13 @@ class TrackerHoles():
             v["to_close"] &= False
 
     def draw(self, wxdc: wx.PaintDC):
+        if self.open_pen is None:
+            self.open_pen = wx.Pen((200, 0, 0))
+        if self.close_pen is None:
+            self.close_pen = wx.Pen((0, 0, 200))
+
         wxdc.SetBrush(wx.TRANSPARENT_BRUSH)
-        open_color = wx.Pen((200, 0, 0))
-        close_color = wx.Pen((0, 0, 200))
-        pens = [open_color if open else close_color for v in self.group_by_size.values() for open in v["is_open"]]
+        pens = [self.open_pen if is_open else self.close_pen for v in self.group_by_size.values() for is_open in v["is_open"]]
         wxdc.SetLogicalOrigin(self.xoffset * -1, 0)
         wxdc.DrawRectangleList(self.draw_rects, pens)
         wxdc.SetLogicalOrigin(0, 0)
@@ -95,8 +102,8 @@ class TrackerHoles():
         return ret
 
 
-class Player():
-    def __init__(self, confpath, midiobj):
+class Player:
+    def __init__(self, confpath, midiobj: MidiWrap):
         self.midi = midiobj
 
         # load tracker config
@@ -104,7 +111,7 @@ class Player():
             conf = json.load(f)
 
         self.stack_split = conf["expression"]["stack_split_point"] - conf["tracker_holes"]["lowest_note"]
-        self.treble_vacuum = self.bass_vacuum = conf["expression"].get("vacuum", 15)
+        self.treble_vacuum = self.bass_vacuum = conf["expression"].get("vacuum", 6)
         self.spool_diameter = conf["spool_diameter"]
         self.roll_width = conf["roll_width"]
         self.default_tempo = conf["default_tempo"]
@@ -120,10 +127,22 @@ class Player():
         self.emulate_enable = False
 
         # vacuum to velocity map
-        vacuum = list(range(5, 41))
-        self.velocity = [37, 42, 46.5, 50.5, 54, 57, 59.5, 61.7, 63.7, 65.5, 67.1, 68.6, 70, 71.3, 72.5, 73.6, 74.6, 75.6, 76.5, 77.4, 78.3, 79.1, 79.9, 80.7, 81.4, 82.1, 82.8, 83.4, 84, 84.6, 85.2, 85.8, 86.4, 87, 87.6, 88.2]
+        self.max_vacuum = 40
+        vacuum = list(range(4, self.max_vacuum + 1))
+        self.velocity = [33, 37, 42, 46.5, 50.5, 54, 57, 59.5, 61.7, 63.7, 65.5, 67.1, 68.6, 70, 71.3, 72.5, 73.6, 74.6, 75.6, 76.5, 77.4, 78.3, 79.1, 79.9, 80.7, 81.4, 82.1, 82.8, 83.4, 84, 84.6, 85.2, 85.8, 86.4, 87, 87.6, 88.2]
         k = np.polyfit(self.velocity, vacuum, 5)
         self.velocity_bins = [np.poly1d(k)(v) for v in range(int(self.velocity[0]), int(self.velocity[-1] + 1))]
+
+        # for manual expression by keyboard input
+        # self.bass_accent = False
+        # self.bass_accent_key = ord("A")
+        # self.treble_accent = False
+        # self.treble_accent_key = ord("S")
+        # self.key_accomp_map = {
+        #     ord("J"): {"press": False, "vacuum": 3},
+        #     ord("K"): {"press": False, "vacuum": 7},
+        #     ord("L"): {"press": False, "vacuum": 15},
+        # }
 
     def calc_velocity(self):
         idx = np.digitize([self.bass_vacuum, self.treble_vacuum], bins=self.velocity_bins)
@@ -145,11 +164,11 @@ class Player():
         # find roll edge
         roi = np.array([frame[250:350:5, 0:7], frame[250:350:5, 793:800]])
         if self.is_dark_hole:
-            left_end, right_end = (roi < self.on_bright).all(axis=3).sum(axis=2).mean(axis=1)
-        else:
             left_end, right_end = (roi > self.on_bright).all(axis=3).sum(axis=2).mean(axis=1)
+        else:
+            left_end, right_end = (roi <= self.on_bright).all(axis=3).sum(axis=2).mean(axis=1)
 
-        self.tracker_offset = int(left_end - right_end) + 1
+        self.tracker_offset = int(right_end - left_end)
 
     @final
     def emulate(self, frame, curtime):
@@ -164,8 +183,30 @@ class Player():
 
             self.during_emulate_evt.set()
 
+    # def expression_key_event(self, key, keydown):
+    #     if key == self.bass_accent_key:
+    #         self.bass_accent = keydown
+
+    #     if key == self.treble_accent_key:
+    #         self.treble_accent = keydown
+
+    #     accomp_map = self.key_accomp_map.get(key, None)
+    #     if accomp_map is not None:
+    #         if accomp_map["press"] and not keydown:
+    #             accomp_map["press"] = False
+    #         if not accomp_map["press"] and keydown:
+    #             accomp_map["press"] = True
+
     def emulate_expression(self, curtime):
         pass
+        # accomp_vacuum = self.base_vacuum + sum([v["vacuum"] for v in self.key_accomp_map.values() if v["press"]])
+        # self.bass_vacuum = self.treble_vacuum = accomp_vacuum
+
+        # if self.bass_accent:
+        #     self.bass_vacuum = min(self.bass_vacuum + 9, self.max_vacuum)
+
+        # if self.treble_accent:
+        #     self.treble_vacuum = min(self.treble_vacuum + 9, self.max_vacuum)
 
     def emulate_pedals(self):
         # sustain pedal
@@ -215,10 +256,10 @@ if __name__ == "__main__":
     import os
     import time
 
-    from midi_controller import MidiWrap
     midiobj = MidiWrap()
-    player = Player(os.path.join("config", "88 Note white background.json"), midiobj)
+    player = Player(os.path.join("playsk_config", "88 Note white back.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)
+    player.emulate_on()
     start = time.perf_counter()
     for _ in range(10000):
         player.emulate(frame, time.perf_counter())

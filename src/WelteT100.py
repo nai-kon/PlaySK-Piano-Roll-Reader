@@ -1,6 +1,5 @@
 import numpy as np
 import wx
-
 from player import Player
 
 
@@ -155,7 +154,7 @@ if __name__ == "__main__":
 
     from midi_controller import MidiWrap
     midiobj = MidiWrap()
-    player = WelteT100(os.path.join("config", "Ampico B white background.json"), midiobj)
+    player = WelteT100(os.path.join("playsk_config", "Ampico B white back.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)
     start = time.perf_counter()
     for _ in range(10000):

@@ -3,8 +3,8 @@ import mido.backends.rtmidi
 from mido import Message
 
 
-class MidiWrap():
-    '''wrapper of mido library'''
+class MidiWrap:
+    """wrapper of mido library"""
 
     def __init__(self):
         self.output = None

@@ -34,7 +34,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     version='src\\version_info.txt', 
-    icon='src\\config\\PlaySK_icon.ico'
+    icon='src\\playsk_config\\PlaySK_icon.ico'
 )
 coll = COLLECT(
     exe,

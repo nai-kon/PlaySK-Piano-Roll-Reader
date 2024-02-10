@@ -4,9 +4,10 @@ import platform
 import re
 import threading
 import time
+from pathlib import Path
+
 import numpy as np
 import wx
-
 from cis_image import CisImage
 from input_editor import ImgEditDlg
 
@@ -14,82 +15,88 @@ os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2, 42).__str__()
 import cv2
 
 
-def load_scan(path, default_tempo, force_manual_adjust=False):
-    def _img_load(path, default_tempo):
-        with wx.BusyCursor():
-            # cv2.imread erros with multi-byte path
-            n = np.fromfile(path, np.uint8)
-            img = cv2.imdecode(n, cv2.IMREAD_COLOR)
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+def _find_roll_edge(img: np.ndarray) -> tuple[int | None, int | None]:
+    samples = 100
+    margin_th = 220
+    hist_th = samples * 0.8
+    h, w = img.shape[:2]
+    sample_ys = np.linspace(w, img.shape[0] - w, 100, dtype=int)  # avoid padding of start/end
+    # center of left margin
+    sx = 5
+    ex = img.shape[1] // 4
+    left_sample = img[sample_ys, sx: ex, 0]  # enough with first ch
+    left_hist = (left_sample > margin_th).sum(axis=0) > hist_th
+    left_margin_idx = left_hist.nonzero()[0]
+    left_margin_center = None
+    if left_margin_idx.size > 0:
+        left_margin_center = int(left_margin_idx[-1])
+    # center of right margin
+    sx = 3 * img.shape[1] // 4
+    ex = img.shape[1] - 5
+    right_sample = img[sample_ys, sx: ex, 0]  # enough with first ch
+    right_hist = (right_sample > margin_th).sum(axis=0) > hist_th
+    right_margin_idx = right_hist.nonzero()[0]
+    right_margin_center = None
+    if right_margin_idx.size > 0:
+        right_margin_center = int(right_margin_idx[0] + sx)
 
-        # search tempo from ANN file
-        ann_path = path.rsplit(".", 1)[0] + ".ANN"
-        if os.path.exists(ann_path):
-            with open(ann_path) as f:
-                for line in f.readlines():
-                    val = re.search(r"^/roll_tempo:\s+(\d{2,3})", line)
-                    if val is not None:
-                        return img, int(val.group(1))
-        # search tempo from file name
-        val = re.search(r"tempo:?\s*(\d{2,3})", path)
-        tempo = int(val.group(1)) if val is not None else default_tempo
-        return img, tempo
+    return left_margin_center, right_margin_center
 
-    def _find_edge_margin(img):
-        samples = 100
-        margin_th = 220
-        hist_th = samples * 0.8
-        h, w = img.shape[:2]
-        sample_ys = np.linspace(w, img.shape[0] - w, 100, dtype=int)  # avoid padding of start/end
-        # center of left margin
-        sx = 5
-        ex = img.shape[1] // 4
-        left_sample = img[sample_ys, sx: ex, 0]  # enough with first ch
-        left_hist = (left_sample > margin_th).sum(axis=0) > hist_th
-        left_margin_idx = left_hist.nonzero()[0]
-        left_margin_center = None
-        if left_margin_idx.size > 0:
-            left_margin_center = int(np.median(left_margin_idx))
-        # center of right margin
-        sx = 3 * img.shape[1] // 4
-        ex = img.shape[1] - 5
-        right_sample = img[sample_ys, sx: ex, 0]  # enough with first ch
-        right_hist = (right_sample > margin_th).sum(axis=0) > hist_th
-        right_margin_idx = right_hist.nonzero()[0]
-        right_margin_center = None
-        if right_margin_idx.size > 0:
-            right_margin_center = int(np.median(right_margin_idx) + sx)
 
-        return left_margin_center, right_margin_center
+def _load_img(path: str, default_tempo: int) -> tuple[np.ndarray | None, int]:
+    # cv2.imread can't load path with multi-byte
+    try:
+        n = np.fromfile(path, np.uint8)
+        img = cv2.imdecode(n, cv2.IMREAD_COLOR)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    except Exception:
+        return None, default_tempo
 
-    def _cis_load(path, default_tempo, force_manual_adjust):
-        # load
-        obj = CisImage()
-        with wx.BusyCursor():
-            if not obj.load(path):
+    # search tempo from ANN file
+    ann_path = Path(path).with_suffix(".ANN")
+    if os.path.exists(ann_path):
+        with open(ann_path) as f:
+            for line in f.readlines():
+                val = re.search(r"^/roll_tempo:\s+(\d{2,3})", line)
+                if val is not None:
+                    return img, int(val.group(1))
+
+    # search tempo from file name
+    val = re.search(r"tempo:?\s*(\d{2,3})", path)
+    tempo = int(val.group(1)) if val is not None else default_tempo
+    return img, tempo
+
+
+def _load_cis(path: str, default_tempo: int, force_manual_adjust: bool) -> tuple[np.ndarray | None, int]:
+    obj = CisImage()
+    if not obj.load(path):
+        return None, default_tempo
+    # find center of roll margin or manually set if not found
+    left_edge, right_edge = _find_roll_edge(obj.decode_img)
+    if left_edge is None or right_edge is None or force_manual_adjust:
+        with ImgEditDlg(obj) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                left_edge, right_edge = dlg.get_margin_pos()
+            else:
                 return None, default_tempo
-        # find center of roll margin or manually set if not found
-        left_edge, right_edge = _find_edge_margin(obj.img)
-        if left_edge is None or right_edge is None or force_manual_adjust:
-            with ImgEditDlg(obj) as dlg:
-                if dlg.ShowModal() == wx.ID_OK:
-                    left_edge, right_edge = dlg.get_margin_pos()
-                else:
-                    return None, default_tempo
-        # cut off edge
-        obj.img[:, :left_edge] = (255, 255, 255)
-        obj.img[:, right_edge:] = (255, 255, 255)
-        tempo = default_tempo if obj.tempo == 0 else obj.tempo
-        return obj.img, tempo
+    # cut off edge
+    obj.decode_img[:, :left_edge] = (255, 255, 255)
+    obj.decode_img[:, right_edge:] = (255, 255, 255)
 
-    basename = os.path.basename(path)
-    if basename.lower().endswith(".cis"):
-        return _cis_load(path, default_tempo, force_manual_adjust)
-    else:
-        return _img_load(path, default_tempo)
+    # search tempo from CIS header
+    tempo = default_tempo if obj.tempo == 0 else obj.tempo
+    return obj.decode_img, tempo
 
 
-class FPScounter():
+def load_scan(path: str, default_tempo: int, force_manual_adjust: bool = False) -> tuple[np.ndarray | None, int]:
+    with wx.BusyCursor():
+        if Path(path).suffix.lower().endswith(".cis"):
+            return _load_cis(path, default_tempo, force_manual_adjust)
+        else:
+            return _load_img(path, default_tempo)
+
+
+class FPScounter:
     def __init__(self, name="fps"):
         self.name = name
         self.start = None
@@ -104,16 +111,6 @@ class FPScounter():
             # print(self.name, self.fps)
             self.fps = 0
             self.start = cur
-
-
-def deco_start_end(func):
-    def wrapper(*args, **kwargs):
-        print("start", func.__name__)
-        ret = func(*args, **kwargs)
-        print("end", func.__name__)
-        return ret
-
-    return wrapper
 
 
 class InputVideo(wx.Panel):
@@ -231,7 +228,7 @@ class InputVideo(wx.Panel):
                 time.sleep(sleep)
                 elapsed_time = time.perf_counter() - t1
 
-            self.cnt_worker_fps()
+            # self.cnt_worker_fps()
         print(f"end {self.__class__.__name__}.load_thread")
 
 
@@ -252,7 +249,7 @@ class InputWebcam(InputVideo):
         return camera_list
 
 
-class InputScanImg_v0(InputVideo):
+class InputScanImg(InputVideo):
     def __init__(self, parent, img, spool_diameter=2.72, roll_width=11.25, tempo=80, disp_size=(800, 600), callback=None):
         super().__init__(parent, None, disp_size, callback)
         self.src = img
@@ -266,13 +263,19 @@ class InputScanImg_v0(InputVideo):
 
     def start_worker(self):
         # load initial frame
-        self.cur_y = self.src.shape[0] - 1
         self.left_side, self.right_side = self._find_roll_edge()
         margin = 7 * (self.right_side - self.left_side + 1) // (self.disp_w - 7 * 2)  # 7px on both edge @800x600
-        self.crop_x1 = self.left_side - margin
-        self.crop_x2 = self.right_side + margin
-        self.crop_h = (self.crop_x2 - self.crop_x1) * self.disp_h // self.disp_w
-        self.roll_dpi = (self.right_side - self.left_side + 1) / self.roll_width
+        # crop and resize image
+        crop_x1 = max(self.left_side - margin, 0)
+        crop_x2 = min(self.right_side + margin, self.src.shape[1])
+        self.src = self.src[:, crop_x1:crop_x2 + 1]
+        resize_ratio = self.disp_w / self.src.shape[1]
+        resize_h = int(self.src.shape[0] * resize_ratio)
+        self.src = cv2.resize(self.src, dsize=(self.disp_w, resize_h))
+        self.cur_y = self.src.shape[0] - 1
+
+        self.crop_h = self.disp_h
+        self.roll_dpi = resize_ratio * (self.right_side - self.left_side + 1) / self.roll_width
         self.set_tempo(self.tempo)
         self._load_next_frame()
         self.thread_worker.start()
@@ -311,60 +314,10 @@ class InputScanImg_v0(InputVideo):
 
             edges.append((left_side, right_side))
 
-        #  sort by width, and get a middle point
+        # sort by width, and get a middle point
         edges.sort(key=lambda x: x[1] - x[0])
         middle = len(edges) // 2
         return edges[middle]
-
-    def _load_next_frame(self):
-        crop_y2 = self.cur_y
-        crop_y1 = crop_y2 - self.crop_h
-        if crop_y1 < 0:
-            return
-
-        frame = self.src[crop_y1:crop_y2 + 1, self.crop_x1:self.crop_x2 + 1]
-        self.frame = cv2.resize(frame, (self.disp_w, self.disp_h), interpolation=cv2.INTER_NEAREST)
-        self.cur_y -= self.skip_px
-
-        # update take-up spool round
-        spool_rpf = self.spool_rps / self.worker_fps
-        self.cur_spool_pos += spool_rpf
-
-    def _get_one_frame_time(self):
-
-        # spool diameter will increase per 1 round. this causes acceleration.
-        if self.cur_spool_pos > 1:
-            self.cur_spool_pos -= 1  # don't reset to 0.
-            self.cur_spool_diameter += self.roll_thick
-
-        # take-up pixels per one second
-        takeup_px = self.spool_rps * self.cur_spool_diameter * math.pi * self.roll_dpi
-
-        # increase fps to emulating acceleration
-        self.worker_fps = takeup_px / self.skip_px
-
-        return 1 / self.worker_fps
-
-
-class InputScanImg(InputScanImg_v0):
-    def start_worker(self):
-        # load initial frame
-        self.left_side, self.right_side = self._find_roll_edge()
-        margin = 7 * (self.right_side - self.left_side + 1) // (self.disp_w - 7 * 2)  # 7px on both edge @800x600
-        # crop and resize image
-        crop_x1 = max(self.left_side - margin, 0)
-        crop_x2 = min(self.right_side + margin, self.src.shape[1])
-        self.src = self.src[:, crop_x1:crop_x2 + 1]
-        resize_ratio = self.disp_w / self.src.shape[1]
-        resize_h = int(self.src.shape[0] * resize_ratio)
-        self.src = cv2.resize(self.src, dsize=(self.disp_w, resize_h))
-        self.cur_y = self.src.shape[0] - 1
-
-        self.crop_h = self.disp_h
-        self.roll_dpi = resize_ratio * (self.right_side - self.left_side + 1) / self.roll_width
-        self.set_tempo(self.tempo)
-        self._load_next_frame()
-        self.thread_worker.start()
 
     def _load_next_frame(self):
         crop_y2 = self.cur_y
@@ -377,6 +330,19 @@ class InputScanImg(InputScanImg_v0):
         # update take-up spool round
         spool_rpf = self.spool_rps / self.worker_fps
         self.cur_spool_pos += spool_rpf
+
+    def _get_one_frame_time(self):
+        # spool diameter will increase per 1 round. this causes acceleration.
+        if self.cur_spool_pos > 1:
+            self.cur_spool_pos -= 1  # don't reset to 0.
+            self.cur_spool_diameter += self.roll_thick
+
+        # take-up pixels per one second
+        takeup_px = self.spool_rps * self.cur_spool_diameter * math.pi * self.roll_dpi
+
+        # increase fps to emulating acceleration
+        self.worker_fps = takeup_px / self.skip_px
+        return 1 / self.worker_fps
 
 
 if __name__ == "__main__":
@@ -393,7 +359,7 @@ if __name__ == "__main__":
 
     midobj = MidiWrap()
     midobj.open_port(None)
-    img, tempo = load_scan("../sample_scans/Ampico B 68361 Dancing Tambourine tempo95.png", 80)
+    img, tempo = load_scan("../sample_scans/Duo-Art 67249 Dance Of The Hours.CIS", 80)
     panel1 = InputScanImg(frame, img)
     panel1.start_worker()
     # print(InputWebcam.list_camera())

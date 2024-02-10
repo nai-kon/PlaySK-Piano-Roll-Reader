@@ -6,14 +6,23 @@ import cv2
 import numpy as np
 import wx
 
-from cis_decoder.cis_decoder import decode_cis, get_outimg_size
+try:
+    from cis_decoder.cis_decoder import _decode_cis, _get_decode_params
+except ModuleNotFoundError as e:
+    raise ModuleNotFoundError(
+        """
+        Can't import cis_decoder. Did you build cis_decoder?
+        1. cd cis_decoder/
+        2. python setup.py build_ext --inplace
+        """,
+    ) from e
 
 
 class ScannerType(Enum):
     UNKNOWN = "Unknown"
     FREERUN = "Free Run Scanner"
-    WHEELRUN = "Wheel Encoder Scanner"
-    SHAFTRUN = "Shaft Encoder Scanner"
+    WHEELENCODER = "Wheel Encoder Scanner"
+    SHAFTENCODER = "Shaft Encoder Scanner"
     STEPPER = "Stepper Scanner"
     DELTA4 = "Delta 4 Scanner"
 
@@ -26,48 +35,55 @@ class CisImage:
     def __init__(self) -> None:
         self.desc = ""
         self.scanner_type = ScannerType.UNKNOWN
-        self.doubler = False
-        self.twin_array = False
-        self.bicolor = False
-        self.encoder_division = 0
-        self.mirror = False
-        self.reverse = False
+        self.is_clocked = False
+        self.is_twin_array = False
+        self.is_bicolor = False
+        self.encoder_division = 1
+        # self.mirror = False  # not used now
+        # self.reverse = False
+        # self.clock_doubler = False
         self.vert_sep_twin = 0
+        self.overlap_twin = 0
         self.hol_dpi = 0
         self.hol_px = 0
         self.tempo = 0
         self.vert_res = 0  # lpi in stepper scanner. tpi in encoder wheel
         self.vert_px = 0
-        self.img = None
+        self.raw_img = None
+        self.decode_img = None
         self.lpt = 0  # lines per tick. only for re-clock
-        self.need_reclock = False  # reposition line
 
-    def load(self, path):
+    def load(self, path: str) -> bool:
         try:
-            self._load_inner(path)
+            self._load_file(path)
+            self._decode()
             return True
         except Exception as e:
             wx.MessageBox(f"Failed to load the CIS image\n{e}", ".CIS Load error", style=wx.ICON_ERROR)
 
         return False
 
-    def get_outimg_size(self, data):
-        reclock_map: list[int, int] = []
+    def _get_decode_params_py(self, data: np.ndarray) -> tuple[int, int, list[int, int]]:
+        """
+        Experimentally decode file and get output image size and re-clock position map.
+        Python version.
+        """
+        reclock_map: list[int, int] = []  # src line idx, dest line idx
 
         # width
         width = self.hol_px
-        if self.twin_array:
+        if self.is_twin_array:
             width = self.hol_px * 2 - self.overlap_twin
 
         # height
         height = self.vert_px
-        if self.need_reclock:
+        if self.is_clocked:
             # calc height after reposition
             height = 0
             cur_idx = 0
             buf_lines = []
             pre_state = None
-            chs = 1 + int(self.twin_array) + int(self.bicolor)
+            chs = 1 + int(self.is_twin_array) + int(self.is_bicolor)
             for cur_line in range(self.vert_px - 1, 0, -1):
                 for _ in range(chs):
                     last_pos = 0
@@ -79,15 +95,14 @@ class CisImage:
                 encoder_val = data[cur_idx]
                 # clock = bool(encoder_val & 32)
                 state = bool(encoder_val & 128)
-                if pre_state != state or cur_line == 0:
-                    if buf_lines:
-                        si = min(buf_lines)
-                        ei = max(buf_lines)
-                        # make re-clock map
-                        for i in np.linspace(ei, si, self.lpt):
-                            reclock_map.append([round(i), height])  # [src, dest]
-                            height += 1
-                        buf_lines = []
+                if (pre_state != state or cur_line == 0) and buf_lines:
+                    si = min(buf_lines)
+                    ei = max(buf_lines)
+                    # make re-clock map
+                    for i in np.linspace(ei, si, self.lpt):
+                        reclock_map.append([round(i), height])
+                        height += 1
+                    buf_lines = []
 
                 buf_lines.append(cur_line)
                 pre_state = state
@@ -107,7 +122,7 @@ class CisImage:
         return width, height, reclock_map
 
     # slow python version. only used for debugging
-    def decode_cis_py(self, data, out_img, vert_px, hol_px, twin_overlap, twin_vsep, end_padding_y, bicolor, twin, reclock_map):
+    def _decode_cis_py(self, data, out_img, vert_px, hol_px, twin_overlap, twin_vsep, end_padding_y, bicolor, twin, reclock_map) -> None:
         class CurColor(IntEnum):
             BG = auto()
             ROLL = auto()
@@ -169,25 +184,25 @@ class CisImage:
             # encoder_val = data[cur_idx]  # not used
             cur_idx += 1
 
-        if self.need_reclock:
+        if self.is_clocked:
             # reposition lines
             for src, dest in reclock_map:
                 out_img[dest + end_padding_y] = out_img[src + end_padding_y]
 
-    def _load_inner(self, path):
+    def _load_file(self, path: str) -> None:
         # CIS file format
         # http://semitone440.co.uk/rolls/utils/cisheader/cis-format.htm#scantype
 
         with open(path, "rb") as f:
-            bytes = f.read()
+            data = f.read()
 
-        self.desc = bytes[:32]
-        status_flags = bytes[34:36]
+        self.desc = data[:32]
+        status_flags = data[34:36]
         scanner_types = [
             ScannerType.UNKNOWN,
             ScannerType.FREERUN,
-            ScannerType.WHEELRUN,
-            ScannerType.SHAFTRUN,
+            ScannerType.WHEELENCODER,
+            ScannerType.SHAFTENCODER,
             ScannerType.STEPPER,
             ScannerType.DELTA4,
         ]
@@ -197,59 +212,62 @@ class CisImage:
         if self.scanner_type == ScannerType.UNKNOWN:
             self.hol_dpi = 200  # most of unknown type scanner is 200DPI
         else:
-            self.need_reclock = self.scanner_type in [ScannerType.WHEELRUN, ScannerType.SHAFTRUN]
-            self.doubler = bool(status_flags[0] & 16)
-            self.twin_array = bool(status_flags[0] & 32)
-
-            self.bicolor = bool(status_flags[0] & 64)
+            self.is_clocked = self.scanner_type in [ScannerType.WHEELENCODER, ScannerType.SHAFTENCODER]
+            self.is_twin_array = bool(status_flags[0] & 32)
+            self.is_bicolor = bool(status_flags[0] & 64)
             self.encoder_division = 2 ** int(status_flags[1] & 15)
-            self.mirror = bool(status_flags[1] & 16)
-            self.reverse = bool(status_flags[1] & 32)
-            self.vert_sep_twin = int.from_bytes(bytes[36:38], byteorder="little")
-            self.hol_dpi = int.from_bytes(bytes[38:40], byteorder="little")
-        self.hol_px = int.from_bytes(bytes[40:42], byteorder="little")
-        self.overlap_twin = int.from_bytes(bytes[42:44], byteorder="little")
-        self.tempo = int.from_bytes(bytes[44:46], byteorder="little")
-        self.vert_res = int.from_bytes(bytes[46:48], byteorder="little")
-        self.vert_px = int.from_bytes(bytes[48:52], byteorder="little")
-        scan_data = np.frombuffer(bytes[52:], np.uint16)
+            # self.clock_doubler = bool(status_flags[0] & 16)  # not used now
+            # self.mirror = bool(status_flags[1] & 16)
+            # self.reverse = bool(status_flags[1] & 32)
+            self.vert_sep_twin = int.from_bytes(data[36:38], byteorder="little")
+            self.hol_dpi = int.from_bytes(data[38:40], byteorder="little")
+
+        self.hol_px = int.from_bytes(data[40:42], byteorder="little")
+        self.overlap_twin = int.from_bytes(data[42:44], byteorder="little")
+        self.tempo = int.from_bytes(data[44:46], byteorder="little")
+        self.vert_res = int.from_bytes(data[46:48], byteorder="little")
+        self.vert_px = int.from_bytes(data[48:52], byteorder="little")
+        self.raw_img = np.frombuffer(data[52:], np.uint16)
 
         # reclock parameters
-        if self.need_reclock:
+        if self.is_clocked:
             division = self.vert_res / self.encoder_division
             self.lpt = round(self.hol_dpi / division)
             self.vert_res = round(self.lpt * division)
 
-        # reserve output image
-        out_w, out_h, reclock_map = get_outimg_size(scan_data, self.vert_px, self.hol_px, self.overlap_twin, self.lpt, self.bicolor, self.twin_array, self.need_reclock)
-        # out_w, out_h, reclock_map = self.get_outimg_size(scan_data)
+    def _decode(self, use_cython=True) -> None:
+        # get output image params
+        out_w, out_h, reclock_map = _get_decode_params(self.raw_img, self.vert_px, self.hol_px, self.overlap_twin, self.lpt, self.is_bicolor, self.is_twin_array, self.is_clocked)
+        # out_w, out_h, reclock_map = self.get_decode_params_py(self.raw_img)
 
-        # add padding on start and end
-        start_padding_y = out_w // 2
-        end_padding_y = out_w // 2
-        self.img = np.full((out_h + start_padding_y + end_padding_y, out_w, 3), 120, np.uint8)
-        self.img[out_h + end_padding_y:] = 255
-
-        # decode scan data
         twin_overlap = self.overlap_twin // 2
         twin_vsep = math.ceil(self.vert_sep_twin * self.vert_res / 1000)
-        decode_cis(scan_data, self.img, self.vert_px, self.hol_px, twin_overlap, twin_vsep, end_padding_y, self.bicolor, self.twin_array, self.need_reclock, reclock_map)
-        # self.decode_cis_py(scan_data, self.img, self.vert_px, self.hol_px, twin_overlap, twin_vsep, end_padding_y, self.bicolor, self.twin_array, reclock_map)
 
-        if len(self.img) == 0:
+        # reserve decoded image with padding on start/end
+        start_padding_y = out_w // 2
+        end_padding_y = out_w // 2
+        self.decode_img = np.full((out_h + start_padding_y + end_padding_y, out_w, 3), 120, np.uint8)
+        self.decode_img[out_h + end_padding_y:] = 255
+
+        # decode
+        if use_cython:
+            _decode_cis(self.raw_img, self.decode_img, self.vert_px, self.hol_px, twin_overlap, twin_vsep, end_padding_y, self.is_bicolor, self.is_twin_array, self.is_clocked, reclock_map)
+        else:
+            self._decode_cis_py(self.raw_img, self.decode_img, self.vert_px, self.hol_px, twin_overlap, twin_vsep, end_padding_y, self.is_bicolor, self.is_twin_array, reclock_map)
+
+        if len(self.decode_img) == 0:
             raise BufferError
 
-        self.hol_px = self.img.shape[1]
-
         # Resize horizontal and vertical to the same dpi
+        self.hol_px = self.decode_img.shape[1]
         if self.vert_res != self.hol_dpi:
-            self.img = cv2.resize(self.img, dsize=None, fx=1, fy=self.hol_dpi / self.vert_res)
+            self.decode_img = cv2.resize(self.decode_img, dsize=None, fx=1, fy=self.hol_dpi / self.vert_res)
 
 
 if __name__ == "__main__":
     app = wx.App()
     s = time.time()
     obj = CisImage()
-    if obj.load("../68361A twin.CIS"):
+    if obj.load("../sample_Scans/Ampico B 68991 Papillons.CIS"):
         print(time.time() - s)
-        cv2.imwrite("decoded_cis.png", obj.img)
+        cv2.imwrite("decoded_cis.png", obj.decode_img)

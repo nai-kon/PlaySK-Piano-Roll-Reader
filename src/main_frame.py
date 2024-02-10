@@ -1,11 +1,11 @@
 import os
 import platform
 import sys
+from pathlib import Path
 
 import wx
-
 from config import ConfigMng
-from controls import SpeedSlider, TrackerCtrl, WelcomeMsg
+from controls import NotifyUpdate, SpeedSlider, TrackerCtrl, WelcomeMsg
 from input_src import InputScanImg, load_scan
 from midi_controller import MidiWrap
 from player_mng import PlayerMng
@@ -13,7 +13,7 @@ from vacuum_gauge import VacuumGauge
 from version import APP_TITLE
 
 
-class CallBack():
+class CallBack:
     def __init__(self, player, tracker, bass_vac_lv, treble_vac_lv):
         self.player = player
         self.bass_vac_meter = bass_vac_lv
@@ -29,6 +29,10 @@ class CallBack():
             self.treble_vac_meter.vacuum = self.player.treble_vacuum
             self.tracker.changed(self.player.tracker_offset)
 
+    # def key_event(self, key, keydown):
+    #     if self.player is not None:
+    #         self.player.expression_key_event(key, keydown)
+
 
 class FileDrop(wx.FileDropTarget):
     def __init__(self, parent):
@@ -43,7 +47,7 @@ class FileDrop(wx.FileDropTarget):
 class MainFrame(wx.Frame):
     def __init__(self):
         super().__init__(parent=None, title=APP_TITLE, style=wx.CAPTION | wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.CLIP_CHILDREN)
-        self.SetIcon(wx.Icon(os.path.join("config", "PlaySK_icon.ico"), wx.BITMAP_TYPE_ICO))
+        self.SetIcon(wx.Icon(os.path.join("playsk_config", "PlaySK_icon.ico"), wx.BITMAP_TYPE_ICO))
         if platform.system() == "Windows":
             # wxpython on Windows does not support Darkmode
             self.SetBackgroundColour("#AAAAAA")
@@ -103,8 +107,11 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.on_close)
         self.Show()
 
-        # app was opened with file
+        # notify update
+        NotifyUpdate.check(self, self.conf)
+
         if len(sys.argv) > 1:
+            # app was opened with file
             wx.CallAfter(self.load_file, path=sys.argv[1])
 
     def create_status_bar(self):
@@ -144,6 +151,16 @@ class MainFrame(wx.Frame):
         self.treble_vacuum_lv.destroy()
         self.Destroy()
 
+    # def on_keydown(self, event):
+    #     keycode = event.GetUnicodeKey()
+    #     self.callback.key_event(keycode, True)
+    #     event.Skip()
+
+    # def on_keyup(self, event):
+    #     keycode = event.GetUnicodeKey()
+    #     self.callback.key_event(keycode, False)
+    #     event.Skip()
+
     def change_midi_port(self, event=None):
         idx = self.port_sel.GetSelection()
         port = self.port_sel.GetString(idx)
@@ -171,7 +188,7 @@ class MainFrame(wx.Frame):
             obj.SetLabel("MIDI On")
 
     def load_file(self, path, force_manual_adjust=False):
-        ext = os.path.splitext(path)[-1]
+        ext = Path(path).suffix.lower()
         if ext.lower() not in (".cis", ".jpg", ".png", ".tif", ".bmp"):
             wx.MessageBox("Supported image formats are .cis .jpg, .png, .tif, .bmp", "Unsupported file")
             return
@@ -189,6 +206,8 @@ class MainFrame(wx.Frame):
         tmp = self.spool
         self.spool = InputScanImg(self, img, self.callback.player.spool_diameter, self.callback.player.roll_width, callback=self.callback)
         self.spool.start_worker()
+        # self.spool.Bind(wx.EVT_KEY_DOWN, self.on_keydown)
+        # self.spool.Bind(wx.EVT_KEY_UP, self.on_keyup)
         self.Title = APP_TITLE + " - " + os.path.basename(path)
         self.sizer3.Replace(tmp, self.spool)
         tmp.Destroy()
@@ -213,7 +232,7 @@ class MainFrame(wx.Frame):
     def adjust_image(self, event):
         if self.img_path is not None:
             # re-open with manually adjust dialog
-            self.load_file(self.img_path, True)
+            self.load_file(self.img_path, force_manual_adjust=True)
 
 
 if __name__ == "__main__":
