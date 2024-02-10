@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Codesign and notarize the built Mac app then create dmg file.
-# Need to get Apple Developer ID in advance and register certificate information in keychain.
+# This only works on author's Mac.
 
 pushd dist
 
