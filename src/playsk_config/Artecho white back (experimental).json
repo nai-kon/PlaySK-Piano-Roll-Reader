@@ -100,8 +100,8 @@
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.25,
-      "off_apature": 0.1
+      "on_apature": 0.15,
+      "off_apature": 0.05
     },
     "bass_intensity": {
       "x": [
