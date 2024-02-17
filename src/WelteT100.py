@@ -44,7 +44,6 @@ class WelteT100(Player):
         self.treble_vacuum = self.min_vacuum
 
     def emulate_expression(self, curtime):
-
         # Check bass expression holes
         if self.holes["bass_mf_on"]["to_open"]:
             self.bass_mf_hook = True
@@ -154,7 +153,7 @@ if __name__ == "__main__":
 
     from midi_controller import MidiWrap
     midiobj = MidiWrap()
-    player = WelteT100(os.path.join("playsk_config", "Ampico B white back.json"), midiobj)
+    player = WelteT100(os.path.join("playsk_config", "Welte T100 white back.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)
     start = time.perf_counter()
     for _ in range(10000):

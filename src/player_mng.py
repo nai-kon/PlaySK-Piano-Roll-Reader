@@ -10,6 +10,7 @@ from player import Player
 from RecordoA import RecordoA
 from RecordoB import RecordoB
 from WelteLicensee import WelteLicensee
+from WelteT98 import WelteT98
 from WelteT100 import WelteT100
 
 
@@ -42,6 +43,7 @@ class PlayerMng:
             "AmpicoB": AmpicoB,
             "Duo-Art": DuoArt,
             "WelteT100": WelteT100,
+            "WelteT98": WelteT98,
             "WelteLicensee": WelteLicensee,
             "PhillipsDuca": PhilippsDuca,
             "RecordoA": RecordoA,
