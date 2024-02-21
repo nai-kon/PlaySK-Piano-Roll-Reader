@@ -12,6 +12,7 @@ from player_mng import PlayerMng
 from RecordoA import RecordoA
 from RecordoB import RecordoB
 from WelteLicensee import WelteLicensee
+from WelteT98 import WelteT98
 from WelteT100 import WelteT100
 
 
@@ -41,6 +42,7 @@ class TestPlayerMng:
             "Recordo A (rare) white back",
             "Recordo B white back",
             "Artecho white back (experimental)",
+            "Welte T98 white back",
         ])
         assert player_names == gt_names
 
@@ -55,3 +57,4 @@ class TestPlayerMng:
         assert type(player_mng.get_player_obj("Recordo A (rare) white back", None)) is RecordoA
         assert type(player_mng.get_player_obj("Recordo B white back", None)) is RecordoB
         assert type(player_mng.get_player_obj("Artecho white back (experimental)", None)) is Artecho
+        assert type(player_mng.get_player_obj("Welte T98 white back", None)) is WelteT98
