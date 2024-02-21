@@ -19,16 +19,16 @@ jobs:
       fail-fast: false
       matrix:
         python-ver: [3.11]
-        # only build for Windows. Because Mac needs software notarization but I don't have $99 for it.
-        os: [windows-latest, macos-latest, macos-latest-xlarge]
+        # Intel mac for macos-13, M1/2 mac for macos-14
+        os: [windows-latest, macos-13, macos-14]
         include: 
           - os: windows-latest
             build_cmd: build_win.bat
             zip_name: PlaySK-PianoRoll-Reader-Win.x64.zip
-          - os: macos-latest
+          - os: macos-13
             build_cmd: bash build_mac.sh
             zip_name: PlaySK-PianoRoll-Reader-Mac.x64.zip
-          - os: macos-latest-xlarge
+          - os: macos-14
             build_cmd: bash build_mac.sh
             zip_name: PlaySK-PianoRoll-Reader-Mac.ARM.zip
 
