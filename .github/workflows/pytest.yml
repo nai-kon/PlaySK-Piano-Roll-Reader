@@ -19,7 +19,7 @@ jobs:
       matrix:
         os: 
         - windows-latest
-        - macos-latest    
+        - macos-14    
         python-ver:
         - 3.11
     steps:
