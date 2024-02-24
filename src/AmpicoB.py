@@ -72,20 +72,15 @@ class AmpicoB(Player):
             self.treble_sub_intensity_lock = True
             self.bass_sub_intensity_lock = True
 
-        # trigger intensity holes
-        if bass_intensities["is_open"][0]:  # bass lv 2
-            self.bass_intensity_lock[0] = True
-        if bass_intensities["is_open"][1]:  # bass lv 4
-            self.bass_intensity_lock[1] = True
-        if bass_intensities["is_open"][2]:  # bass lv 6
-            self.bass_intensity_lock[2] = True
+        # trigger intensity holes (LV2->4->6)
+        for idx in range(3):
+            # bass 2->4->6
+            if bass_intensities["is_open"][idx]:
+                self.bass_intensity_lock[idx] = True
+            # treble 2->4->6
+            if treble_intensities["is_open"][2 - idx]:
+                self.treble_intensity_lock[idx] = True
 
-        if treble_intensities["is_open"][2]:  # treble lv 2
-            self.treble_intensity_lock[0] = True
-        if treble_intensities["is_open"][1]:  # treble lv 4
-            self.treble_intensity_lock[1] = True
-        if treble_intensities["is_open"][0]:  # treble lv 6
-            self.treble_intensity_lock[2] = True
 
         self.calc_crescendo(curtime)
         self.calc_expression()
