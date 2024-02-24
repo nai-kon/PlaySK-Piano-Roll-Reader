@@ -69,7 +69,7 @@ class TestWelteT98:
         sustain_off_mock.assert_called_once()
 
 
-    def test_emulate_expression(self, player, mocker):
+    def test_emulate_expression(self, player):
         # bass mf on
         frame = np.full((600, 800, 3), 0, np.uint8)
         x1, y1, x2, y2 = player.holes["bass_mf"]["pos"][0]
