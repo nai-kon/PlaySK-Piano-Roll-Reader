@@ -8,9 +8,9 @@ class WelteT100(Player):
         super().__init__(confpath, midiobj)
 
         self.mf_hook_pos = 0.47
-        self.min_vacuum = 5     # in W.G
+        self.min_vacuum = 5.5   # in W.G
         self.max_vacuum = 35    # in W.G
-        self.cres_pos_to_vacuum = np.poly1d(np.polyfit((0, self.mf_hook_pos, 1), (5, 20, 35), 2))
+        self.cres_pos_to_vacuum = np.poly1d(np.polyfit((0, self.mf_hook_pos, 1), (self.min_vacuum, 20, self.max_vacuum), 2))
 
         self.bass_cres_pos = 0
         self.bass_cres_state = "slow_decres"

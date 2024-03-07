@@ -8,12 +8,12 @@ class WelteT98(WelteT100):
         self.bass_slow_cres_rate = self.mf_hook_pos / 2.45   # min to mf takes 2.5sec
         self.bass_slow_decres_rate = self.mf_hook_pos / 2.45   # mf to min takes 2.5sec
         self.bass_fast_cres_rate = 1 / 0.85
-        self.bass_fast_decres_rate = 1 / 0.19
+        self.bass_fast_decres_rate = 1 / 0.18
 
         self.treble_slow_cres_rate = self.mf_hook_pos / 2.45   # min to mf takes 2.5sec
         self.treble_slow_decres_rate = self.mf_hook_pos / 2.45   # mf to min takes 2.5sec
         self.treble_fast_cres_rate = 1 / 0.85
-        self.treble_fast_decres_rate = 1 / 0.19
+        self.treble_fast_decres_rate = 1 / 0.18
 
         self.bass_vacuum = self.min_vacuum
         self.treble_vacuum = self.min_vacuum
