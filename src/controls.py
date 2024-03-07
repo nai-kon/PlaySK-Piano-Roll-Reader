@@ -78,7 +78,7 @@ class SpeedSlider(wx.Panel):
     def set(self, label, tempo_range, val):
         self.label = label
         self.slider.SetRange(tempo_range[0], tempo_range[1])
-        self.slider.SetValue(val)
+        self.slider.SetValue(int(val))
         wx.CallAfter(self._value_changed, val)
 
     def _slider_changed(self, event):
