@@ -2,16 +2,7 @@ import glob
 import json
 import os
 
-from AmpicoB import AmpicoB
-from Artecho import Artecho
-from DuoArt import DuoArt
-from PhilippsDuca import PhilippsDuca
-from player import Player
-from RecordoA import RecordoA
-from RecordoB import RecordoB
-from WelteLicensee import WelteLicensee
-from WelteT98 import WelteT98
-from WelteT100 import WelteT100
+import players
 
 
 class PlayerMng:
@@ -39,16 +30,16 @@ class PlayerMng:
     def get_player_obj(self, player_name, midiobj):
         cls_name = self.player_conf_map.get(player_name, None)
         cls_map = {
-            "Player": Player,
-            "AmpicoB": AmpicoB,
-            "Duo-Art": DuoArt,
-            "WelteT100": WelteT100,
-            "WelteT98": WelteT98,
-            "WelteLicensee": WelteLicensee,
-            "PhillipsDuca": PhilippsDuca,
-            "RecordoA": RecordoA,
-            "RecordoB": RecordoB,
-            "Artecho": Artecho,
+            "Player": players.BasePlayer,
+            "AmpicoB": players.AmpicoB,
+            "Duo-Art": players.DuoArt,
+            "WelteT100": players.WelteT100,
+            "WelteT98": players.WelteT98,
+            "WelteLicensee": players.WelteLicensee,
+            "PhillipsDuca": players.PhilippsDuca,
+            "RecordoA": players.RecordoA,
+            "RecordoB": players.RecordoB,
+            "Artecho": players.Artecho,
         }
         clsobj = cls_map.get(cls_name, None)
         if clsobj is not None:
@@ -63,5 +54,5 @@ if __name__ == "__main__":
     print(obj.player_list)
     print(type(obj.get_player_obj("88 Note white back", None)))
     assert obj.get_player_obj("not exists", None) is None
-    assert type(obj.get_player_obj("88 Note white back", None)) is Player
-    assert type(obj.get_player_obj("Ampico B white back", None)) is AmpicoB
+    assert type(obj.get_player_obj("88 Note white back", None)) is players.Player
+    assert type(obj.get_player_obj("Ampico B white back", None)) is players.AmpicoB

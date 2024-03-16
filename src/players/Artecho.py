@@ -1,9 +1,10 @@
 import numpy as np
 import wx
-from player import Player
+
+from .base_player import BasePlayer
 
 
-class Artecho(Player):
+class Artecho(BasePlayer):
     def __init__(self, confpath, midiobj):
         """
         The intensity vacuum is based on crescendo position like Ampico B.

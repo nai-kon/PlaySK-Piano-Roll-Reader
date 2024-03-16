@@ -4,15 +4,15 @@ import numpy as np
 import pytest
 
 sys.path.append("src/")
+import players
 from midi_controller import MidiWrap
-from RecordoA import RecordoA
 
 
 class TestRecordoA:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = RecordoA("src/playsk_config/Recordo A (rare) white back.json", midiobj)
+        obj = players.RecordoA("src/playsk_config/Recordo A (rare) white back.json", midiobj)
         return obj
 
     def test_emulate_off(self, player):

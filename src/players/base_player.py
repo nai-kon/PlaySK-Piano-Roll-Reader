@@ -102,7 +102,7 @@ class TrackerHoles:
         return ret
 
 
-class Player:
+class BasePlayer:
     def __init__(self, confpath, midiobj: MidiWrap):
         self.midi = midiobj
 
@@ -257,7 +257,7 @@ if __name__ == "__main__":
     import time
 
     midiobj = MidiWrap()
-    player = Player(os.path.join("playsk_config", "88 Note white back.json"), midiobj)
+    player = BasePlayer(os.path.join("playsk_config", "88 Note white back.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)
     player.emulate_on()
     start = time.perf_counter()

@@ -4,16 +4,15 @@ import numpy as np
 import pytest
 
 sys.path.append("src/")
-
+import players
 from midi_controller import MidiWrap
-from WelteT100 import WelteT100
 
 
 class TestWelteT100:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = WelteT100("src/playsk_config/Welte T100 white back.json", midiobj)
+        obj = players.WelteT100("src/playsk_config/Welte T100 white back.json", midiobj)
         return obj
 
     def test_emulate_off(self, player):

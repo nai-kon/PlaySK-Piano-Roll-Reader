@@ -1,4 +1,4 @@
-from WelteT100 import WelteT100
+from .WelteT100 import WelteT100
 
 
 class WelteT98(WelteT100):

@@ -1,8 +1,9 @@
 import wx
-from player import Player
+
+from .base_player import BasePlayer
 
 
-class AmpicoB(Player):
+class AmpicoB(BasePlayer):
     def __init__(self, confpath, midiobj):
         super().__init__(confpath, midiobj)
 

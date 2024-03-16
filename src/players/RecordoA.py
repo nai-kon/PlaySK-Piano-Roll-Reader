@@ -1,7 +1,7 @@
-from player import Player
+from .base_player import BasePlayer
 
 
-class RecordoA(Player):
+class RecordoA(BasePlayer):
     def __init__(self, confpath, midiobj):
         super().__init__(confpath, midiobj)
 

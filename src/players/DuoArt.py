@@ -1,9 +1,9 @@
 from collections import deque
 
-from player import Player
+from .base_player import BasePlayer
 
 
-class DuoArt(Player):
+class DuoArt(BasePlayer):
     def __init__(self, confpath, midiobj):
         super().__init__(confpath, midiobj)
 

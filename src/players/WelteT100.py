@@ -1,9 +1,9 @@
 import numpy as np
 import wx
-from player import Player
+from .base_player import BasePlayer
 
 
-class WelteT100(Player):
+class WelteT100(BasePlayer):
     def __init__(self, confpath, midiobj):
         super().__init__(confpath, midiobj)
 

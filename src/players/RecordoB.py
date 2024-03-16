@@ -1,4 +1,4 @@
-from RecordoA import RecordoA
+from .RecordoA import RecordoA
 
 
 class RecordoB(RecordoA):

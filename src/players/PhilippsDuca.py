@@ -1,7 +1,7 @@
-from player import Player
+from .base_player import BasePlayer
 
 
-class PhilippsDuca(Player):
+class PhilippsDuca(BasePlayer):
     def __init__(self, confpath, midiobj):
         super().__init__(confpath, midiobj)
 
