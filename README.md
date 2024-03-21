@@ -2,7 +2,7 @@
 
 Optically reading a piano roll image, emulates expression and output midi signal in real-time.
 
-![Overall System](./docs/Overall_System.webp)
+![Overall System](./assets/Overall_System.webp)
 
 The "virtual tracker bar" optically picks up roll holes then emulates note, pedal and expression.
 Currently, 9 virtual tracker bars are available.

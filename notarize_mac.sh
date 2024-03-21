@@ -25,7 +25,7 @@ xcrun stapler staple "PlaySK Piano Roll Reader.app"
 # create dmg
 echo "~~ create dmg ~~"
 test -f PlaySK-Installer.dmg && rm PlaySK-Installer.dmg
-create-dmg --volname "PlaySK Installer" --background ../docs/dmg-bg.tiff \
+create-dmg --volname "PlaySK Installer" --background ../assets/dmg-bg.tiff \
     --window-pos 200 120 --window-size 800 500 \
     --icon-size 100 --icon "PlaySK Piano Roll Reader.app" 100 100 \
     --add-file "playsk_config" playsk_config 100 300 \
