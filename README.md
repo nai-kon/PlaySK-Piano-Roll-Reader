@@ -25,7 +25,7 @@ Support image formats are `.cis`, `.jpg`, `.tif`, `.png`, `.bmp`.
 ## Demo
 
 - Reading an Ampico B roll with Yamaha Disklavier  
-    https://www.youtube.com/watch?v=ldwOIEc21QE
+    https://www.youtube.com/watch?v=9f9J4TRmr5Y
 
 - Reading a Red Welte T-100 roll with Software Synthesizer  
     https://www.youtube.com/watch?v=WMEPW-UWhSU
