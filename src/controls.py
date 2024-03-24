@@ -12,7 +12,7 @@ from wx.lib.agw.hyperlink import HyperLinkCtrl
 
 class WelcomeMsg(wx.Panel):
     def __init__(self, parent, pos=(0, 0), size=(800, 600)):
-        wx.Panel.__init__(self, parent, wx.ID_ANY, pos, parent.FromDIP(wx.Size(size)))
+        wx.Panel.__init__(self, parent, wx.ID_ANY, pos, parent.FromDIPCustom(wx.Size(size)))
 
         self.SetForegroundColour("white")
 
@@ -110,7 +110,7 @@ class TrackerCtrl(wx.Panel):
         sizer = wx.GridBagSizer(vgap=2, hgap=2)
         sizer.Add(self.auto_tracking, (0, 0), (1, 3), flag=wx.EXPAND)
         sizer.Add(self.label, (1, 0), (1, 1), flag=wx.EXPAND)
-        border_size = parent.FromDIP(5)
+        border_size = parent.FromDIPCustom(5)
         sizer.Add(self.left, (1, 1), (1, 1), flag=wx.EXPAND | wx.LEFT, border=border_size)
         sizer.Add(self.right, (1, 2), (1, 1), flag=wx.EXPAND | wx.LEFT, border=border_size)
         self.SetSizer(sizer)

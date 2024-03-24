@@ -52,15 +52,16 @@ class MainFrame(wx.Frame):
             # wxpython on Windows does not support Darkmode
             self.SetBackgroundColour("#AAAAAA")
 
+        self.conf = ConfigMng()
         self.img_path = None
         self.spool = WelcomeMsg(self, size=(800, 600))
         self.spool.start_worker()
 
-        self.midi_btn = wx.Button(self, size=self.FromDIP(wx.Size((90, 50))), label="MIDI On")
+        self.midi_btn = wx.Button(self, size=self.FromDIPCustom(wx.Size((90, 50))), label="MIDI On")
         self.midi_btn.Bind(wx.EVT_BUTTON, self.midi_onoff)
         self.midi_btn.Disable()
 
-        self.file_btn = wx.Button(self, size=self.FromDIP(wx.Size((90, 50))), label="File")
+        self.file_btn = wx.Button(self, size=self.FromDIPCustom(wx.Size((90, 50))), label="File")
         self.file_btn.Bind(wx.EVT_BUTTON, self.open_file)
 
         self.speed = SpeedSlider(self, callback=self.speed_change)
@@ -69,16 +70,15 @@ class MainFrame(wx.Frame):
         self.bass_vacuum_lv = VacuumGauge(self, caption="Bass Vacuum (inches of water)")
         self.treble_vacuum_lv = VacuumGauge(self, caption="Treble Vacuum (inches of water)")
 
-        self.adjust_btn = wx.Button(self, size=self.FromDIP(wx.Size((180, 50))), label="Adjust CIS Image")
+        self.adjust_btn = wx.Button(self, size=self.FromDIPCustom(wx.Size((180, 50))), label="Adjust CIS Image")
         self.adjust_btn.Bind(wx.EVT_BUTTON, self.adjust_image)
 
         self.callback = CallBack(None, self.tracking, self.bass_vacuum_lv, self.treble_vacuum_lv)
         self.midiobj = MidiWrap()
-        self.conf = ConfigMng()
         self.player_mng = PlayerMng()
 
         # sizer of controls
-        border_size = self.FromDIP(5)
+        border_size = self.FromDIPCustom(5)
         self.sizer1 = wx.BoxSizer(wx.HORIZONTAL)
         self.sizer1.Add(self.midi_btn, flag=wx.EXPAND | wx.ALL, border=border_size, proportion=1)
         self.sizer1.Add(self.file_btn, flag=wx.EXPAND | wx.ALL, border=border_size, proportion=1)
@@ -114,14 +114,31 @@ class MainFrame(wx.Frame):
             # app was opened with file
             wx.CallAfter(self.load_file, path=sys.argv[1])
 
+    def FromDIPCustom(self, size:wx.Size | int):
+        if isinstance(size, int):
+            return int(self.FromDIP(size) * self.conf.window_scale)
+        else:
+            return self.FromDIP(size) * self.conf.window_scale
+
+    def GetDPIScaleFactorCustom(self):
+        return self.GetDPIScaleFactor() * self.conf.window_scale if platform.system() == "Windows" else self.conf.window_scale
+
     def create_status_bar(self):
-        self.sbar = self.CreateStatusBar(5)  # midi-port, tracker-bar
+        self.sbar = self.CreateStatusBar(8)  # midi-port, tracker-bar
         _, h = self.sbar.Size[:2]
-        self.sbar.SetStatusWidths([-5, -1, -5, -5, -5])
+        midiout_cap = "MIDI Output :"
+        midiout_capw = wx.Window.GetTextExtent(self, midiout_cap).Width
+        tracker_cap = "Tracker Bar :"
+        tracker_capw = wx.Window.GetTextExtent(self, tracker_cap).Width
+        wsize_cap = "Window Size :"
+        wsize_capw = wx.Window.GetTextExtent(self, wsize_cap).Width
+
+        self.sbar.SetStatusWidths([midiout_capw, -4, -1, tracker_capw, -4, -3, wsize_capw, -1])
 
         # midi port
+        self.sbar.SetStatusText(midiout_cap, 0)
         ports = self.midiobj.port_list
-        rect = self.sbar.GetFieldRect(0)
+        rect = self.sbar.GetFieldRect(1)
         self.port_sel = wx.Choice(self.sbar, choices=ports, size=(rect.width, h))
         self.port_sel.Bind(wx.EVT_CHOICE, self.change_midi_port)
         self.port_sel.SetPosition((rect.x, 0))
@@ -130,14 +147,26 @@ class MainFrame(wx.Frame):
         self.change_midi_port()  # call manually for init
 
         # tracker bar
+        self.sbar.SetStatusText(tracker_cap, 3)
         players = self.player_mng.player_list
-        rect = self.sbar.GetFieldRect(2)
+        rect = self.sbar.GetFieldRect(4)
         self.player_sel = wx.Choice(self.sbar, choices=players, size=(rect.width, h))
         self.player_sel.Bind(wx.EVT_CHOICE, self.change_player)
         self.player_sel.SetPosition((rect.x, 0))
         last_sel = players.index(self.conf.last_tracker) if self.conf.last_tracker in players else 0
         self.player_sel.SetSelection(last_sel)
         self.change_player()  # call manually for init
+
+        # window scale
+        self.sbar.SetStatusText(wsize_cap, 6)
+        scales = ("1.0", "1.25", "1.5", "2.0")
+        rect = self.sbar.GetFieldRect(7)
+        self.scale_sel = wx.Choice(self.sbar, choices=scales, size=(rect.width, h))
+        self.scale_sel.Bind(wx.EVT_CHOICE, self.change_scale)
+        self.scale_sel.SetPosition((rect.x, 0))
+        config_scale = str(self.conf.window_scale)
+        last_sel = scales.index(config_scale) if config_scale in scales else 0
+        self.scale_sel.SetSelection(last_sel)
 
     def post_status_msg(self, msg):
         wx.CallAfter(self.sbar.SetStatusText, text=msg, i=4)
@@ -178,6 +207,12 @@ class MainFrame(wx.Frame):
             player_tmp.auto_tracking = self.tracking.auto_tracking
             self.callback.player = player_tmp
 
+    def change_scale(self, event=None):
+        idx = self.scale_sel.GetSelection()
+        self.conf.window_scale = float(self.scale_sel.GetString(idx))
+        wx.MessageBox("Exit the App. Please start App after exit.", "Change Window Size needs Restart")
+        self.on_close(event=None)
+
     def midi_onoff(self, event):
         obj = event.GetEventObject()
         if obj.GetLabel() == "MIDI On":
@@ -193,7 +228,7 @@ class MainFrame(wx.Frame):
             wx.MessageBox("Supported image formats are .cis .jpg, .png, .tif, .bmp", "Unsupported file")
             return
 
-        img, tempo = load_scan(path, self.callback.player.default_tempo, force_manual_adjust)
+        img, tempo = load_scan(self, path, self.callback.player.default_tempo, force_manual_adjust)
         if img is None:
             return
         self.img_path = path
@@ -204,7 +239,7 @@ class MainFrame(wx.Frame):
         self.callback.player.emulate_off()
         self.spool.on_destroy()
         tmp = self.spool
-        self.spool = InputScanImg(self, img, self.callback.player.spool_diameter, self.callback.player.roll_width, callback=self.callback)
+        self.spool = InputScanImg(self, img, self.callback.player.spool_diameter, self.callback.player.roll_width, window_scale=self.conf.window_scale, callback=self.callback)
         self.spool.start_worker()
         # self.spool.Bind(wx.EVT_KEY_DOWN, self.on_keydown)
         # self.spool.Bind(wx.EVT_KEY_UP, self.on_keyup)

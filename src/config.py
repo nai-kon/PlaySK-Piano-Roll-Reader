@@ -9,7 +9,7 @@ class ConfigMng:
         self.last_midi_port = ""
         self.last_tracker = ""
         self.update_notified_version = ""
-
+        self.window_scale = 1
         self.load_config()
 
     def load_config(self):
@@ -21,6 +21,7 @@ class ConfigMng:
             self.last_midi_port = v.get("last_midi_port", "")
             self.last_tracker = v.get("last_tracker", "")
             self.update_notified_version = v.get("update_notified_version", "")
+            self.window_scale = v.get("window_scale", 1)
 
     def save_config(self):
         with open(ConfigMng._path, "w", encoding="utf-8") as f:

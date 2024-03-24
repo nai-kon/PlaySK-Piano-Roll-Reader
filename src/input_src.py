@@ -67,14 +67,14 @@ def _load_img(path: str, default_tempo: int) -> tuple[np.ndarray | None, int]:
     return img, tempo
 
 
-def _load_cis(path: str, default_tempo: int, force_manual_adjust: bool) -> tuple[np.ndarray | None, int]:
+def _load_cis(parent: wx.Frame, path: str, default_tempo: int, force_manual_adjust: bool) -> tuple[np.ndarray | None, int]:
     obj = CisImage()
     if not obj.load(path):
         return None, default_tempo
     # find center of roll margin or manually set if not found
     left_edge, right_edge = _find_roll_edge(obj.decode_img)
     if left_edge is None or right_edge is None or force_manual_adjust:
-        with ImgEditDlg(obj) as dlg:
+        with ImgEditDlg(parent, obj) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 left_edge, right_edge = dlg.get_margin_pos()
             else:
@@ -88,10 +88,10 @@ def _load_cis(path: str, default_tempo: int, force_manual_adjust: bool) -> tuple
     return obj.decode_img, tempo
 
 
-def load_scan(path: str, default_tempo: int, force_manual_adjust: bool = False) -> tuple[np.ndarray | None, int]:
+def load_scan(parent: wx.Frame, path: str, default_tempo: int, force_manual_adjust: bool = False) -> tuple[np.ndarray | None, int]:
     with wx.BusyCursor():
         if Path(path).suffix.lower().endswith(".cis"):
-            return _load_cis(path, default_tempo, force_manual_adjust)
+            return _load_cis(parent, path, default_tempo, force_manual_adjust)
         else:
             return _load_img(path, default_tempo)
 
@@ -114,16 +114,16 @@ class FPScounter:
 
 
 class InputVideo(wx.Panel):
-    def __init__(self, parent, path, disp_size=(800, 600), callback=None):
-        wx.Panel.__init__(self, parent, size=parent.FromDIP(wx.Size(disp_size)))
+    def __init__(self, parent, path, window_scale, callback=None):
+        self.disp_w, self.disp_h = (800, 600)
+        wx.Panel.__init__(self, parent, size=parent.FromDIPCustom(wx.Size((self.disp_w, self.disp_h))))
         self.parent = parent
         self.SetDoubleBuffered(True)
-        self.disp_w, self.disp_h = disp_size
         self.bmp = wx.Bitmap(self.disp_w, self.disp_h, depth=24)
         self.callback = callback
         self.src = None
         self.src_path = path
-        self.scale = self.GetDPIScaleFactor() if platform.system() == "Windows" else 1
+        self.scale = parent.GetDPIScaleFactorCustom()
 
         self.start_play = False
         self.thread_enable = True
@@ -233,8 +233,8 @@ class InputVideo(wx.Panel):
 
 
 class InputWebcam(InputVideo):
-    def __init__(self, parent, webcam_no=0, disp_size=(800, 600), callback=None):
-        super().__init__(parent, webcam_no, disp_size, callback)
+    def __init__(self, parent, webcam_no=0, window_scale=1, callback=None):
+        super().__init__(parent, webcam_no, window_scale, callback)
         self.start = True
 
     @staticmethod
@@ -250,8 +250,8 @@ class InputWebcam(InputVideo):
 
 
 class InputScanImg(InputVideo):
-    def __init__(self, parent, img, spool_diameter=2.72, roll_width=11.25, tempo=80, disp_size=(800, 600), callback=None):
-        super().__init__(parent, None, disp_size, callback)
+    def __init__(self, parent, img, spool_diameter=2.72, roll_width=11.25, tempo=80, window_scale=1, callback=None):
+        super().__init__(parent, None, window_scale, callback)
         self.src = img
         self.skip_px = 1
         self.spool_rps = 0
@@ -368,7 +368,7 @@ if __name__ == "__main__":
     def slider_value_change(event):
         obj = event.GetEventObject()
         panel1.set_tempo(obj.GetValue())
-    slider = wx.Slider(frame, value=80, minValue=10, maxValue=140, pos=(0, 600), size=frame.FromDIP(wx.Size((200, 100))), style=wx.SL_HORIZONTAL | wx.SL_LABELS)
+    slider = wx.Slider(frame, value=80, minValue=10, maxValue=140, pos=(0, 600), size=frame.FromDIPCustom(wx.Size((200, 100))), style=wx.SL_HORIZONTAL | wx.SL_LABELS)
     slider.SetPageSize(5)
     slider.Bind(wx.EVT_SLIDER, slider_value_change)
 
