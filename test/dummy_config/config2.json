@@ -1,5 +1,6 @@
 {
-    "last_midi_port": 1,
-    "last_tracker": 2,
-    "update_notified_version": 3
+    "last_midi_port": "hogehoge",
+    "last_tracker": "fugafuga",
+    "update_notified_version": "4",
+    "window_scale": "125%"
 }

@@ -116,12 +116,12 @@ class MainFrame(wx.Frame):
 
     def FromDIPCustom(self, size:wx.Size | int):
         if isinstance(size, int):
-            return int(self.FromDIP(size) * self.conf.window_scale)
+            return int(self.FromDIP(size) * self.conf.window_scale_ratio)
         else:
-            return self.FromDIP(size) * self.conf.window_scale
+            return self.FromDIP(size) * self.conf.window_scale_ratio
 
     def GetDPIScaleFactorCustom(self):
-        return self.GetDPIScaleFactor() * self.conf.window_scale if platform.system() == "Windows" else self.conf.window_scale
+        return self.GetDPIScaleFactor() * self.conf.window_scale_ratio if platform.system() == "Windows" else self.conf.window_scale_ratio
 
     def create_status_bar(self):
         self.sbar = self.CreateStatusBar(8)  # midi-port, tracker-bar
@@ -159,13 +159,16 @@ class MainFrame(wx.Frame):
 
         # window scale
         self.sbar.SetStatusText(wsize_cap, 6)
-        scales = ("1.0", "1.25", "1.5", "2.0")
+        # calc scales which fit in display size
+        client_h = wx.Display().GetClientArea().height
+        cur_h = self.GetSize()[1]
+
+        scales = [f"{v}%" for v in range(100, 400 + 1, 25) if (v / 100) * (cur_h / self.conf.window_scale_ratio) < client_h]
         rect = self.sbar.GetFieldRect(7)
         self.scale_sel = wx.Choice(self.sbar, choices=scales, size=(rect.width, h))
         self.scale_sel.Bind(wx.EVT_CHOICE, self.change_scale)
         self.scale_sel.SetPosition((rect.x, 0))
-        config_scale = str(self.conf.window_scale)
-        last_sel = scales.index(config_scale) if config_scale in scales else 0
+        last_sel = scales.index(self.conf.window_scale) if self.conf.window_scale in scales else "100%"
         self.scale_sel.SetSelection(last_sel)
 
     def post_status_msg(self, msg):
@@ -209,7 +212,7 @@ class MainFrame(wx.Frame):
 
     def change_scale(self, event=None):
         idx = self.scale_sel.GetSelection()
-        self.conf.window_scale = float(self.scale_sel.GetString(idx))
+        self.conf.window_scale = self.scale_sel.GetString(idx)
         wx.MessageBox("Exit the App. Please start App after exit.", "Change Window Size needs Restart")
         self.on_close(event=None)
 
