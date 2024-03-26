@@ -1,4 +1,4 @@
-# PlaySK Piano Roll Reader Ver3.2
+# PlaySK Piano Roll Reader Ver3.3
 
 Optically reading a piano roll image, emulates expression and output midi signal in real-time.
 
@@ -10,6 +10,7 @@ Currently, 9 virtual tracker bars are available.
 - Ampico B
 - Duo-Art
 - Welte-Mignon Licensee
+- Welte-Mignon T-98 (Green)
 - Welte-Mignon T-100 (Red)
 - Philipps Duca (no expression. experimental)
 - Recordo version A / B

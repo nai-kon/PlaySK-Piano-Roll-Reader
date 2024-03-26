@@ -43,7 +43,7 @@ class SingleInstWin:
                     sock.sendall(f"{self.message_path}{sys.argv[1]}".encode())
                 else:
                     sock.sendall(self.message_notify.encode())
-            print("app is already exists.")
+            print("The software is already exists.")
             return True
         except OSError:
             # app is not exists. run socket server as a daemon

@@ -8,3 +8,16 @@ from .RecordoB import RecordoB
 from .WelteLicensee import WelteLicensee
 from .WelteT98 import WelteT98
 from .WelteT100 import WelteT100
+
+__all__ = [
+    "AmpicoB",
+    "Artecho",
+    "BasePlayer",
+    "DuoArt",
+    "PhilippsDuca",
+    "RecordoA",
+    "RecordoB",
+    "WelteLicensee",
+    "WelteT98",
+    "WelteT100",
+]

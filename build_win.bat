@@ -17,5 +17,5 @@ pip-licenses --format=plain-vertical --with-license-file --no-license-path --out
 
 rem copy files
 xcopy /i /y "3rd-party-license.txt" ".\dist\PlaySK Piano Roll Reader\"
-xcopy /i /y ".\docs\How to use.png" ".\dist\PlaySK Piano Roll Reader\"
+xcopy /i /y ".\assets\How to use.png" ".\dist\PlaySK Piano Roll Reader\"
 xcopy /s /i /y ".\src\playsk_config\" ".\dist\PlaySK Piano Roll Reader\playsk_config\"

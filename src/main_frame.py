@@ -126,17 +126,17 @@ class MainFrame(wx.Frame):
     def create_status_bar(self):
         self.sbar = self.CreateStatusBar(8)  # midi-port, tracker-bar
         _, h = self.sbar.Size[:2]
-        midiout_cap = "MIDI Output :"
-        midiout_capw = wx.Window.GetTextExtent(self, midiout_cap).Width
-        tracker_cap = "Tracker Bar :"
-        tracker_capw = wx.Window.GetTextExtent(self, tracker_cap).Width
-        wsize_cap = "Window Size :"
-        wsize_capw = wx.Window.GetTextExtent(self, wsize_cap).Width
+        midiout_caption = "MIDI Output :"
+        tracker_caption = "Tracker Bar :"
+        trwsize_caption = "Window Size :"
+        midiout_caption_w = wx.Window.GetTextExtent(self, midiout_caption).Width
+        tracker_caption_w = wx.Window.GetTextExtent(self, tracker_caption).Width
+        wsize_caption_w = wx.Window.GetTextExtent(self, trwsize_caption).Width
 
-        self.sbar.SetStatusWidths([midiout_capw, -4, -1, tracker_capw, -4, -3, wsize_capw, -1])
+        self.sbar.SetStatusWidths([midiout_caption_w, -4, -1, tracker_caption_w, -4, -3, wsize_caption_w, -1])
 
         # midi port
-        self.sbar.SetStatusText(midiout_cap, 0)
+        self.sbar.SetStatusText(midiout_caption, 0)
         ports = self.midiobj.port_list
         rect = self.sbar.GetFieldRect(1)
         self.port_sel = wx.Choice(self.sbar, choices=ports, size=(rect.width, h))
@@ -147,7 +147,7 @@ class MainFrame(wx.Frame):
         self.change_midi_port()  # call manually for init
 
         # tracker bar
-        self.sbar.SetStatusText(tracker_cap, 3)
+        self.sbar.SetStatusText(tracker_caption, 3)
         players = self.player_mng.player_list
         rect = self.sbar.GetFieldRect(4)
         self.player_sel = wx.Choice(self.sbar, choices=players, size=(rect.width, h))
@@ -158,7 +158,7 @@ class MainFrame(wx.Frame):
         self.change_player()  # call manually for init
 
         # window scale
-        self.sbar.SetStatusText(wsize_cap, 6)
+        self.sbar.SetStatusText(trwsize_caption, 6)
         # calc scales which fit in display size
         client_h = wx.Display().GetClientArea().height
         cur_h = self.GetSize()[1]
@@ -213,7 +213,7 @@ class MainFrame(wx.Frame):
     def change_scale(self, event=None):
         idx = self.scale_sel.GetSelection()
         self.conf.window_scale = self.scale_sel.GetString(idx)
-        wx.MessageBox("Exit the App. Please start App after exit.", "Change Window Size needs Restart")
+        wx.MessageBox("Exit the software. Please re-start after exit.", "Change Window Size needs Restart")
         self.on_close(event=None)
 
     def midi_onoff(self, event):

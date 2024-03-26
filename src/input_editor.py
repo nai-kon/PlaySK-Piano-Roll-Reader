@@ -1,5 +1,3 @@
-import platform
-
 import cv2
 import wx
 from cis_image import CisImage, ScannerType
@@ -15,8 +13,8 @@ class ImgEditDlg(wx.Dialog):
         border_size = self.FromDIPCustom(5)
         sizer1 = wx.BoxSizer(wx.VERTICAL)
         sizer1.Add(wx.StaticText(self, label=self.get_show_text()), 1, wx.EXPAND | wx.ALL, border=border_size)
-        sizer1.Add(wx.Button(self, wx.ID_OK, label="OK"), 1, wx.EXPAND | wx.ALL, border=border_size)
-        sizer1.Add(wx.Button(self, wx.ID_CANCEL, label="Cancel"), 1, wx.EXPAND | wx.ALL, border=border_size)
+        sizer1.Add(wx.Button(self, wx.ID_OK, label="OK"), 1, wx.EXPAND | wx.ALL)
+        sizer1.Add(wx.Button(self, wx.ID_CANCEL, label="Cancel"), 1, wx.EXPAND | wx.ALL)
 
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
         sizer2.Add(self.panel)

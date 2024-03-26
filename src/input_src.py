@@ -1,6 +1,5 @@
 import math
 import os
-import platform
 import re
 import threading
 import time

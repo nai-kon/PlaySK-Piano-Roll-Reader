@@ -1,5 +1,6 @@
 import numpy as np
 import wx
+
 from .base_player import BasePlayer
 
 

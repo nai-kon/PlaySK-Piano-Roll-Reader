@@ -1,5 +1,6 @@
 import json
 import os
+
 from pydantic import BaseModel
 
 CONFIG_PATH = os.path.join("playsk_config", "config.json")
