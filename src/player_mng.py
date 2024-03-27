@@ -25,7 +25,7 @@ class PlayerMng:
 
     @property
     def player_list(self):
-        return list(self.player_conf_map.keys())
+        return sorted(self.player_conf_map.keys())
 
     def get_player_obj(self, player_name, midiobj):
         cls_name = self.player_conf_map.get(player_name, None)
