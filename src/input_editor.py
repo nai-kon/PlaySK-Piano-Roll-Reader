@@ -10,7 +10,7 @@ class ImgEditDlg(wx.Dialog):
         self.cis = cis
         self.panel = SetEdgePane(self, cis.decode_img)
 
-        border_size = self.FromDIPCustom(5)
+        border_size = self.get_dipscaled_size(5)
         sizer1 = wx.BoxSizer(wx.VERTICAL)
         sizer1.Add(wx.StaticText(self, label=self.get_show_text()), 1, wx.EXPAND | wx.ALL, border=border_size)
         sizer1.Add(wx.Button(self, wx.ID_OK, label="OK"), 1, wx.EXPAND | wx.ALL)
@@ -43,16 +43,16 @@ class ImgEditDlg(wx.Dialog):
     def get_margin_pos(self):
         return self.panel.get_pos()
 
-    def FromDIPCustom(self, size):
-        return self.parent.FromDIPCustom(size)
+    def get_dipscaled_size(self, size):
+        return self.parent.get_dipscaled_size(size)
 
-    def GetDPIScaleFactorCustom(self):
-        return self.parent.GetDPIScaleFactorCustom()
+    def get_dpiscale_factor(self):
+        return self.parent.get_dpiscale_factor()
 
 
 class SetEdgePane(wx.Panel):
     def __init__(self, parent, img):
-        self.frame_w = parent.FromDIPCustom(950)
+        self.frame_w = parent.get_dipscaled_size(950)
         self.frame_h = wx.Display().GetClientArea().height  # display height
         wx.Panel.__init__(self, parent, size=(self.frame_w, self.frame_h))
         self.SetDoubleBuffered(True)
@@ -66,12 +66,12 @@ class SetEdgePane(wx.Panel):
         self.scroll_y1 = self.img_h // 2
         self.scroll_size = 500  # @px
         self.norm_cursor = wx.Cursor()
-        self.guild_line_w = parent.FromDIPCustom(2)
+        self.guild_line_w = parent.get_dipscaled_size(2)
         self.adjust_cursor = wx.Cursor(wx.CURSOR_SIZEWE)
-        self.adjust_cursor_slip = parent.FromDIPCustom(20)
+        self.adjust_cursor_slip = parent.get_dipscaled_size(20)
         self.guide_base_text = "Set this line to the edge of the roll"
         self.guide_font = wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD)
-        self.scale = parent.GetDPIScaleFactorCustom()
+        self.scale = parent.get_dpiscale_factor()
 
         text = "If there is a margin, set it roughly in the center of the margin. It will be adjusted automatically.\n" \
             "If there is no margin, set it strictly to the edge."

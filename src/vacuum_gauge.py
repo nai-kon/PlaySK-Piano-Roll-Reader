@@ -11,8 +11,8 @@ class VacuumGauge(wx.Panel):
     def __init__(self, parent, pos=(0, 0), caption=""):
         wx.Panel.__init__(self, parent, wx.ID_ANY, pos=pos)
         caption = wx.StaticText(self, wx.ID_ANY, caption)
-        scale = parent.GetDPIScaleFactorCustom()
-        self.meter = OscilloGraph(self, scale, parent.FromDIPCustom(wx.Size(200, 150)))
+        scale = parent.get_dpiscale_factor()
+        self.meter = OscilloGraph(self, scale, parent.get_dipscaled_size(wx.Size(200, 150)))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(caption)
@@ -129,7 +129,7 @@ if __name__ == "__main__":
         panel1.vacuum = obj.GetValue()
         panel2.vacuum = obj.GetValue() + 10
 
-    slider = wx.Slider(frame, value=0, minValue=0, maxValue=40, size=frame.FromDIPCustom(wx.Size(200, 100)), style=wx.SL_LABELS)
+    slider = wx.Slider(frame, value=0, minValue=0, maxValue=40, size=frame.get_dipscaled_size(wx.Size(200, 100)), style=wx.SL_LABELS)
     slider.Bind(wx.EVT_SLIDER, slider_value_change)
 
     sizer = wx.BoxSizer(wx.VERTICAL)

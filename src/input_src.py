@@ -115,14 +115,14 @@ class FPScounter:
 class InputVideo(wx.Panel):
     def __init__(self, parent, path, window_scale, callback=None):
         self.disp_w, self.disp_h = (800, 600)
-        wx.Panel.__init__(self, parent, size=parent.FromDIPCustom(wx.Size((self.disp_w, self.disp_h))))
+        wx.Panel.__init__(self, parent, size=parent.get_dipscaled_size(wx.Size((self.disp_w, self.disp_h))))
         self.parent = parent
         self.SetDoubleBuffered(True)
         self.bmp = wx.Bitmap(self.disp_w, self.disp_h, depth=24)
         self.callback = callback
         self.src = None
         self.src_path = path
-        self.scale = parent.GetDPIScaleFactorCustom()
+        self.scale = parent.get_dpiscale_factor()
 
         self.start_play = False
         self.thread_enable = True
@@ -367,7 +367,7 @@ if __name__ == "__main__":
     def slider_value_change(event):
         obj = event.GetEventObject()
         panel1.set_tempo(obj.GetValue())
-    slider = wx.Slider(frame, value=80, minValue=10, maxValue=140, pos=(0, 600), size=frame.FromDIPCustom(wx.Size((200, 100))), style=wx.SL_HORIZONTAL | wx.SL_LABELS)
+    slider = wx.Slider(frame, value=80, minValue=10, maxValue=140, pos=(0, 600), size=frame.get_dipscaled_size(wx.Size((200, 100))), style=wx.SL_HORIZONTAL | wx.SL_LABELS)
     slider.SetPageSize(5)
     slider.Bind(wx.EVT_SLIDER, slider_value_change)
 

@@ -57,11 +57,15 @@ class MainFrame(wx.Frame):
         self.spool = WelcomeMsg(self, size=(800, 600))
         self.spool.start_worker()
 
-        self.midi_btn = wx.Button(self, size=self.FromDIPCustom(wx.Size((90, 50))), label="MIDI On")
+        font = wx.Font(self.get_scaled_textsize(10), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+
+        self.midi_btn = wx.Button(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="MIDI On")
         self.midi_btn.Bind(wx.EVT_BUTTON, self.midi_onoff)
+        self.midi_btn.SetFont(font)
         self.midi_btn.Disable()
 
-        self.file_btn = wx.Button(self, size=self.FromDIPCustom(wx.Size((90, 50))), label="File")
+        self.file_btn = wx.Button(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="File")
+        self.file_btn.SetFont(font)
         self.file_btn.Bind(wx.EVT_BUTTON, self.open_file)
 
         self.speed = SpeedSlider(self, callback=self.speed_change)
@@ -70,15 +74,16 @@ class MainFrame(wx.Frame):
         self.bass_vacuum_lv = VacuumGauge(self, caption="Bass Vacuum (inches of water)")
         self.treble_vacuum_lv = VacuumGauge(self, caption="Treble Vacuum (inches of water)")
 
-        self.adjust_btn = wx.Button(self, size=self.FromDIPCustom(wx.Size((180, 50))), label="Adjust CIS Image")
+        self.adjust_btn = wx.Button(self, size=self.get_dipscaled_size(wx.Size((180, 50))), label="Adjust CIS Image")
         self.adjust_btn.Bind(wx.EVT_BUTTON, self.adjust_image)
+        self.adjust_btn.SetFont(font)
 
         self.callback = CallBack(None, self.tracking, self.bass_vacuum_lv, self.treble_vacuum_lv)
         self.midiobj = MidiWrap()
         self.player_mng = PlayerMng()
 
         # sizer of controls
-        border_size = self.FromDIPCustom(5)
+        border_size = self.get_dipscaled_size(5)
         self.sizer1 = wx.BoxSizer(wx.HORIZONTAL)
         self.sizer1.Add(self.midi_btn, flag=wx.EXPAND | wx.ALL, border=border_size, proportion=1)
         self.sizer1.Add(self.file_btn, flag=wx.EXPAND | wx.ALL, border=border_size, proportion=1)
@@ -114,14 +119,17 @@ class MainFrame(wx.Frame):
             # app was opened with file
             wx.CallAfter(self.load_file, path=sys.argv[1])
 
-    def FromDIPCustom(self, size:wx.Size | int):
+    def get_dipscaled_size(self, size:wx.Size | int):
         if isinstance(size, int):
             return int(self.FromDIP(size) * self.conf.window_scale_ratio)
         else:
             return self.FromDIP(size) * self.conf.window_scale_ratio
 
-    def GetDPIScaleFactorCustom(self):
+    def get_dpiscale_factor(self):
         return self.GetDPIScaleFactor() * self.conf.window_scale_ratio if platform.system() == "Windows" else self.conf.window_scale_ratio
+
+    def get_scaled_textsize(self, size):
+        return int(size * self.conf.window_scale_ratio)
 
     def create_status_bar(self):
         self.sbar = self.CreateStatusBar(8)  # midi-port, tracker-bar
@@ -163,12 +171,12 @@ class MainFrame(wx.Frame):
         client_h = wx.Display().GetClientArea().height
         cur_h = self.GetSize()[1]
 
-        scales = [f"{v}%" for v in range(100, 400 + 1, 25) if (v / 100) * (cur_h / self.conf.window_scale_ratio) < client_h]
+        scales = [f"{v}%" for v in range(100, 300 + 1, 25) if (v / 100) * (cur_h / self.conf.window_scale_ratio) < client_h]
         rect = self.sbar.GetFieldRect(7)
         self.scale_sel = wx.Choice(self.sbar, choices=scales, size=(rect.width, h))
         self.scale_sel.Bind(wx.EVT_CHOICE, self.change_scale)
         self.scale_sel.SetPosition((rect.x, 0))
-        last_sel = scales.index(self.conf.window_scale) if self.conf.window_scale in scales else "100%"
+        last_sel = scales.index(self.conf.window_scale) if self.conf.window_scale in scales else 0
         self.scale_sel.SetSelection(last_sel)
 
     def post_status_msg(self, msg):
@@ -212,9 +220,11 @@ class MainFrame(wx.Frame):
 
     def change_scale(self, event=None):
         idx = self.scale_sel.GetSelection()
-        self.conf.window_scale = self.scale_sel.GetString(idx)
-        wx.MessageBox("Exit the software. Please re-start after exit.", "Change Window Size needs Restart")
-        self.on_close(event=None)
+        select_scale = self.scale_sel.GetString(idx)
+        if select_scale != self.conf.window_scale:
+            self.conf.window_scale = select_scale
+            wx.MessageBox("Exit the software. Please re-start after exit.", "Change Window Size needs Restart")
+            self.on_close(event=None)
 
     def midi_onoff(self, event):
         obj = event.GetEventObject()
