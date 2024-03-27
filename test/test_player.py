@@ -9,7 +9,7 @@ import pytest
 
 sys.path.append("src/")
 from midi_controller import MidiWrap
-from player import BasesPlayer, TrackerHoles
+from players.base_player import BasePlayer, TrackerHoles
 
 
 class TestTrackerHoles:
@@ -94,7 +94,7 @@ class TestPlayer:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = BasesPlayer("src/playsk_config/88 Note white back.json", midiobj)
+        obj = BasePlayer("src/playsk_config/88 Note white back.json", midiobj)
         return obj
 
     def call_emulate_th(self, obj, frame):
@@ -156,7 +156,7 @@ class TestPlayer:
 
         hole_color = player.holes.th_bright - 1 if player.holes.is_dark_hole else player.holes.th_bright + 1
         frame = np.full((600, 800, 3), hole_color, np.uint8)
-        monkeypatch.setattr(BasesPlayer, "emulate_notes", heavy_emulate_notes)
+        monkeypatch.setattr(BasePlayer, "emulate_notes", heavy_emulate_notes)
         th = threading.Thread(target=self.call_emulate_th, args=(player, frame))
         th.start()
         time.sleep(1)
