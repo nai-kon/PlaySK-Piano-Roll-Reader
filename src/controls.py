@@ -114,17 +114,15 @@ class TrackerCtrl(wx.Panel):
         self.right.Bind(wx.EVT_BUTTON, lambda event: self.changed(self.offset + 1))
         self.right.Disable()
 
-
-        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        border_size = parent.get_dipscaled_size(3)
-        sizer1.Add(self.label, flag=wx.EXPAND | wx.ALL, border=border_size, proportion=1)
-        sizer1.Add(self.left, flag=wx.EXPAND | wx.ALL, border=border_size, proportion=2)
-        sizer1.Add(self.right, flag=wx.EXPAND | wx.ALL, border=border_size, proportion=2)
-
-        sizer2 = wx.BoxSizer(wx.VERTICAL)
-        sizer2.Add(self.auto_tracking, flag=wx.EXPAND)
-        sizer2.Add(sizer1, flag=wx.EXPAND)
-        self.SetSizer(sizer2)
+        sizer = wx.GridBagSizer(vgap=2, hgap=2)
+        sizer.Add(self.auto_tracking, (0, 0), (1, 3))
+        sizer.Add(self.label, (1, 0), (1, 1), flag=wx.EXPAND)
+        border_size = parent.FromDIP(5)
+        sizer.Add(self.left, (1, 1), (1, 1), flag=wx.EXPAND | wx.LEFT, border=border_size)
+        sizer.Add(self.right, (1, 2), (1, 1), flag=wx.EXPAND | wx.LEFT, border=border_size)
+        sizer.AddGrowableCol(1)
+        sizer.AddGrowableCol(2)
+        self.SetSizer(sizer)
         self.Fit()
 
     def _on_auto_checked(self, event):
