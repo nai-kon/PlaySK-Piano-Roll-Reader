@@ -16,7 +16,7 @@ Currently, 9 virtual tracker bars are available.
 - Recordo version A / B
 - Artecho
 
-In the future, Ampico A, Welte T-98 will be supported.
+In the future, Ampico A will be supported.
 
 Support image formats are `.cis`, `.jpg`, `.tif`, `.png`, `.bmp`. 
 
