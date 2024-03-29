@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 sys.path.append("src/")
-from Artecho import Artecho
+import players
 from midi_controller import MidiWrap
 
 
@@ -12,7 +12,7 @@ class TestArtecho:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = Artecho("src/playsk_config/Artecho white back (experimental).json", midiobj)
+        obj = players.Artecho("src/playsk_config/Artecho white back (experimental).json", midiobj)
         return obj
 
     def test_emulate_off(self, player):
@@ -52,7 +52,6 @@ class TestArtecho:
         assert player.calc_velocity() == (60, 54)
 
     def test_emulate_pedals(self, player, mocker):
-
         # sustain on
         frame = np.full((600, 800, 3), 0, np.uint8)
         sustain_on_mock = mocker.patch("midi_controller.MidiWrap.sustain_on")
@@ -69,4 +68,44 @@ class TestArtecho:
         player.holes.set_frame(frame, 0)
         player.emulate_pedals()
         sustain_off_mock.assert_called_once()
+
+    def test_emulate_expression(self, player):
+        # bass intensity cancel
+        frame = np.full((600, 800, 3), 0, np.uint8)
+        x1, y1, x2, y2 = player.holes["bass_cancel"]["pos"][0]
+        frame[y1:y2, x1:x2, :] = 255
+        player.holes.set_frame(frame, 0)
+        player.bass_intensity_lock = [True, True, True]
+        player.emulate_expression(0)
+        assert player.bass_intensity_lock == [False, False, False]
+
+        # bass intensity cancel
+        frame = np.full((600, 800, 3), 0, np.uint8)
+        x1, y1, x2, y2 = player.holes["treble_cancel"]["pos"][0]
+        frame[y1:y2, x1:x2, :] = 255
+        player.holes.set_frame(frame, 0)
+        player.treble_intensity_lock = [True, True, True]
+        player.emulate_expression(0)
+        assert player.treble_intensity_lock == [False, False, False]
+
+        # cancel
+        frame = np.full((600, 800, 3), 0, np.uint8)
+        x1, y1, x2, y2 = player.holes["cancel"]["pos"][0]
+        frame[y1:y2, x1:x2, :] = 255
+        player.holes.set_frame(frame, 0)
+        player.bass_hammer_rail_lock = False
+        player.treble_hammer_rail_lock = False
+        player.pianissimo_lock = False
+        player.emulate_expression(0)
+        assert not player.bass_hammer_rail_lock
+        assert not player.treble_hammer_rail_lock
+        assert not player.pianissimo_lock
+
+        # pianissimo
+        frame = np.full((600, 800, 3), 0, np.uint8)
+        x1, y1, x2, y2 = player.holes["pianissimo"]["pos"][0]
+        frame[y1:y2, x1:x2, :] = 255
+        player.holes.set_frame(frame, 0)
+        player.emulate_expression(0)
+        assert player.pianissimo_lock
 

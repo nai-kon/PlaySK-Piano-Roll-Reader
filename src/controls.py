@@ -12,23 +12,30 @@ from wx.lib.agw.hyperlink import HyperLinkCtrl
 
 class WelcomeMsg(wx.Panel):
     def __init__(self, parent, pos=(0, 0), size=(800, 600)):
-        wx.Panel.__init__(self, parent, wx.ID_ANY, pos, parent.FromDIP(wx.Size(size)))
+        wx.Panel.__init__(self, parent, wx.ID_ANY, pos, parent.get_dipscaled_size(wx.Size(size)))
 
         self.SetForegroundColour("white")
 
         dummy = wx.StaticText(self, wx.ID_ANY, "")
         msg1 = wx.StaticText(self, wx.ID_ANY, "SELECT or DROP FILE here!")
-        msg1.SetFont(wx.Font(30, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
+        text_size = parent.get_scaled_textsize(30)
+        msg1.SetFont(wx.Font(text_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
 
         msg2 = wx.StaticText(self, wx.ID_ANY, "Please donate for continuous development of the software.")
-        msg2.SetFont(wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
+        text_size = parent.get_scaled_textsize(15)
+        msg2.SetFont(wx.Font(text_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
         lnk1 = HyperLinkCtrl(self, wx.ID_ANY, "Donate via PayPal", URL="https://paypal.me/KatzSasaki")
-        lnk1.SetFont(wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
+        lnk1.SetFont(wx.Font(text_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
 
+        text_size = parent.get_scaled_textsize(10)
         msg3 = wx.StaticText(self, wx.ID_ANY, APP_TITLE)
+        msg3.SetFont(wx.Font(text_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
         msg4 = wx.StaticText(self, wx.ID_ANY, f"Version {APP_VERSION}")
+        msg4.SetFont(wx.Font(text_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
         lnk2 = HyperLinkCtrl(self, wx.ID_ANY, "Project page on GitHub", URL="https://github.com/nai-kon/PlaySK-Piano-Roll-Reader")
+        lnk2.SetFont(wx.Font(text_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
         msg5 = wx.StaticText(self, wx.ID_ANY, COPY_RIGHT)
+        msg5.SetFont(wx.Font(text_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(dummy, 4, wx.ALIGN_CENTER)
@@ -78,7 +85,7 @@ class SpeedSlider(wx.Panel):
     def set(self, label, tempo_range, val):
         self.label = label
         self.slider.SetRange(tempo_range[0], tempo_range[1])
-        self.slider.SetValue(val)
+        self.slider.SetValue(int(val))
         wx.CallAfter(self._value_changed, val)
 
     def _slider_changed(self, event):
@@ -107,13 +114,17 @@ class TrackerCtrl(wx.Panel):
         self.right.Bind(wx.EVT_BUTTON, lambda event: self.changed(self.offset + 1))
         self.right.Disable()
 
-        sizer = wx.GridBagSizer(vgap=2, hgap=2)
-        sizer.Add(self.auto_tracking, (0, 0), (1, 3), flag=wx.EXPAND)
-        sizer.Add(self.label, (1, 0), (1, 1), flag=wx.EXPAND)
-        border_size = parent.FromDIP(5)
-        sizer.Add(self.left, (1, 1), (1, 1), flag=wx.EXPAND | wx.LEFT, border=border_size)
-        sizer.Add(self.right, (1, 2), (1, 1), flag=wx.EXPAND | wx.LEFT, border=border_size)
-        self.SetSizer(sizer)
+
+        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        border_size = parent.get_dipscaled_size(3)
+        sizer1.Add(self.label, flag=wx.EXPAND | wx.ALL, border=border_size, proportion=1)
+        sizer1.Add(self.left, flag=wx.EXPAND | wx.ALL, border=border_size, proportion=2)
+        sizer1.Add(self.right, flag=wx.EXPAND | wx.ALL, border=border_size, proportion=2)
+
+        sizer2 = wx.BoxSizer(wx.VERTICAL)
+        sizer2.Add(self.auto_tracking, flag=wx.EXPAND)
+        sizer2.Add(sizer1, flag=wx.EXPAND)
+        self.SetSizer(sizer2)
         self.Fit()
 
     def _on_auto_checked(self, event):

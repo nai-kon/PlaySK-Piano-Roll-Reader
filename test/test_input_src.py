@@ -25,7 +25,7 @@ def test_load_img(img_path, expect):
 ])
 def test_load_cis(img_path, expect, mocker):
     mocker.patch("wx.MessageBox")  # ignore msg box
-    img, tempo = _load_cis("test/test_images/" + img_path, 80, False)
+    img, tempo = _load_cis(None, "test/test_images/" + img_path, 80, False)
     assert (img is not None, tempo) == expect
 
     # Test case of using ImgEditDlg is not implemented yet

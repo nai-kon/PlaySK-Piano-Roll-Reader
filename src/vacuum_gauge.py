@@ -11,7 +11,8 @@ class VacuumGauge(wx.Panel):
     def __init__(self, parent, pos=(0, 0), caption=""):
         wx.Panel.__init__(self, parent, wx.ID_ANY, pos=pos)
         caption = wx.StaticText(self, wx.ID_ANY, caption)
-        self.meter = OscilloGraph(self)
+        scale = parent.get_dpiscale_factor()
+        self.meter = OscilloGraph(self, scale, parent.get_dipscaled_size(wx.Size(200, 150)))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(caption)
@@ -32,14 +33,13 @@ class VacuumGauge(wx.Panel):
 
 
 class OscilloGraph(wx.Panel):
-    def __init__(self, parent, max_scale_scale=50, size=(200, 150)):
-        size = parent.FromDIP(wx.Size(size))
+    def __init__(self, parent, scale, size, max_vacuum=50):
         wx.Panel.__init__(self, parent, wx.ID_ANY, size=size)
         self.w = size[0]
         self.h = size[1]
-        self.max_scale = max_scale_scale
-        self.scale = self.GetDPIScaleFactor() if platform.system() == "Windows" else 1
-        self.plot_scale = self.h / self.max_scale
+        self.scale = scale
+        self.max_vacuum = max_vacuum
+        self.plot_scale = self.h / self.max_vacuum
         self.SetDoubleBuffered(True)
 
         self.val = 0
@@ -77,7 +77,7 @@ class OscilloGraph(wx.Panel):
         # grid line
         dc.SetPen(wx.Pen("black", int(1 * self.scale), wx.SOLID))
         dc.DrawLineList([(x, 0, x, self.h - 1) for x in range(0, self.w, int(50 * self.scale))])
-        dc.DrawLineList([(0, int(y * self.plot_scale), self.w - 1, int(y * self.plot_scale)) for y in range(0, self.max_scale, 10)])
+        dc.DrawLineList([(0, int(y * self.plot_scale), self.w - 1, int(y * self.plot_scale)) for y in range(0, self.max_vacuum, 10)])
 
         # scale
         dc.SetFont(wx.Font(int(12 * self.scale), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
@@ -129,7 +129,7 @@ if __name__ == "__main__":
         panel1.vacuum = obj.GetValue()
         panel2.vacuum = obj.GetValue() + 10
 
-    slider = wx.Slider(frame, value=0, minValue=0, maxValue=40, size=frame.FromDIP(wx.Size(200, 100)), style=wx.SL_LABELS)
+    slider = wx.Slider(frame, value=0, minValue=0, maxValue=40, size=frame.get_dipscaled_size(wx.Size(200, 100)), style=wx.SL_LABELS)
     slider.Bind(wx.EVT_SLIDER, slider_value_change)
 
     sizer = wx.BoxSizer(wx.VERTICAL)

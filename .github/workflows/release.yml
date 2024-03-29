@@ -19,16 +19,16 @@ jobs:
       fail-fast: false
       matrix:
         python-ver: [3.11]
-        # only build for Windows. Because Mac needs software notarization but I don't have $99 for it.
-        os: [windows-latest, macos-latest, macos-latest-xlarge]
+        # Intel mac for macos-13, M1/2 mac for macos-14
+        os: [windows-latest, macos-13, macos-14]
         include: 
           - os: windows-latest
             build_cmd: build_win.bat
             zip_name: PlaySK-PianoRoll-Reader-Win.x64.zip
-          - os: macos-latest
+          - os: macos-13
             build_cmd: bash build_mac.sh
             zip_name: PlaySK-PianoRoll-Reader-Mac.x64.zip
-          - os: macos-latest-xlarge
+          - os: macos-14
             build_cmd: bash build_mac.sh
             zip_name: PlaySK-PianoRoll-Reader-Mac.ARM.zip
 
@@ -95,7 +95,7 @@ jobs:
         pushd dist
         brew install create-dmg
         test -f PlaySK-Installer.dmg && rm PlaySK-Installer.dmg
-        create-dmg --volname "PlaySK Installer" --background ../docs/dmg-bg.tiff --window-pos 200 120 --window-size 800 500 --icon-size 100 --icon "PlaySK Piano Roll Reader.app" 100 100 --add-file "playsk_config" playsk_config 100 300 --hide-extension "PlaySK Piano Roll Reader.app" --app-drop-link 600 200 "PlaySK-Installer.dmg" "PlaySK Piano Roll Reader.app"
+        create-dmg --volname "PlaySK Installer" --background ../assets/dmg-bg.tiff --window-pos 200 120 --window-size 800 500 --icon-size 100 --icon "PlaySK Piano Roll Reader.app" 100 100 --add-file "playsk_config" playsk_config 100 300 --hide-extension "PlaySK Piano Roll Reader.app" --app-drop-link 600 200 "PlaySK-Installer.dmg" "PlaySK Piano Roll Reader.app"
         popd
         mv dist/PlaySK-Installer.dmg "dist/How to use Mac.png" dist/3rd-party-license.txt .
         zip -qr ${{ matrix.zip_name }} sample_scans/ PlaySK-Installer.dmg "How to use Mac.png" "3rd-party-license.txt"

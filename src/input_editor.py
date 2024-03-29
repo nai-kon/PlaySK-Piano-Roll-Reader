@@ -1,21 +1,20 @@
-import platform
-
 import cv2
 import wx
 from cis_image import CisImage, ScannerType
 
 
 class ImgEditDlg(wx.Dialog):
-    def __init__(self, cis: CisImage):
+    def __init__(self, parent, cis: CisImage):
         wx.Dialog.__init__(self, None, title="Adjust roll image")
+        self.parent = parent
         self.cis = cis
         self.panel = SetEdgePane(self, cis.decode_img)
 
-        border_size = self.FromDIP(5)
+        border_size = self.get_dipscaled_size(5)
         sizer1 = wx.BoxSizer(wx.VERTICAL)
         sizer1.Add(wx.StaticText(self, label=self.get_show_text()), 1, wx.EXPAND | wx.ALL, border=border_size)
-        sizer1.Add(wx.Button(self, wx.ID_OK, label="OK"), 1, wx.EXPAND | wx.ALL, border=border_size)
-        sizer1.Add(wx.Button(self, wx.ID_CANCEL, label="Cancel"), 1, wx.EXPAND | wx.ALL, border=border_size)
+        sizer1.Add(wx.Button(self, wx.ID_OK, label="OK"), 1, wx.EXPAND | wx.ALL)
+        sizer1.Add(wx.Button(self, wx.ID_CANCEL, label="Cancel"), 1, wx.EXPAND | wx.ALL)
 
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
         sizer2.Add(self.panel)
@@ -44,10 +43,16 @@ class ImgEditDlg(wx.Dialog):
     def get_margin_pos(self):
         return self.panel.get_pos()
 
+    def get_dipscaled_size(self, size):
+        return self.parent.get_dipscaled_size(size)
+
+    def get_dpiscale_factor(self):
+        return self.parent.get_dpiscale_factor()
+
 
 class SetEdgePane(wx.Panel):
     def __init__(self, parent, img):
-        self.frame_w = parent.FromDIP(950)
+        self.frame_w = parent.get_dipscaled_size(950)
         self.frame_h = wx.Display().GetClientArea().height  # display height
         wx.Panel.__init__(self, parent, size=(self.frame_w, self.frame_h))
         self.SetDoubleBuffered(True)
@@ -61,11 +66,12 @@ class SetEdgePane(wx.Panel):
         self.scroll_y1 = self.img_h // 2
         self.scroll_size = 500  # @px
         self.norm_cursor = wx.Cursor()
+        self.guild_line_w = parent.get_dipscaled_size(2)
         self.adjust_cursor = wx.Cursor(wx.CURSOR_SIZEWE)
-        self.adjust_cursor_slip = self.FromDIP(20)
+        self.adjust_cursor_slip = parent.get_dipscaled_size(20)
         self.guide_base_text = "Set this line to the edge of the roll"
         self.guide_font = wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD)
-        self.scale = self.GetDPIScaleFactor() if platform.system() == "Windows" else 1
+        self.scale = parent.get_dpiscale_factor()
 
         text = "If there is a margin, set it roughly in the center of the margin. It will be adjusted automatically.\n" \
             "If there is no margin, set it strictly to the edge."
@@ -90,7 +96,7 @@ class SetEdgePane(wx.Panel):
         dc.DrawText(self.guide_base_text + " →", self.right_margin_x - text_len[0], self.frame_h // 2)
 
         # guide line
-        dc.SetPen(wx.Pen((180, 0, 0), self.FromDIP(2), wx.SOLID))
+        dc.SetPen(wx.Pen((180, 0, 0), self.guild_line_w, wx.SOLID))
         dc.DrawLine(self.left_margin_x, 0, self.left_margin_x, self.frame_h)
         dc.DrawLine(self.right_margin_x, 0, self.right_margin_x, self.frame_h)
 
