@@ -1,13 +1,16 @@
 import json
 import re
+import ssl
 import threading
 import urllib.request
 
+import certifi
 import wx
 import wx.adv
+from wx.lib.agw.hyperlink import HyperLinkCtrl
+
 from config import ConfigMng
 from version import APP_TITLE, APP_VERSION, COPY_RIGHT
-from wx.lib.agw.hyperlink import HyperLinkCtrl
 
 
 class WelcomeMsg(wx.Panel):
@@ -180,12 +183,15 @@ class NotifyUpdate:
     def fetch_latest_version(self) -> str | None:
         # get from release title. If title is not format in "VerX.X", not released yet
         try:
-            with urllib.request.urlopen(self.url, timeout=10) as res:
+            context = ssl.create_default_context(cafile=certifi.where())
+            with urllib.request.urlopen(self.url, timeout=10, context=context) as res:
                 title = json.loads(res.read().decode("utf8")).get("name", None)
                 matched = re.findall(r"^Ver(\d.\d.\d)$", title)
                 ver = matched[0] if matched else None
-        except Exception:
+
+        except Exception as e:
             ver = None
+
         return ver
 
     def need_notify(self, ver: str | None) -> bool:

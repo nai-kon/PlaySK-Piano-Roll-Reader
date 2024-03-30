@@ -23,6 +23,17 @@ files = [
 ]
 
 [[package]]
+name = "certifi"
+version = "2024.2.2"
+description = "Python package for providing Mozilla's CA Bundle."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "certifi-2024.2.2-py3-none-any.whl", hash = "sha256:dc383c07b76109f368f6106eee2b593b04a011ea4d55f652c6ca24a754d1cdd1"},
+    {file = "certifi-2024.2.2.tar.gz", hash = "sha256:0569859f95fc761b18b45ef421b1290a0f65f147e92a1e5eb3e635f9a5e4e66f"},
+]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
@@ -803,4 +814,4 @@ six = "*"
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.11"
-content-hash = "5e575fd92af50bc0fe6c781c92e8042091b46355bdfc0b3fe6076fd4307ccb50"
+content-hash = "3adbcee320d2b5da8cd296009dc738770a8725e905236e32eff79b5d6ab8be50"
