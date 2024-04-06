@@ -57,15 +57,11 @@ class MainFrame(wx.Frame):
         self.spool = WelcomeMsg(self, size=(800, 600))
         self.spool.start_worker()
 
-        font = wx.Font(self.get_scaled_textsize(10), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
-
         self.midi_btn = wx.Button(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="MIDI On")
         self.midi_btn.Bind(wx.EVT_BUTTON, self.midi_onoff)
-        self.midi_btn.SetFont(font)
         self.midi_btn.Disable()
 
         self.file_btn = wx.Button(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="File")
-        self.file_btn.SetFont(font)
         self.file_btn.Bind(wx.EVT_BUTTON, self.open_file)
 
         self.speed = SpeedSlider(self, callback=self.speed_change)
@@ -76,7 +72,6 @@ class MainFrame(wx.Frame):
 
         self.adjust_btn = wx.Button(self, size=self.get_dipscaled_size(wx.Size((180, 50))), label="Adjust CIS Image")
         self.adjust_btn.Bind(wx.EVT_BUTTON, self.adjust_image)
-        self.adjust_btn.SetFont(font)
 
         self.callback = CallBack(None, self.tracking, self.bass_vacuum_lv, self.treble_vacuum_lv)
         self.midiobj = MidiWrap()
@@ -132,16 +127,16 @@ class MainFrame(wx.Frame):
         return int(size * self.conf.window_scale_ratio)
 
     def create_status_bar(self):
-        self.sbar = self.CreateStatusBar(8)  # midi-port, tracker-bar
+        self.sbar = self.CreateStatusBar(9)  # midi-port, tracker-bar
         _, h = self.sbar.Size[:2]
         midiout_caption = "MIDI Output :"
         tracker_caption = "Tracker Bar :"
-        trwsize_caption = "Window Size :"
+        wsize_caption = "Window Size :"
         midiout_caption_w = wx.Window.GetTextExtent(self, midiout_caption).Width
         tracker_caption_w = wx.Window.GetTextExtent(self, tracker_caption).Width
-        wsize_caption_w = wx.Window.GetTextExtent(self, trwsize_caption).Width
+        wsize_caption_w = wx.Window.GetTextExtent(self, wsize_caption).Width
 
-        self.sbar.SetStatusWidths([midiout_caption_w, -4, -1, tracker_caption_w, -4, -3, wsize_caption_w, -1])
+        self.sbar.SetStatusWidths([midiout_caption_w, -3, -1, tracker_caption_w, -4, -1,  -3, wsize_caption_w, -1])
 
         # midi port
         self.sbar.SetStatusText(midiout_caption, 0)
@@ -166,13 +161,13 @@ class MainFrame(wx.Frame):
         self.change_player()  # call manually for init
 
         # window scale
-        self.sbar.SetStatusText(trwsize_caption, 6)
+        self.sbar.SetStatusText(wsize_caption, 7)
         # calc scales which fit in display size
         client_h = wx.Display().GetClientArea().height
         cur_h = self.GetSize()[1]
 
         scales = [f"{v}%" for v in range(100, 300 + 1, 25) if (v / 100) * (cur_h / self.conf.window_scale_ratio) < client_h]
-        rect = self.sbar.GetFieldRect(7)
+        rect = self.sbar.GetFieldRect(8)
         self.scale_sel = wx.Choice(self.sbar, choices=scales, size=(rect.width, h))
         self.scale_sel.Bind(wx.EVT_CHOICE, self.change_scale)
         self.scale_sel.SetPosition((rect.x, 0))
@@ -180,7 +175,7 @@ class MainFrame(wx.Frame):
         self.scale_sel.SetSelection(last_sel)
 
     def post_status_msg(self, msg):
-        wx.CallAfter(self.sbar.SetStatusText, text=msg, i=4)
+        wx.CallAfter(self.sbar.SetStatusText, text=msg, i=6)
 
     def on_close(self, event):
         print("on_close called")
