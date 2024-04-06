@@ -40,6 +40,7 @@ class PlayerMng:
             "RecordoA": players.RecordoA,
             "RecordoB": players.RecordoB,
             "Artecho": players.Artecho,
+            "Themodist": players.Themodist,
         }
         clsobj = cls_map.get(cls_name, None)
         if clsobj is not None:

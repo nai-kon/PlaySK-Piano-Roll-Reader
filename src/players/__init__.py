@@ -8,6 +8,7 @@ from .RecordoB import RecordoB
 from .WelteLicensee import WelteLicensee
 from .WelteT98 import WelteT98
 from .WelteT100 import WelteT100
+from .Themodist import Themodist
 
 __all__ = [
     "AmpicoB",
@@ -20,4 +21,5 @@ __all__ = [
     "WelteLicensee",
     "WelteT98",
     "WelteT100",
+    "Themodist",
 ]
