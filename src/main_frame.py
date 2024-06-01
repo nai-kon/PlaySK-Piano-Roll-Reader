@@ -56,6 +56,7 @@ class MainFrame(wx.Frame):
         self.img_path = None
         self.spool = WelcomeMsg(self, size=(800, 600))
         self.spool.start_worker()
+        self.supported_imgs = (".cis", ".jpg", ".png", ".tif", ".bmp")
 
         self.midi_btn = wx.Button(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="MIDI On")
         self.midi_btn.Bind(wx.EVT_BUTTON, self.midi_onoff)
@@ -232,8 +233,8 @@ class MainFrame(wx.Frame):
 
     def load_file(self, path, force_manual_adjust=False):
         ext = Path(path).suffix.lower()
-        if ext.lower() not in (".cis", ".jpg", ".png", ".tif", ".bmp"):
-            wx.MessageBox("Supported image formats are .cis .jpg, .png, .tif, .bmp", "Unsupported file")
+        if ext.lower() not in self.supported_imgs:
+            wx.MessageBox(f"Supported image formats are {' '.join(self.supported_imgs)}", "Unsupported file")
             return
 
         img, tempo = load_scan(self, path, self.callback.player.default_tempo, force_manual_adjust)
@@ -262,7 +263,8 @@ class MainFrame(wx.Frame):
         self.speed.set("Tempo", (50, 140), tempo)
 
     def open_file(self, event):
-        filters = "image files (*cis;*.jpg;*.png;*.tif;*.bmp)|*cis;*.jpg;*.png;*.tif;*.bmp"
+        tmp = ";".join(f"*{v}" for v in self.supported_imgs)
+        filters = f"image files ({tmp})|{tmp}"
         with wx.FileDialog(self, "Select File", style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST, wildcard=filters) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
