@@ -6,16 +6,16 @@ from mido import Message
 class MidiWrap:
     """wrapper of mido library"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.output = None
-        self.enable = False
-        self.hammer_lift = False
+        self.enable: bool = False
+        self.hammer_lift: bool = False
 
     @property
-    def port_list(self):
+    def port_list(self) -> list[str]:
         return mido.get_output_names()
 
-    def open_port(self, name):
+    def open_port(self, name: str) -> bool:
         self.close_port()
         try:
             self.output = mido.open_output(name, autoreset=True)
@@ -25,16 +25,16 @@ class MidiWrap:
 
         return self.enable
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.close_port()
 
-    def close_port(self):
+    def close_port(self) -> None:
         if self.enable:
             self.enable = False
             self.all_off()
             self.output.close()
 
-    def all_off(self):
+    def all_off(self) -> None:
         if self.enable:
             # some device not support all note off message
             self.sustain_off()
@@ -44,41 +44,42 @@ class MidiWrap:
 
             self.output.reset()
 
-    def note_on(self, key, velo):
+    def note_on(self, note: int, velocity: int) -> None:
         if self.enable:
             if self.hammer_lift:
-                velo = int(velo * 0.9)
-            self.output.send(Message("note_on", note=key, velocity=velo))
+                velocity -= 8
+            self.output.send(Message("note_on", note=note, velocity=velocity))
 
-    def note_off(self, key, velo=90):
+    def note_off(self, note: int, velocity: int = 90) -> None:
         if self.enable:
-            self.output.send(Message("note_off", note=key, velocity=velo))
+            self.output.send(Message("note_off", note=note, velocity=velocity))
 
-    def sustain_on(self):
+    def sustain_on(self) -> None:
         if self.enable:
             self.output.send(Message("control_change", control=64, value=127))
 
-    def sustain_off(self):
+    def sustain_off(self) -> None:
         if self.enable:
             self.output.send(Message("control_change", control=64, value=0))
 
-    def soft_on(self):
+    def soft_on(self) -> None:
         if self.enable:
             self.output.send(Message("control_change", control=67, value=127))
 
-    def soft_off(self):
+    def soft_off(self) -> None:
         if self.enable:
             self.output.send(Message("control_change", control=67, value=0))
 
-    def hammer_lift_on(self):
+    def hammer_lift_on(self) -> None:
         self.hammer_lift = True
 
-    def hammer_lift_off(self):
+    def hammer_lift_off(self) -> None:
         self.hammer_lift = False
 
 
 if __name__ == "__main__":
     import time
+
     obj = MidiWrap()
     print(obj.port_list)
     assert not obj.open_port("not_exists"), "error at opening not exists port"
