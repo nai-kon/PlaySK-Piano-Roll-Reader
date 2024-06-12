@@ -125,6 +125,7 @@ class InputVideo(wx.Panel):
         self.scale = parent.get_dpiscale_factor()
 
         self.start_play = False
+        self.repeat_btn_pos = (0, 0, 0, 0)
         self.thread_enable = True
         self.thread_worker = threading.Thread(target=self.load_thread)
         self.worker_fps = 60
@@ -133,7 +134,7 @@ class InputVideo(wx.Panel):
 
         self.Bind(wx.EVT_PAINT, self.on_paint)
         # self.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
-        self.Bind(wx.EVT_LEFT_DOWN, self.on_start)
+        self.Bind(wx.EVT_LEFT_UP, self.on_click)
 
     def start_worker(self):
         self.src = cv2.VideoCapture(self.src_path)
@@ -158,19 +159,26 @@ class InputVideo(wx.Panel):
 
         # draw play button
         if not self.start_play:
-            self.draw_play_button(dc)
+            self.draw_buttons(dc)
 
-    def draw_play_button(self, dc):
+    def draw_buttons(self, dc):
         dc = wx.GCDC(dc)  # for anti-aliasing
 
-        # draw circle
+        # Play button outer
         dc.SetBrush(wx.Brush("#05A2C2"))
         dc.SetPen(wx.Pen("#05A2C2"))
-        center_x, center_y = self.disp_w // 2, self.disp_h // 2
         rad = self.disp_h // 14
+        center_x, center_y = rad + (self.disp_w // 2), self.disp_h // 2
         dc.DrawCircle(center_x, center_y, rad)
 
-        # draw triangle
+        # Repeat button outer
+        x1 = center_x - rad * 4
+        y1 = center_y - rad
+        w = h = rad * 2
+        self.repeat_btn_pos = (x1, y1, w, h)
+        dc.DrawRectangle(self.repeat_btn_pos)
+
+        # Play button inner
         dc.SetBrush(wx.Brush("white"))
         dc.SetPen(wx.Pen("white"))
         rad = self.disp_h // 20
@@ -178,9 +186,29 @@ class InputVideo(wx.Panel):
                         (center_x - rad // 2, center_y + int(math.sqrt(3) * rad) // 2),
                         (center_x + rad, center_y)])
 
-    def on_start(self, event):
+        # Repeat button inner
+        center_x -= rad * 4
+        dc.DrawPolygon([(center_x + rad // 2, center_y - int(math.sqrt(3) * rad) // 2),
+                        (center_x + rad // 2, center_y + int(math.sqrt(3) * rad) // 2),
+                        (center_x - rad, center_y)])
+        dc.DrawRectangle(center_x - rad, center_y - int(math.sqrt(3) * rad) // 2, 5, int(math.sqrt(3) * rad))
+
+    def on_click(self, event):
+        pos = event.GetPosition()
+        if not self.start_play and \
+            self.repeat_btn_pos[0] < pos.x // self.scale < self.repeat_btn_pos[0] + self.repeat_btn_pos[2] and \
+            self.repeat_btn_pos[1] < pos.y // self.scale < self.repeat_btn_pos[1] + self.repeat_btn_pos[3]:
+            # repeat button is clicked
+            self.on_repeat()
+        else:
+            # other area is clicked
+            self.on_start()
+
+    def on_start(self):
         self.start_play = not self.start_play
-        event.Skip()
+
+    def on_repeat(self):
+        pass
 
     def _load_next_frame(self):
         ret, frame = self.src.read()
@@ -278,6 +306,14 @@ class InputScanImg(InputVideo):
         self.set_tempo(self.tempo)
         self._load_next_frame()
         self.thread_worker.start()
+
+    def on_repeat(self):
+        self.parent.midi_off()
+        self.start_play = False
+        self.cur_y = self.src.shape[0] - 1
+        self.cur_spool_pos = 0
+        self.cur_spool_diameter = self.org_spool_diameter
+        self._load_next_frame()
 
     def set_tempo(self, tempo):
         # calc take-up spool rps

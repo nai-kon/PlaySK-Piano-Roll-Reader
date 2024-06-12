@@ -228,8 +228,11 @@ class MainFrame(wx.Frame):
             self.callback.player.emulate_on()
             obj.SetLabel("MIDI Off")
         else:
-            self.callback.player.emulate_off()
-            obj.SetLabel("MIDI On")
+            self.midi_off()
+
+    def midi_off(self):
+        self.callback.player.emulate_off()
+        self.midi_btn.SetLabel("MIDI On")
 
     def load_file(self, path, force_manual_adjust=False):
         ext = Path(path).suffix.lower()
@@ -246,15 +249,15 @@ class MainFrame(wx.Frame):
         else:
             self.adjust_btn.Hide()
         self.callback.player.emulate_off()
-        self.spool.on_destroy()
         tmp = self.spool
         self.spool = InputScanImg(self, img, self.callback.player.spool_diameter, self.callback.player.roll_width, window_scale=self.conf.window_scale, callback=self.callback)
-        self.spool.start_worker()
-        # self.spool.Bind(wx.EVT_KEY_DOWN, self.on_keydown)
-        # self.spool.Bind(wx.EVT_KEY_UP, self.on_keyup)
+        self.spool.Bind(wx.EVT_KEY_DOWN, self.on_keydown)
+        self.spool.Bind(wx.EVT_KEY_UP, self.on_keyup)
         self.Title = APP_TITLE + " - " + os.path.basename(path)
         self.sizer3.Replace(tmp, self.spool)
+        tmp.on_destroy()
         tmp.Destroy()
+        self.spool.start_worker()
 
         self.midi_btn.SetLabel("MIDI On")
         self.midi_btn.Enable()
