@@ -125,7 +125,9 @@ class InputVideo(wx.Panel):
         self.scale = parent.get_dpiscale_factor()
 
         self.start_play = False
+        self.repeat_btn_focused = False
         self.repeat_btn_pos = (0, 0, 0, 0)
+        self.play_btn_focused = False
         self.thread_enable = True
         self.thread_worker = threading.Thread(target=self.load_thread)
         self.worker_fps = 60
@@ -134,8 +136,7 @@ class InputVideo(wx.Panel):
 
         self.Bind(wx.EVT_PAINT, self.on_paint)
         # self.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
-        self.Bind(wx.EVT_LEFT_UP, self.on_click)
-
+        self.Bind(wx.EVT_MOUSE_EVENTS, self.on_mouse)
     def start_worker(self):
         self.src = cv2.VideoCapture(self.src_path)
         self._load_next_frame()
@@ -163,15 +164,21 @@ class InputVideo(wx.Panel):
 
     def draw_buttons(self, dc):
         dc = wx.GCDC(dc)  # for anti-aliasing
+        bg_color =  "#63B3ED"
+        focused_color = "#4299E1"
 
         # Play button outer
-        dc.SetBrush(wx.Brush("#05A2C2"))
-        dc.SetPen(wx.Pen("#05A2C2"))
+        color = focused_color if self.play_btn_focused else bg_color
+        dc.SetBrush(wx.Brush(color))
+        dc.SetPen(wx.Pen(color))
         rad = self.disp_h // 14
         center_x, center_y = rad + (self.disp_w // 2), self.disp_h // 2
         dc.DrawCircle(center_x, center_y, rad)
 
         # Repeat button outer
+        color = focused_color if self.repeat_btn_focused else bg_color
+        dc.SetBrush(wx.Brush(color))
+        dc.SetPen(wx.Pen(color))
         x1 = center_x - rad * 4
         y1 = center_y - rad
         w = h = rad * 2
@@ -193,15 +200,25 @@ class InputVideo(wx.Panel):
                         (center_x - rad, center_y)])
         dc.DrawRectangle(center_x - rad, center_y - int(math.sqrt(3) * rad) // 2, 5, int(math.sqrt(3) * rad))
 
-    def on_click(self, event):
-        pos = event.GetPosition()
-        if not self.start_play and \
-            self.repeat_btn_pos[0] < pos.x // self.scale < self.repeat_btn_pos[0] + self.repeat_btn_pos[2] and \
-            self.repeat_btn_pos[1] < pos.y // self.scale < self.repeat_btn_pos[1] + self.repeat_btn_pos[3]:
-            # repeat button is clicked
-            self.on_repeat()
+    def on_mouse(self, event):
+        # check button is focused and pressed
+        if event.Leaving():
+            self.repeat_btn_focused = False
+            self.play_btn_focused = False
         else:
-            # other area is clicked
+            pos = event.GetPosition()
+            if not self.start_play and \
+                self.repeat_btn_pos[0] < pos.x // self.scale < self.repeat_btn_pos[0] + self.repeat_btn_pos[2] and \
+                self.repeat_btn_pos[1] < pos.y // self.scale < self.repeat_btn_pos[1] + self.repeat_btn_pos[3]:
+                self.repeat_btn_focused = True
+                self.play_btn_focused = False
+            else:
+                self.repeat_btn_focused = False
+                self.play_btn_focused = True
+
+        if self.repeat_btn_focused and event.LeftUp():
+            self.on_repeat()
+        elif self.play_btn_focused and event.LeftUp():
             self.on_start()
 
     def on_start(self):
