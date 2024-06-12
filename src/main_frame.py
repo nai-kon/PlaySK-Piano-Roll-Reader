@@ -251,8 +251,8 @@ class MainFrame(wx.Frame):
         self.callback.player.emulate_off()
         tmp = self.spool
         self.spool = InputScanImg(self, img, self.callback.player.spool_diameter, self.callback.player.roll_width, window_scale=self.conf.window_scale, callback=self.callback)
-        self.spool.Bind(wx.EVT_KEY_DOWN, self.on_keydown)
-        self.spool.Bind(wx.EVT_KEY_UP, self.on_keyup)
+        # self.spool.Bind(wx.EVT_KEY_DOWN, self.on_keydown)
+        # self.spool.Bind(wx.EVT_KEY_UP, self.on_keyup)
         self.Title = APP_TITLE + " - " + os.path.basename(path)
         self.sizer3.Replace(tmp, self.spool)
         tmp.on_destroy()
