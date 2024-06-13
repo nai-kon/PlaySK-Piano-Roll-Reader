@@ -167,10 +167,10 @@ class InputVideo(wx.Panel):
 
     def draw_buttons(self, dc):
         dc = wx.GCDC(dc)  # for anti-aliasing
-        bg_color =  "#63B3ED"
-        focused_color = "#4299E1"
 
         # Play button outer
+        bg_color =  "#60a5fa"  # tailwind bg-blue-400 color
+        focused_color = "#3b82f6"  # tailwind bg-blue-500 color
         color = focused_color if self.play_btn_focused else bg_color
         dc.SetBrush(wx.Brush(color))
         dc.SetPen(wx.Pen(color))
@@ -179,14 +179,15 @@ class InputVideo(wx.Panel):
         dc.DrawCircle(center_x, center_y, rad)
 
         # Repeat button outer
+        bg_color =  "#4ade80"  # tailwind bg-green-400 color
+        focused_color = "#22c55e"  # tailwind bg-green-500 color
         color = focused_color if self.repeat_btn_focused else bg_color
         dc.SetBrush(wx.Brush(color))
         dc.SetPen(wx.Pen(color))
-        x1 = center_x - rad * 4
-        y1 = center_y - rad
+        x1, y1 = center_x - rad * 4, center_y - rad
         w = h = rad * 2
         self.repeat_btn_pos = (x1, y1, w, h)
-        dc.DrawRectangle(self.repeat_btn_pos)
+        dc.DrawRoundedRectangle(*self.repeat_btn_pos, radius=w // 10)
 
         # Play button inner
         dc.SetBrush(wx.Brush("white"))
@@ -297,7 +298,7 @@ class InputWebcam(InputVideo):
 
 
 class InputScanImg(InputVideo):
-    def __init__(self, parent, img, spool_diameter=2.72, roll_width=11.25, tempo=80, window_scale=1, callback=None):
+    def __init__(self, parent, img, spool_diameter=2.72, roll_width=11.25, tempo=80, window_scale=1, callback=None) -> None:
         super().__init__(parent, None, window_scale, callback)
         self.src = img
         self.skip_px = 1
@@ -308,7 +309,7 @@ class InputScanImg(InputVideo):
         self.roll_width = roll_width
         self.tempo = tempo
 
-    def start_worker(self):
+    def start_worker(self) -> None:
         # load initial frame
         self.left_side, self.right_side = self._find_roll_edge()
         margin = 7 * (self.right_side - self.left_side + 1) // (self.disp_w - 7 * 2)  # 7px on both edge @800x600
@@ -327,7 +328,7 @@ class InputScanImg(InputVideo):
         self._load_next_frame()
         self.thread_worker.start()
 
-    def on_repeat(self):
+    def on_repeat(self) -> None:
         self.parent.midi_off()
         self.start_play = False
         self.cur_y = self.src.shape[0] - 1
@@ -335,7 +336,7 @@ class InputScanImg(InputVideo):
         self.cur_spool_diameter = self.org_spool_diameter
         self._load_next_frame()
 
-    def set_tempo(self, tempo):
+    def set_tempo(self, tempo: float) -> None:
         # calc take-up spool rps
         self.spool_rps = (tempo * 1.2) / (self.org_spool_diameter * math.pi * 60)
 
