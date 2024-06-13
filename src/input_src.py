@@ -14,24 +14,27 @@ os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2, 42).__str__()
 import cv2
 
 
-def _find_roll_edge(img: np.ndarray) -> tuple[int | None, int | None]:
+def _find_roll_cut_point(img: np.ndarray) -> tuple[int | None, int | None]:
+    """
+    Finds white margins at both ends of the roll and returns the center coordinates of each margin.
+    These coordinates will be used to cut out the roll image.
+    """
     samples = 100
     margin_th = 220
     hist_th = samples * 0.8
     h, w = img.shape[:2]
-    sample_ys = np.linspace(w, img.shape[0] - w, 100, dtype=int)  # avoid padding of start/end
-    # center of left margin
-    sx = 5
-    ex = img.shape[1] // 4
+    pad_h = w  # set start/end padding size to same with width
+    sample_ys = np.linspace(pad_h, h - pad_h, samples, dtype=int)
+    # find left margin center
+    sx, ex = 5, w // 4
     left_sample = img[sample_ys, sx: ex, 0]  # enough with first ch
     left_hist = (left_sample > margin_th).sum(axis=0) > hist_th
     left_margin_idx = left_hist.nonzero()[0]
     left_margin_center = None
     if left_margin_idx.size > 0:
         left_margin_center = int(left_margin_idx[-1])
-    # center of right margin
-    sx = 3 * img.shape[1] // 4
-    ex = img.shape[1] - 5
+    # find right margin center
+    sx, ex = 3 * w // 4, w - 5
     right_sample = img[sample_ys, sx: ex, 0]  # enough with first ch
     right_hist = (right_sample > margin_th).sum(axis=0) > hist_th
     right_margin_idx = right_hist.nonzero()[0]
@@ -71,7 +74,7 @@ def _load_cis(parent: wx.Frame, path: str, default_tempo: int, force_manual_adju
     if not obj.load(path):
         return None, default_tempo
     # find center of roll margin or manually set if not found
-    left_edge, right_edge = _find_roll_edge(obj.decode_img)
+    left_edge, right_edge = _find_roll_cut_point(obj.decode_img)
     if left_edge is None or right_edge is None or force_manual_adjust:
         with ImgEditDlg(parent, obj) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
@@ -345,33 +348,26 @@ class InputScanImg(InputVideo):
                 print("self.skip_px", self.skip_px, ", fps", px_per_sec / i)
                 break
 
-    def _find_roll_edge(self):
+    def _find_roll_edge(self) -> list[int, int]:
+        # find roll edge x coordinate
         roll_h, roll_w = self.src.shape[:2]
         edges = []
         edge_th = 220
-        for y in np.linspace(0, roll_h - 1, 20, dtype=int):
-            # find left edge
-            left_side = 0
-            for x in range(0, roll_w // 2):
-                if self.src[y, x][0] < edge_th:
-                    left_side = x
-                    break
-
-            # find right edge
-            right_side = roll_w - 1
-            for x in range(roll_w - 1, roll_w // 2, -1):
-                if self.src[y, x][0] < edge_th:
-                    right_side = x
-                    break
-
-            edges.append((left_side, right_side))
+        # find roll edges
+        sample_ys = np.linspace(0, roll_h - 1, 20, dtype=int)
+        for v in (self.src[sample_ys, :, 0] < edge_th):
+            t = v.nonzero()[0]
+            if len(t) < 2:
+                edges.append((0, roll_w - 1))
+            else:
+                edges.append(t[[0, -1]].tolist())
 
         # sort by width, and get a middle point
         edges.sort(key=lambda x: x[1] - x[0])
         middle = len(edges) // 2
         return edges[middle]
 
-    def _load_next_frame(self):
+    def _load_next_frame(self) -> None:
         crop_y2 = self.cur_y
         crop_y1 = crop_y2 - self.crop_h
         if crop_y1 < 0:
@@ -383,7 +379,7 @@ class InputScanImg(InputVideo):
         spool_rpf = self.spool_rps / self.worker_fps
         self.cur_spool_pos += spool_rpf
 
-    def _get_one_frame_time(self):
+    def _get_one_frame_time(self) -> float:
         # spool diameter will increase per 1 round. this causes acceleration.
         if self.cur_spool_pos > 1:
             self.cur_spool_pos -= 1  # don't reset to 0.
