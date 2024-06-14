@@ -5,7 +5,14 @@ from pathlib import Path
 
 import wx
 from config import ConfigMng
-from controls import NotifyUpdate, SpeedSlider, TrackerCtrl, WelcomeMsg
+from controls import (
+    BaseButton,
+    BaseCheckbox,
+    NotifyUpdate,
+    SpeedSlider,
+    TrackerCtrl,
+    WelcomeMsg,
+)
 from input_src import InputScanImg, load_scan
 from midi_controller import MidiWrap
 from player_mng import PlayerMng
@@ -14,13 +21,13 @@ from version import APP_TITLE
 
 
 class CallBack:
-    def __init__(self, player, tracker, bass_vac_lv, treble_vac_lv):
+    def __init__(self, player, tracker, bass_vac_lv, treble_vac_lv) -> None:
         self.player = player
         self.bass_vac_meter = bass_vac_lv
         self.treble_vac_meter = treble_vac_lv
         self.tracker = tracker
 
-    def emulate(self, frame, curtime):
+    def emulate(self, frame, curtime) -> None:
         if self.player is not None:
             self.player.auto_tracking = self.tracker.is_auto_tracking()
             self.player.tracker_offset = self.tracker.offset
@@ -29,9 +36,9 @@ class CallBack:
             self.treble_vac_meter.vacuum = self.player.treble_vacuum
             self.tracker.changed(self.player.tracker_offset)
 
-    # def key_event(self, key, keydown):
-    #     if self.player is not None:
-    #         self.player.expression_key_event(key, keydown)
+    def key_event(self, key: int, pressed: bool) -> None:
+        if self.player is not None:
+            self.player.expression_key_event(key, pressed)
 
 
 class FileDrop(wx.FileDropTarget):
@@ -58,20 +65,21 @@ class MainFrame(wx.Frame):
         self.spool.start_worker()
         self.supported_imgs = (".cis", ".jpg", ".png", ".tif", ".bmp")
 
-        self.midi_btn = wx.Button(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="MIDI On")
+        self.midi_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((90, 45))), label="MIDI On")
         self.midi_btn.Bind(wx.EVT_BUTTON, self.midi_onoff)
         self.midi_btn.Disable()
 
-        self.file_btn = wx.Button(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="File")
+        self.file_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((90, 45))), label="File")
         self.file_btn.Bind(wx.EVT_BUTTON, self.open_file)
 
         self.speed = SpeedSlider(self, callback=self.speed_change)
         self.tracking = TrackerCtrl(self)
 
+        self.manual_expression = BaseCheckbox(self, wx.ID_ANY, "Manual Expression")
         self.bass_vacuum_lv = VacuumGauge(self, caption="Bass Vacuum (inches of water)")
         self.treble_vacuum_lv = VacuumGauge(self, caption="Treble Vacuum (inches of water)")
 
-        self.adjust_btn = wx.Button(self, size=self.get_dipscaled_size(wx.Size((180, 50))), label="Adjust CIS Image")
+        self.adjust_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((180, 50))), label="Adjust CIS Image")
         self.adjust_btn.Bind(wx.EVT_BUTTON, self.adjust_image)
 
         self.callback = CallBack(None, self.tracking, self.bass_vacuum_lv, self.treble_vacuum_lv)
@@ -88,6 +96,7 @@ class MainFrame(wx.Frame):
         self.sizer2.Add(self.sizer1, flag=wx.EXPAND)
         self.sizer2.Add(self.speed, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.tracking, flag=wx.EXPAND | wx.ALL, border=border_size)
+        self.sizer2.Add(self.manual_expression, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.bass_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.treble_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.adjust_btn, flag=wx.EXPAND | wx.ALL, border=border_size)
@@ -114,6 +123,10 @@ class MainFrame(wx.Frame):
         if len(sys.argv) > 1:
             # app was opened with file
             wx.CallAfter(self.load_file, path=sys.argv[1])
+
+        self.Bind(wx.EVT_KEY_DOWN, self.on_keydown)
+        self.Bind(wx.EVT_KEY_UP, self.on_keyup)
+        self.manual_expression.Bind(wx.EVT_CHECKBOX, self.on_check_manual_expression)
 
     def get_dipscaled_size(self, size:wx.Size | int):
         if isinstance(size, int):
@@ -187,15 +200,22 @@ class MainFrame(wx.Frame):
         self.treble_vacuum_lv.destroy()
         self.Destroy()
 
-    # def on_keydown(self, event):
-    #     keycode = event.GetUnicodeKey()
-    #     self.callback.key_event(keycode, True)
-    #     event.Skip()
+    def on_keydown(self, event):
+        keycode = event.GetUnicodeKey()
+        self.spool.set_pressed_key(keycode, True)
+        self.callback.key_event(keycode, True)
+        event.Skip()
 
-    # def on_keyup(self, event):
-    #     keycode = event.GetUnicodeKey()
-    #     self.callback.key_event(keycode, False)
-    #     event.Skip()
+    def on_keyup(self, event):
+        keycode = event.GetUnicodeKey()
+        self.spool.set_pressed_key(keycode, False)
+        self.callback.key_event(keycode, False)
+        event.Skip()
+
+    def on_check_manual_expression(self, event):
+        checked = event.GetEventObject().IsChecked()
+        self.spool.set_manual_expression(checked)
+        self.callback.player.manual_expression = checked
 
     def change_midi_port(self, event=None):
         idx = self.port_sel.GetSelection()
@@ -251,8 +271,6 @@ class MainFrame(wx.Frame):
         self.callback.player.emulate_off()
         tmp = self.spool
         self.spool = InputScanImg(self, img, self.callback.player.spool_diameter, self.callback.player.roll_width, window_scale=self.conf.window_scale, callback=self.callback)
-        # self.spool.Bind(wx.EVT_KEY_DOWN, self.on_keydown)
-        # self.spool.Bind(wx.EVT_KEY_UP, self.on_keyup)
         self.Title = APP_TITLE + " - " + os.path.basename(path)
         self.sizer3.Replace(tmp, self.spool)
         tmp.on_destroy()
@@ -274,8 +292,7 @@ class MainFrame(wx.Frame):
                 self.load_file(path)
 
     def speed_change(self, val):
-        if hasattr(self.spool, "set_tempo"):
-            self.spool.set_tempo(val)
+        self.spool.set_tempo(val)
 
     def adjust_image(self, event):
         if self.img_path is not None:

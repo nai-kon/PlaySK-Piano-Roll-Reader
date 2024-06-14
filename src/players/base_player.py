@@ -110,6 +110,7 @@ class BasePlayer:
         with open(confpath, encoding="utf-8") as f:
             conf = json.load(f)
 
+        self.manual_expression = False
         self.stack_split = conf["expression"]["stack_split_point"] - conf["tracker_holes"]["lowest_note"]
         self.treble_vacuum = self.bass_vacuum = conf["expression"].get("vacuum", 6)
         self.spool_diameter = conf["spool_diameter"]
@@ -134,15 +135,15 @@ class BasePlayer:
         self.velocity_bins = [np.poly1d(k)(v) for v in range(int(self.velocity[0]), int(self.velocity[-1] + 1))]
 
         # for manual expression by keyboard input
-        # self.bass_accent = False
-        # self.bass_accent_key = ord("A")
-        # self.treble_accent = False
-        # self.treble_accent_key = ord("S")
-        # self.key_accomp_map = {
-        #     ord("J"): {"press": False, "vacuum": 3},
-        #     ord("K"): {"press": False, "vacuum": 7},
-        #     ord("L"): {"press": False, "vacuum": 15},
-        # }
+        self.bass_accent = False
+        self.bass_accent_key = ord("A")
+        self.treble_accent = False
+        self.treble_accent_key = ord("S")
+        self.key_accomp_map = {
+            ord("J"): {"press": False, "vacuum": 3},
+            ord("K"): {"press": False, "vacuum": 7},
+            ord("L"): {"press": False, "vacuum": 15},
+        }
 
     def calc_velocity(self):
         idx = np.digitize([self.bass_vacuum, self.treble_vacuum], bins=self.velocity_bins)
@@ -178,35 +179,42 @@ class BasePlayer:
             self.auto_track(frame)
             self.holes.set_frame(frame, self.tracker_offset)
             self.emulate_expression(curtime)
+            self.emulate_manual_expression(curtime)
             self.emulate_pedals()
             self.emulate_notes()
 
             self.during_emulate_evt.set()
 
-    # def expression_key_event(self, key, keydown):
-    #     if key == self.bass_accent_key:
-    #         self.bass_accent = keydown
+    def expression_key_event(self, key: int, pressed: bool) -> None:
+        if key == self.bass_accent_key:
+            self.bass_accent = pressed
 
-    #     if key == self.treble_accent_key:
-    #         self.treble_accent = keydown
+        if key == self.treble_accent_key:
+            self.treble_accent = pressed
 
-    #     accomp_map = self.key_accomp_map.get(key, None)
-    #     if accomp_map is not None:
-    #         if accomp_map["press"] and not keydown:
-    #             accomp_map["press"] = False
-    #         if not accomp_map["press"] and keydown:
-    #             accomp_map["press"] = True
+        accomp_map = self.key_accomp_map.get(key, None)
+        if accomp_map is not None:
+            if accomp_map["press"] and not pressed:
+                accomp_map["press"] = False
+            if not accomp_map["press"] and pressed:
+                accomp_map["press"] = True
 
     def emulate_expression(self, curtime):
         pass
-        # accomp_vacuum = self.base_vacuum + sum([v["vacuum"] for v in self.key_accomp_map.values() if v["press"]])
-        # self.bass_vacuum = self.treble_vacuum = accomp_vacuum
 
-        # if self.bass_accent:
-        #     self.bass_vacuum = min(self.bass_vacuum + 9, self.max_vacuum)
+    def emulate_manual_expression(self, curtime):
+        if not self.manual_expression:
+            return
 
-        # if self.treble_accent:
-        #     self.treble_vacuum = min(self.treble_vacuum + 9, self.max_vacuum)
+        # override manual expression
+        accomp_vacuum = 6 + sum([v["vacuum"] for v in self.key_accomp_map.values() if v["press"]])
+        self.bass_vacuum = self.treble_vacuum = accomp_vacuum
+
+        if self.bass_accent:
+            self.bass_vacuum = min(self.bass_vacuum + 9, self.max_vacuum)
+
+        if self.treble_accent:
+            self.treble_vacuum = min(self.treble_vacuum + 9, self.max_vacuum)
 
     def emulate_pedals(self):
         # sustain pedal

@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import wx
 from cis_image import CisImage
+from controls import BasePanel
 from input_editor import ImgEditDlg
 
 os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2, 42).__str__()
@@ -115,10 +116,10 @@ class FPScounter:
             self.start = cur
 
 
-class InputVideo(wx.Panel):
+class InputVideo(BasePanel):
     def __init__(self, parent, path, window_scale, callback=None):
         self.disp_w, self.disp_h = (800, 600)
-        wx.Panel.__init__(self, parent, size=parent.get_dipscaled_size(wx.Size((self.disp_w, self.disp_h))))
+        BasePanel.__init__(self, parent, size=parent.get_dipscaled_size(wx.Size((self.disp_w, self.disp_h))))
         self.parent = parent
         self.SetDoubleBuffered(True)
         self.bmp = wx.Bitmap(self.disp_w, self.disp_h, depth=24)
@@ -129,6 +130,9 @@ class InputVideo(wx.Panel):
 
         self.start_play = False
         self.repeat_btn_focused = False
+        self.manual_expression = False
+        self.expression_btn_pressed = {ord("A"): False, ord("S"): False, ord("J"): False, ord("K"): False, ord("L"): False}
+
         self.repeat_btn_pos = (0, 0, 0, 0)
         self.play_btn_focused = False
         self.thread_enable = True
@@ -140,10 +144,18 @@ class InputVideo(wx.Panel):
         self.Bind(wx.EVT_PAINT, self.on_paint)
         # self.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
         self.Bind(wx.EVT_MOUSE_EVENTS, self.on_mouse)
+
     def start_worker(self):
         self.src = cv2.VideoCapture(self.src_path)
         self._load_next_frame()
         self.thread_worker.start()
+
+    def set_pressed_key(self, keycode: int, is_pressed: bool) -> None:
+        if keycode in self.expression_btn_pressed:
+            self.expression_btn_pressed[keycode] = is_pressed
+
+    def set_manual_expression(self, enabled: bool) -> None:
+        self.manual_expression = enabled
 
     def on_destroy(self, event=None):
         self.thread_enable = False
@@ -165,7 +177,10 @@ class InputVideo(wx.Panel):
         if not self.start_play:
             self.draw_buttons(dc)
 
-    def draw_buttons(self, dc):
+        if self.manual_expression:
+            self.draw_manual_expression(dc)
+
+    def draw_buttons(self, dc: wx.PaintDC) -> None:
         dc = wx.GCDC(dc)  # for anti-aliasing
 
         # Play button outer
@@ -204,6 +219,71 @@ class InputVideo(wx.Panel):
                         (center_x - rad, center_y)])
         dc.DrawRectangle(center_x - rad, center_y - int(math.sqrt(3) * rad) // 2, 5, int(math.sqrt(3) * rad))
 
+    def draw_manual_expression(self, dc: wx.PaintDC) -> None:
+        dc = wx.GCDC(dc)  # for anti-aliasing
+
+        # draw background
+        dc.SetBrush(wx.Brush("#eeeeee"))
+        dc.SetPen(wx.Pen("#eeeeee"))
+        base_x, base_y = 0, 4 * self.disp_h // 5
+        base_w, base_h = self.disp_w, self.disp_h // 5
+        dc.DrawRectangle((base_x, base_y), (self.disp_w, self.disp_h))
+
+        # guidance
+        txt = "Manual Expression Keys"
+        txt_w = dc.GetTextExtent(txt).Width
+        x1 = self.disp_w // 2 - txt_w // 2
+        dc.DrawText(txt, x1, base_y)
+
+        # Accent keys
+        txt = "Accent"
+        txt_w, txt_h = dc.GetTextExtent(txt)
+        x1 = self.disp_w // 10
+        y1 = base_y + 2 * base_h // 3
+        dc.DrawText(txt, x1, y1)
+
+        # "A", "B"
+        x1 += txt_w + txt_h // 2
+        key_w, key_h = dc.GetTextExtent("AAA")
+        for key, title in zip(("A", "S"), ("Bass", "Treble")):
+            # key outer
+            color = "#fca5a5" if self.expression_btn_pressed[ord(key)] else "#cccccc"
+            dc.SetBrush(wx.Brush(color))
+            dc.SetPen(wx.Pen(color))
+            dc.DrawRoundedRectangle(x1, y1, key_w, int(key_h * 1.1), radius=key_h // 5)
+
+            # Inner Text
+            char_w = dc.GetTextExtent(key).Width
+            dc.DrawText(key, x1 + (key_w // 2) - (char_w // 2), y1)
+            # title text
+            dc.DrawText(title, x1, y1 - key_h)
+
+            x1 += self.disp_w // 10
+
+        # Intensity keys
+        txt = "Intensity"
+        txt_w, txt_h = dc.GetTextExtent(txt)
+        x1 = 5 * self.disp_w // 10
+        dc.DrawText(txt, x1, y1)
+
+        # "J", "K", "L"
+        x1 += txt_w + txt_h // 2
+        key_w, key_h = dc.GetTextExtent("AAA")
+        for key, title in zip(("J", "K", "L"), ("Lv1", "Lv2", "Lv4")):
+            # key outer
+            color = "#fca5a5" if self.expression_btn_pressed[ord(key)] else "#cccccc"
+            dc.SetBrush(wx.Brush(color))
+            dc.SetPen(wx.Pen(color))
+            dc.DrawRoundedRectangle(x1, y1, key_w, int(key_h * 1.1), radius=key_h // 5)
+
+            # Inner Text
+            char_w = dc.GetTextExtent(key).Width
+            dc.DrawText(key, x1 + (key_w // 2) - (char_w // 2), y1)
+            # title text
+            dc.DrawText(title, x1, y1 - key_h)
+
+            x1 += self.disp_w // 10
+
     def on_mouse(self, event):
         # check button is focused and pressed
         if event.Leaving():
@@ -220,9 +300,9 @@ class InputVideo(wx.Panel):
                 self.repeat_btn_focused = False
                 self.play_btn_focused = True
 
-        if self.repeat_btn_focused and event.LeftUp():
+        if self.repeat_btn_focused and event.LeftDown():
             self.on_repeat()
-        elif self.play_btn_focused and event.LeftUp():
+        elif self.play_btn_focused and event.LeftDown():
             self.on_start()
 
     def on_start(self):

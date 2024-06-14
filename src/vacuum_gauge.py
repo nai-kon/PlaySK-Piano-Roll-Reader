@@ -4,12 +4,13 @@ import time
 
 import numpy as np
 import wx
+from controls import BasePanel
 from input_src import FPScounter
 
 
-class VacuumGauge(wx.Panel):
+class VacuumGauge(BasePanel):
     def __init__(self, parent, pos=(0, 0), caption=""):
-        wx.Panel.__init__(self, parent, wx.ID_ANY, pos=pos)
+        BasePanel.__init__(self, parent, wx.ID_ANY, pos=pos)
         caption = wx.StaticText(self, wx.ID_ANY, caption)
         scale = parent.get_dpiscale_factor()
         self.meter = OscilloGraph(self, scale, parent.get_dipscaled_size(wx.Size(200, 150)))
@@ -32,9 +33,9 @@ class VacuumGauge(wx.Panel):
         self.meter.on_destroy(None)
 
 
-class OscilloGraph(wx.Panel):
+class OscilloGraph(BasePanel):
     def __init__(self, parent, scale, size, max_vacuum=50):
-        wx.Panel.__init__(self, parent, wx.ID_ANY, size=size)
+        BasePanel.__init__(self, parent, wx.ID_ANY, size=size)
         self.w = size[0]
         self.h = size[1]
         self.scale = scale
