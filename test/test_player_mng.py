@@ -34,6 +34,7 @@ class TestPlayerMng:
             "Recordo B white back",
             "Artecho white back (experimental)",
             "Welte T98 white back",
+            "Themodist white back",
         ])
         assert player_names == gt_names
 

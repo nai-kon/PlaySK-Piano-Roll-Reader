@@ -49,8 +49,8 @@ https://www.paypal.com/paypalme/KatzSasaki
 ## Manual Expression
 
 If you check `☑ Manual Expression`, you can express dynamics using the keyboard.
-* `A`, `S`: bass and treble accent
 * `J`, `K`, `L`: intensity level (can be combined)
+* `A`, `S`: bass and treble accent
 
 
 ## Tips

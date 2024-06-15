@@ -3,7 +3,7 @@ import sys
 import pytest
 
 sys.path.append("src/")
-from input_src import _find_roll_edge, _load_cis, _load_img
+from input_src import _find_roll_cut_point, _load_cis, _load_img
 
 
 @pytest.mark.parametrize("img_path, expect", [
@@ -40,5 +40,5 @@ def test_load_cis(img_path, expect, mocker):
 ])
 def test_find_roll_edge(img_path, expect):
     img, _ = _load_img("test/test_images/" + img_path, 80)
-    left, right = _find_roll_edge(img)
+    left, right = _find_roll_cut_point(img)
     assert (left, right) == expect
