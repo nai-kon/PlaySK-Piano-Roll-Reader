@@ -53,14 +53,13 @@ class SingleInstWin:
 
 
 class AppMain(wx.App):
-    """
-    For open file with associated program on Mac.
-    """
     def __init__(self):
         super().__init__()
 
     def MacOpenFile(self, path):
-        # open on default app event
+        """
+        For Mac, open file with associated program.
+        """
         if self.GetTopWindow() is None:
             # app frame is not created yet, so add to sys.argv and load it on MainFrame.init()
             sys.argv.append(path)

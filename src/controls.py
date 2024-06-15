@@ -1,8 +1,10 @@
 import json
 import re
+import ssl
 import threading
 import urllib.request
 
+import certifi
 import wx
 import wx.adv
 from config import ConfigMng
@@ -10,9 +12,41 @@ from version import APP_TITLE, APP_VERSION, COPY_RIGHT
 from wx.lib.agw.hyperlink import HyperLinkCtrl
 
 
-class WelcomeMsg(wx.Panel):
+class BasePanel(wx.Panel):
+    # Base class that propagates key events to parent
+    def __init__(self, *args, **kwargs) -> None:
+        wx.Panel.__init__(self, *args, **kwargs)
+        self.Bind(wx.EVT_KEY_DOWN, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
+        self.Bind(wx.EVT_KEY_UP, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
+
+
+class BaseButton(wx.Button):
+    # Base class that propagates key events to parent
+    def __init__(self, *args, **kwargs) -> None:
+        wx.Button.__init__(self, *args, **kwargs)
+        self.Bind(wx.EVT_KEY_DOWN, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
+        self.Bind(wx.EVT_KEY_UP, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
+
+
+class BaseSlider(wx.Slider):
+    # Base class that propagates key events to parent
+    def __init__(self, *args, **kwargs) -> None:
+        wx.Slider.__init__(self, *args, **kwargs)
+        self.Bind(wx.EVT_KEY_DOWN, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
+        self.Bind(wx.EVT_KEY_UP, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
+
+
+class BaseCheckbox(wx.CheckBox):
+    # Base class that propagates key events to parent
+    def __init__(self, *args, **kwargs) -> None:
+        wx.CheckBox.__init__(self, *args, **kwargs)
+        self.Bind(wx.EVT_KEY_DOWN, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
+        self.Bind(wx.EVT_KEY_UP, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
+
+
+class WelcomeMsg(BasePanel):
     def __init__(self, parent, pos=(0, 0), size=(800, 600)):
-        wx.Panel.__init__(self, parent, wx.ID_ANY, pos, parent.get_dipscaled_size(wx.Size(size)))
+        BasePanel.__init__(self, parent, wx.ID_ANY, pos, parent.get_dipscaled_size(wx.Size(size)))
 
         self.SetForegroundColour("white")
 
@@ -56,18 +90,30 @@ class WelcomeMsg(wx.Panel):
         # compatible with InputVideo classes
         pass
 
+    def set_tempo(self, tempo: float):
+        # compatible with InputVideo classes
+        pass
+
+    def set_pressed_key(self, keycode: int, is_pressed: bool):
+        # compatible with InputVideo classes
+        pass
+
+    def set_manual_expression(self, enabled: bool):
+        # compatible with InputVideo classes
+        pass
+
     def on_destroy(self):
         # compatible with InputVideo classes
         pass
 
 
-class SpeedSlider(wx.Panel):
+class SpeedSlider(BasePanel):
     def __init__(self, parent, pos=(0, 0), label="Tempo", tempo_range=(50, 140), val=80, callback=None):
-        wx.Panel.__init__(self, parent, wx.ID_ANY, pos)
+        BasePanel.__init__(self, parent, wx.ID_ANY, pos)
         self.callback = callback
         self.label = label
         self.caption = wx.StaticText(self, wx.ID_ANY, f"{self.label} {val}")
-        self.slider = wx.Slider(self, wx.ID_ANY, val, tempo_range[0], tempo_range[1], style=wx.SL_HORIZONTAL)
+        self.slider = BaseSlider(self, wx.ID_ANY, val, tempo_range[0], tempo_range[1], style=wx.SL_HORIZONTAL)
         self.slider.SetPageSize(5)
         self.slider.Bind(wx.EVT_SLIDER, self._slider_changed)
 
@@ -93,12 +139,12 @@ class SpeedSlider(wx.Panel):
         self._value_changed(val)
 
 
-class TrackerCtrl(wx.Panel):
+class TrackerCtrl(BasePanel):
     def __init__(self, parent, pos=(0, 0)):
-        wx.Panel.__init__(self, parent, wx.ID_ANY, pos)
+        BasePanel.__init__(self, parent, wx.ID_ANY, pos)
 
         # auto-tracking check box
-        self.auto_tracking = wx.CheckBox(self, wx.ID_ANY, "Auto Tracking")
+        self.auto_tracking = BaseCheckbox(self, wx.ID_ANY, "Auto Tracking")
         self.auto_tracking.SetValue(True)
         self.auto_tracking.Bind(wx.EVT_CHECKBOX, self._on_auto_checked)
 
@@ -180,12 +226,15 @@ class NotifyUpdate:
     def fetch_latest_version(self) -> str | None:
         # get from release title. If title is not format in "VerX.X", not released yet
         try:
-            with urllib.request.urlopen(self.url, timeout=10) as res:
+            context = ssl.create_default_context(cafile=certifi.where())
+            with urllib.request.urlopen(self.url, timeout=10, context=context) as res:
                 title = json.loads(res.read().decode("utf8")).get("name", None)
                 matched = re.findall(r"^Ver(\d.\d.\d)$", title)
                 ver = matched[0] if matched else None
+
         except Exception:
             ver = None
+
         return ver
 
     def need_notify(self, ver: str | None) -> bool:

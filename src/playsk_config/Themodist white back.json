@@ -1,11 +1,13 @@
 {
-  "note": "Welte Mignon T-98 (Green) of white background scan",
-  "base_class": "WelteT98",
+  "note": "88-note setting for white background roll image",
+  "base_class": "Themodist",
   "roll_width": 11.25,
   "spool_diameter": 1.90,
-  "default_tempo": 72.27,
+  "default_tempo": 80,
   "expression": {
-    "stack_split_point": 46
+    "base": 10,
+    "accent": 12.5,
+    "stack_split_point": 43
   },
   "tracker_holes": {
     "is_dark_hole": false,
@@ -100,93 +102,45 @@
         712,
         719,
         727,
-        735     
+        735
       ],
       "y": 297,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
+      "on_apature": 0.25,
       "off_apature": 0.1
     },
-    "bass_forz_piano": {
-      "x": 20,
-      "y": 297,
-      "w": 5,
-      "h": 5,
-      "on_apature": 0.1,
-      "off_apature": 0.1
-    },
-    "bass_mf": {
-      "x": 28,
-      "y": 297,
-      "w": 5,
-      "h": 6,
+    "soft": {
+      "x": 774,
+      "y": 294,
+      "w": 8,
+      "h": 10,
       "on_apature": 0.1,
       "off_apature": 0.05
     },
     "sustain": {
-      "x": 36,
-      "y": 295,
-      "w": 5,
-      "h": 7,
+      "x": 34,
+      "y": 294,
+      "w": 8,
+      "h": 10,
       "on_apature": 0.1,
       "off_apature": 0.05
     },
-    "bass_cresc": {
-      "x": 44,
-      "y": 295,
-      "w": 5,
-      "h": 7,
-      "on_apature": 0.1,
-      "off_apature": 0.05
-    },
-    "bass_forz_forte": {
-      "x": 51,
+    "bass_snakebite": {
+      "x": 45,
       "y": 297,
-      "w": 5,
+      "w": 12,
       "h": 5,
-      "on_apature": 0.1,
-      "off_apature": 0.1
+      "on_apature": 0.05,
+      "off_apature": 0.05
     },
-    "treble_forz_forte": {
+    "treble_snakebite": {
       "x": 743,
       "y": 297,
-      "w": 5,
+      "w": 12,
       "h": 5,
-      "on_apature": 0.1,
-      "off_apature": 0.1
-    },
-    "treble_cresc": {
-      "x": 750,
-      "y": 295,
-      "w": 5,
-      "h": 7,
-      "on_apature": 0.1,
+      "on_apature": 0.05,
       "off_apature": 0.05
-    },
-    "soft": {
-      "x": 758,
-      "y": 295,
-      "w": 5,
-      "h": 7,
-      "on_apature": 0.1,
-      "off_apature": 0.05
-    },
-    "treble_mf": {
-      "x": 766,
-      "y": 297,
-      "w": 5,
-      "h": 6,
-      "on_apature": 0.1,
-      "off_apature": 0.05
-    }, 
-    "treble_forz_piano": {
-      "x": 774,
-      "y": 297,
-      "w": 5,
-      "h": 5,
-      "on_apature": 0.1,
-      "off_apature": 0.1
     }
   }
 }

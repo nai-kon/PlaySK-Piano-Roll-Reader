@@ -8,30 +8,34 @@ from pathlib import Path
 import numpy as np
 import wx
 from cis_image import CisImage
+from controls import BasePanel
 from input_editor import ImgEditDlg
 
 os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2, 42).__str__()
 import cv2
 
 
-def _find_roll_edge(img: np.ndarray) -> tuple[int | None, int | None]:
+def _find_roll_cut_point(img: np.ndarray) -> tuple[int | None, int | None]:
+    """
+    Finds white margins at both ends of the roll and returns the center coordinates of each margin.
+    These coordinates will be used to cut out the roll image.
+    """
     samples = 100
     margin_th = 220
     hist_th = samples * 0.8
     h, w = img.shape[:2]
-    sample_ys = np.linspace(w, img.shape[0] - w, 100, dtype=int)  # avoid padding of start/end
-    # center of left margin
-    sx = 5
-    ex = img.shape[1] // 4
+    pad_h = w  # set start/end padding size to same with width
+    sample_ys = np.linspace(pad_h, h - pad_h, samples, dtype=int)
+    # find left margin center
+    sx, ex = 5, w // 4
     left_sample = img[sample_ys, sx: ex, 0]  # enough with first ch
     left_hist = (left_sample > margin_th).sum(axis=0) > hist_th
     left_margin_idx = left_hist.nonzero()[0]
     left_margin_center = None
     if left_margin_idx.size > 0:
         left_margin_center = int(left_margin_idx[-1])
-    # center of right margin
-    sx = 3 * img.shape[1] // 4
-    ex = img.shape[1] - 5
+    # find right margin center
+    sx, ex = 3 * w // 4, w - 5
     right_sample = img[sample_ys, sx: ex, 0]  # enough with first ch
     right_hist = (right_sample > margin_th).sum(axis=0) > hist_th
     right_margin_idx = right_hist.nonzero()[0]
@@ -71,7 +75,7 @@ def _load_cis(parent: wx.Frame, path: str, default_tempo: int, force_manual_adju
     if not obj.load(path):
         return None, default_tempo
     # find center of roll margin or manually set if not found
-    left_edge, right_edge = _find_roll_edge(obj.decode_img)
+    left_edge, right_edge = _find_roll_cut_point(obj.decode_img)
     if left_edge is None or right_edge is None or force_manual_adjust:
         with ImgEditDlg(parent, obj) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
@@ -112,10 +116,10 @@ class FPScounter:
             self.start = cur
 
 
-class InputVideo(wx.Panel):
+class InputVideo(BasePanel):
     def __init__(self, parent, path, window_scale, callback=None):
         self.disp_w, self.disp_h = (800, 600)
-        wx.Panel.__init__(self, parent, size=parent.get_dipscaled_size(wx.Size((self.disp_w, self.disp_h))))
+        BasePanel.__init__(self, parent, size=parent.get_dipscaled_size(wx.Size((self.disp_w, self.disp_h))))
         self.parent = parent
         self.SetDoubleBuffered(True)
         self.bmp = wx.Bitmap(self.disp_w, self.disp_h, depth=24)
@@ -125,6 +129,13 @@ class InputVideo(wx.Panel):
         self.scale = parent.get_dpiscale_factor()
 
         self.start_play = False
+        self.repeat_btn_focused = False
+        self.manual_expression = False
+        self.draw_cache = {}
+        self.expression_btn_pressed = {ord("A"): False, ord("S"): False, ord("J"): False, ord("K"): False, ord("L"): False}
+
+        self.repeat_btn_pos = (0, 0, 0, 0)
+        self.play_btn_focused = False
         self.thread_enable = True
         self.thread_worker = threading.Thread(target=self.load_thread)
         self.worker_fps = 60
@@ -133,12 +144,19 @@ class InputVideo(wx.Panel):
 
         self.Bind(wx.EVT_PAINT, self.on_paint)
         # self.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
-        self.Bind(wx.EVT_LEFT_DOWN, self.on_start)
+        self.Bind(wx.EVT_MOUSE_EVENTS, self.on_mouse)
 
     def start_worker(self):
         self.src = cv2.VideoCapture(self.src_path)
         self._load_next_frame()
         self.thread_worker.start()
+
+    def set_pressed_key(self, keycode: int, is_pressed: bool) -> None:
+        if keycode in self.expression_btn_pressed:
+            self.expression_btn_pressed[keycode] = is_pressed
+
+    def set_manual_expression(self, enabled: bool) -> None:
+        self.manual_expression = enabled
 
     def on_destroy(self, event=None):
         self.thread_enable = False
@@ -158,19 +176,38 @@ class InputVideo(wx.Panel):
 
         # draw play button
         if not self.start_play:
-            self.draw_play_button(dc)
+            self.draw_buttons(dc)
 
-    def draw_play_button(self, dc):
+        if self.manual_expression:
+            self.draw_manual_expression(dc)
+
+    def draw_buttons(self, dc: wx.PaintDC) -> None:
+        # Draw Play/Repeat button
+
         dc = wx.GCDC(dc)  # for anti-aliasing
 
-        # draw circle
-        dc.SetBrush(wx.Brush("#05A2C2"))
-        dc.SetPen(wx.Pen("#05A2C2"))
-        center_x, center_y = self.disp_w // 2, self.disp_h // 2
+        # Play button outer
+        bg_color =  "#60a5fa"  # tailwind bg-blue-400 color
+        focused_color = "#3b82f6"  # tailwind bg-blue-500 color
+        color = focused_color if self.play_btn_focused else bg_color
+        dc.SetBrush(wx.Brush(color))
+        dc.SetPen(wx.Pen(color))
         rad = self.disp_h // 14
+        center_x, center_y = rad + (self.disp_w // 2), self.disp_h // 2
         dc.DrawCircle(center_x, center_y, rad)
 
-        # draw triangle
+        # Repeat button outer
+        bg_color =  "#4ade80"  # tailwind bg-green-400 color
+        focused_color = "#22c55e"  # tailwind bg-green-500 color
+        color = focused_color if self.repeat_btn_focused else bg_color
+        dc.SetBrush(wx.Brush(color))
+        dc.SetPen(wx.Pen(color))
+        x1, y1 = center_x - rad * 4, center_y - rad
+        w = h = rad * 2
+        self.repeat_btn_pos = (x1, y1, w, h)
+        dc.DrawRoundedRectangle(*self.repeat_btn_pos, radius=w // 10)
+
+        # Play button inner
         dc.SetBrush(wx.Brush("white"))
         dc.SetPen(wx.Pen("white"))
         rad = self.disp_h // 20
@@ -178,9 +215,127 @@ class InputVideo(wx.Panel):
                         (center_x - rad // 2, center_y + int(math.sqrt(3) * rad) // 2),
                         (center_x + rad, center_y)])
 
-    def on_start(self, event):
+        # Repeat button inner
+        center_x -= rad * 4
+        dc.DrawPolygon([(center_x + rad // 2, center_y - int(math.sqrt(3) * rad) // 2),
+                        (center_x + rad // 2, center_y + int(math.sqrt(3) * rad) // 2),
+                        (center_x - rad, center_y)])
+        dc.DrawRectangle(center_x - rad, center_y - int(math.sqrt(3) * rad) // 2, 5, int(math.sqrt(3) * rad))
+
+    def draw_manual_expression(self, dc: wx.PaintDC) -> None:
+        # Draw manual expression controls on bottom of screen
+        dc = wx.GCDC(dc)  # for anti-aliasing
+
+        # draw background
+        dc.SetBrush(wx.Brush("#eeeeee"))
+        dc.SetPen(wx.Pen("#eeeeee"))
+        base_x, base_y = 0, 4 * self.disp_h // 5
+        base_h = self.disp_h // 5
+        dc.DrawRectangle((base_x, base_y), (self.disp_w, self.disp_h))
+
+        # guidance
+        txt = "Manual Expression Keyboard Controls"
+        if "guid_font_size" not in self.draw_cache:
+            guid_font_size = 10
+            dc.SetFont(wx.Font(guid_font_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+            txt_w = dc.GetTextExtent(txt).Width
+            self.draw_cache["guid_font_size"] = guid_font_size * self.disp_w // (txt_w * 2)
+            self.draw_cache["guid_font"] = wx.Font(self.draw_cache["guid_font_size"], wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+
+        guid_font_size = self.draw_cache["guid_font_size"]
+        dc.SetFont(self.draw_cache["guid_font"])
+        if "guid_txt_size" not in self.draw_cache:
+            self.draw_cache["guid_txt_size"] = dc.GetTextExtent(txt)
+        txt_w, txt_h = self.draw_cache["guid_txt_size"]
+        x1 = self.disp_w // 2 - txt_w // 2
+        y1 = base_y + txt_h // 2
+        dc.DrawText(txt, x1, y1)
+
+        # Accent keys
+        font_size = int(guid_font_size * 0.8)
+        if "other_font" not in self.draw_cache:
+            self.draw_cache["other_font"] = wx.Font(font_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        dc.SetFont(self.draw_cache["other_font"])
+
+        # cache
+        for txt in ("Accent", "Intensity", "Bass", "Treble", "Lv1", "Lv2", "Lv4", "A", "S", "J", "K", "L"):
+            key = f"{txt}_txt_size"
+            if key not in self.draw_cache:
+                self.draw_cache[key] = dc.GetTextExtent(txt)
+
+        txt = "Accent"
+        txt_w, txt_h = self.draw_cache[f"{txt}_txt_size"]
+        x1 = self.disp_w // 10
+        y1 = base_y + 2 * base_h // 3
+        dc.DrawText(txt, x1, y1)
+
+        # "A", "B"
+        x1 += txt_w + txt_h // 2
+        button_w, button_h = dc.GetTextExtent("AAAA")
+        for key, title in zip(("A", "S"), ("Bass", "Treble")):
+            # key outer
+            color = "#fca5a5" if self.expression_btn_pressed[ord(key)] else "#cccccc"
+            dc.SetBrush(wx.Brush(color))
+            dc.SetPen(wx.Pen(color))
+            dc.DrawRoundedRectangle(x1, y1, button_w, int(button_h * 1.1), radius=button_h // 5)
+
+            # Inner Text
+            txt_w, _ = self.draw_cache[f"{key}_txt_size"]
+            dc.DrawText(key, x1 + (button_w // 2) - (txt_w // 2), y1)
+            # title text
+            txt_w, _ = self.draw_cache[f"{title}_txt_size"]
+            dc.DrawText(title, x1 + (button_w // 2) - (txt_w // 2), y1 - button_h)
+            x1 += self.disp_w // 10
+
+        # Intensity keys
+        txt = "Intensity"
+        txt_w, txt_h = self.draw_cache[f"{txt}_txt_size"]
+        x1 = 5 * self.disp_w // 10
+        dc.DrawText(txt, x1, y1)
+
+        # "J", "K", "L"
+        x1 += txt_w + txt_h // 2
+        for key, title in zip(("J", "K", "L"), ("Lv1", "Lv2", "Lv4")):
+            # key outer
+            color = "#fca5a5" if self.expression_btn_pressed[ord(key)] else "#cccccc"
+            dc.SetBrush(wx.Brush(color))
+            dc.SetPen(wx.Pen(color))
+            dc.DrawRoundedRectangle(x1, y1, button_w, int(button_h * 1.1), radius=button_h // 5)
+
+            # Inner Text
+            txt_w, _ = self.draw_cache[f"{key}_txt_size"]
+            dc.DrawText(key, x1 + (button_w // 2) - (txt_w // 2), y1)
+            # title text
+            txt_w, _ = self.draw_cache[f"{title}_txt_size"]
+            dc.DrawText(title, x1 + (button_w // 2) - (txt_w // 2), y1 - button_h)
+            x1 += self.disp_w // 10
+
+    def on_mouse(self, event):
+        # check button is focused and pressed
+        if event.Leaving():
+            self.repeat_btn_focused = False
+            self.play_btn_focused = False
+        else:
+            pos = event.GetPosition()
+            if not self.start_play and \
+                self.repeat_btn_pos[0] < pos.x // self.scale < self.repeat_btn_pos[0] + self.repeat_btn_pos[2] and \
+                self.repeat_btn_pos[1] < pos.y // self.scale < self.repeat_btn_pos[1] + self.repeat_btn_pos[3]:
+                self.repeat_btn_focused = True
+                self.play_btn_focused = False
+            else:
+                self.repeat_btn_focused = False
+                self.play_btn_focused = True
+
+        if self.repeat_btn_focused and event.LeftDown():
+            self.on_repeat()
+        elif self.play_btn_focused and event.LeftDown():
+            self.on_start()
+
+    def on_start(self):
         self.start_play = not self.start_play
-        event.Skip()
+
+    def on_repeat(self):
+        pass
 
     def _load_next_frame(self):
         ret, frame = self.src.read()
@@ -216,7 +371,7 @@ class InputVideo(wx.Panel):
             desired_time = self._get_one_frame_time()
             t2 = time.perf_counter()
             elapsed_time = t2 - t1
-            if desired_time - elapsed_time < 0:
+            if elapsed_time > desired_time:
                 t_disp_slowcpu = t2
                 self.parent.post_status_msg("Warning: Slow CPU")
                 print(f"frame drop...{(desired_time - elapsed_time)*1000:.2f} msec")
@@ -249,7 +404,7 @@ class InputWebcam(InputVideo):
 
 
 class InputScanImg(InputVideo):
-    def __init__(self, parent, img, spool_diameter=2.72, roll_width=11.25, tempo=80, window_scale=1, callback=None):
+    def __init__(self, parent, img, spool_diameter=2.72, roll_width=11.25, tempo=80, window_scale=1, callback=None) -> None:
         super().__init__(parent, None, window_scale, callback)
         self.src = img
         self.skip_px = 1
@@ -260,7 +415,7 @@ class InputScanImg(InputVideo):
         self.roll_width = roll_width
         self.tempo = tempo
 
-    def start_worker(self):
+    def start_worker(self) -> None:
         # load initial frame
         self.left_side, self.right_side = self._find_roll_edge()
         margin = 7 * (self.right_side - self.left_side + 1) // (self.disp_w - 7 * 2)  # 7px on both edge @800x600
@@ -279,7 +434,15 @@ class InputScanImg(InputVideo):
         self._load_next_frame()
         self.thread_worker.start()
 
-    def set_tempo(self, tempo):
+    def on_repeat(self) -> None:
+        self.parent.midi_off()
+        self.start_play = False
+        self.cur_y = self.src.shape[0] - 1
+        self.cur_spool_pos = 0
+        self.cur_spool_diameter = self.org_spool_diameter
+        self._load_next_frame()
+
+    def set_tempo(self, tempo: float) -> None:
         # calc take-up spool rps
         self.spool_rps = (tempo * 1.2) / (self.org_spool_diameter * math.pi * 60)
 
@@ -292,33 +455,26 @@ class InputScanImg(InputVideo):
                 print("self.skip_px", self.skip_px, ", fps", px_per_sec / i)
                 break
 
-    def _find_roll_edge(self):
+    def _find_roll_edge(self) -> list[int, int]:
+        # find roll edge x coordinate
         roll_h, roll_w = self.src.shape[:2]
         edges = []
         edge_th = 220
-        for y in np.linspace(0, roll_h - 1, 20, dtype=int):
-            # find left edge
-            left_side = 0
-            for x in range(0, roll_w // 2):
-                if self.src[y, x][0] < edge_th:
-                    left_side = x
-                    break
-
-            # find right edge
-            right_side = roll_w - 1
-            for x in range(roll_w - 1, roll_w // 2, -1):
-                if self.src[y, x][0] < edge_th:
-                    right_side = x
-                    break
-
-            edges.append((left_side, right_side))
+        # find roll edges
+        sample_ys = np.linspace(0, roll_h - 1, 20, dtype=int)
+        for v in (self.src[sample_ys, :, 0] < edge_th):
+            t = v.nonzero()[0]
+            if len(t) < 2:
+                edges.append((0, roll_w - 1))
+            else:
+                edges.append(t[[0, -1]].tolist())
 
         # sort by width, and get a middle point
         edges.sort(key=lambda x: x[1] - x[0])
         middle = len(edges) // 2
         return edges[middle]
 
-    def _load_next_frame(self):
+    def _load_next_frame(self) -> None:
         crop_y2 = self.cur_y
         crop_y1 = crop_y2 - self.crop_h
         if crop_y1 < 0:
@@ -330,7 +486,7 @@ class InputScanImg(InputVideo):
         spool_rpf = self.spool_rps / self.worker_fps
         self.cur_spool_pos += spool_rpf
 
-    def _get_one_frame_time(self):
+    def _get_one_frame_time(self) -> float:
         # spool diameter will increase per 1 round. this causes acceleration.
         if self.cur_spool_pos > 1:
             self.cur_spool_pos -= 1  # don't reset to 0.
