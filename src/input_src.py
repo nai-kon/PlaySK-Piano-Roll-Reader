@@ -131,6 +131,7 @@ class InputVideo(BasePanel):
         self.start_play = False
         self.repeat_btn_focused = False
         self.manual_expression = False
+        self.draw_cache = {}
         self.expression_btn_pressed = {ord("A"): False, ord("S"): False, ord("J"): False, ord("K"): False, ord("L"): False}
 
         self.repeat_btn_pos = (0, 0, 0, 0)
@@ -181,6 +182,8 @@ class InputVideo(BasePanel):
             self.draw_manual_expression(dc)
 
     def draw_buttons(self, dc: wx.PaintDC) -> None:
+        # Draw Play/Repeat button
+
         dc = wx.GCDC(dc)  # for anti-aliasing
 
         # Play button outer
@@ -220,68 +223,93 @@ class InputVideo(BasePanel):
         dc.DrawRectangle(center_x - rad, center_y - int(math.sqrt(3) * rad) // 2, 5, int(math.sqrt(3) * rad))
 
     def draw_manual_expression(self, dc: wx.PaintDC) -> None:
+        # Draw manual expression controls on bottom of screen
+
+        t = time.time()
         dc = wx.GCDC(dc)  # for anti-aliasing
 
         # draw background
         dc.SetBrush(wx.Brush("#eeeeee"))
         dc.SetPen(wx.Pen("#eeeeee"))
         base_x, base_y = 0, 4 * self.disp_h // 5
-        base_w, base_h = self.disp_w, self.disp_h // 5
+        base_h = self.disp_h // 5
         dc.DrawRectangle((base_x, base_y), (self.disp_w, self.disp_h))
 
         # guidance
-        txt = "Manual Expression Keys"
-        txt_w = dc.GetTextExtent(txt).Width
+        txt = "Manual Expression Keyboard Controls"
+        if "guid_font_size" not in self.draw_cache:
+            guid_font_size = 10
+            dc.SetFont(wx.Font(guid_font_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+            txt_w = dc.GetTextExtent(txt).Width
+            self.draw_cache["guid_font_size"] = guid_font_size * self.disp_w // (txt_w * 2)
+            self.draw_cache["guid_font"] = wx.Font(self.draw_cache["guid_font_size"], wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+
+        guid_font_size = self.draw_cache["guid_font_size"]
+        dc.SetFont(self.draw_cache["guid_font"])
+        if "guid_txt_size" not in self.draw_cache:
+            self.draw_cache["guid_txt_size"] = dc.GetTextExtent(txt)
+        txt_w, txt_h = self.draw_cache["guid_txt_size"]
         x1 = self.disp_w // 2 - txt_w // 2
-        dc.DrawText(txt, x1, base_y)
+        y1 = base_y + txt_h // 2
+        dc.DrawText(txt, x1, y1)
 
         # Accent keys
+        font_size = int(guid_font_size * 0.8)
+        if "other_font" not in self.draw_cache:
+            self.draw_cache["other_font"] = wx.Font(font_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        dc.SetFont(self.draw_cache["other_font"])
+
+        # cache
+        for txt in ("Accent", "Intensity", "Bass", "Treble", "Lv1", "Lv2", "Lv4", "A", "S", "J", "K", "L"):
+            key = f"{txt}_txt_size"
+            if key not in self.draw_cache:
+                self.draw_cache[key] = dc.GetTextExtent(txt)
+
         txt = "Accent"
-        txt_w, txt_h = dc.GetTextExtent(txt)
+        txt_w, txt_h = self.draw_cache[f"{txt}_txt_size"]
         x1 = self.disp_w // 10
         y1 = base_y + 2 * base_h // 3
         dc.DrawText(txt, x1, y1)
 
         # "A", "B"
         x1 += txt_w + txt_h // 2
-        key_w, key_h = dc.GetTextExtent("AAA")
+        button_w, button_h = dc.GetTextExtent("AAAA")
         for key, title in zip(("A", "S"), ("Bass", "Treble")):
             # key outer
             color = "#fca5a5" if self.expression_btn_pressed[ord(key)] else "#cccccc"
             dc.SetBrush(wx.Brush(color))
             dc.SetPen(wx.Pen(color))
-            dc.DrawRoundedRectangle(x1, y1, key_w, int(key_h * 1.1), radius=key_h // 5)
+            dc.DrawRoundedRectangle(x1, y1, button_w, int(button_h * 1.1), radius=button_h // 5)
 
             # Inner Text
-            char_w = dc.GetTextExtent(key).Width
-            dc.DrawText(key, x1 + (key_w // 2) - (char_w // 2), y1)
+            txt_w, _ = self.draw_cache[f"{key}_txt_size"]
+            dc.DrawText(key, x1 + (button_w // 2) - (txt_w // 2), y1)
             # title text
-            dc.DrawText(title, x1, y1 - key_h)
-
+            txt_w, _ = self.draw_cache[f"{title}_txt_size"]
+            dc.DrawText(title, x1 + (button_w // 2) - (txt_w // 2), y1 - button_h)
             x1 += self.disp_w // 10
 
         # Intensity keys
         txt = "Intensity"
-        txt_w, txt_h = dc.GetTextExtent(txt)
+        txt_w, txt_h = self.draw_cache[f"{txt}_txt_size"]
         x1 = 5 * self.disp_w // 10
         dc.DrawText(txt, x1, y1)
 
         # "J", "K", "L"
         x1 += txt_w + txt_h // 2
-        key_w, key_h = dc.GetTextExtent("AAA")
         for key, title in zip(("J", "K", "L"), ("Lv1", "Lv2", "Lv4")):
             # key outer
             color = "#fca5a5" if self.expression_btn_pressed[ord(key)] else "#cccccc"
             dc.SetBrush(wx.Brush(color))
             dc.SetPen(wx.Pen(color))
-            dc.DrawRoundedRectangle(x1, y1, key_w, int(key_h * 1.1), radius=key_h // 5)
+            dc.DrawRoundedRectangle(x1, y1, button_w, int(button_h * 1.1), radius=button_h // 5)
 
             # Inner Text
-            char_w = dc.GetTextExtent(key).Width
-            dc.DrawText(key, x1 + (key_w // 2) - (char_w // 2), y1)
+            txt_w, _ = self.draw_cache[f"{key}_txt_size"]
+            dc.DrawText(key, x1 + (button_w // 2) - (txt_w // 2), y1)
             # title text
-            dc.DrawText(title, x1, y1 - key_h)
-
+            txt_w, _ = self.draw_cache[f"{title}_txt_size"]
+            dc.DrawText(title, x1 + (button_w // 2) - (txt_w // 2), y1 - button_h)
             x1 += self.disp_w // 10
 
     def on_mouse(self, event):

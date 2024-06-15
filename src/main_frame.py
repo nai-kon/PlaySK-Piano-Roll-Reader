@@ -65,11 +65,11 @@ class MainFrame(wx.Frame):
         self.spool.start_worker()
         self.supported_imgs = (".cis", ".jpg", ".png", ".tif", ".bmp")
 
-        self.midi_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((90, 45))), label="MIDI On")
+        self.midi_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="MIDI On")
         self.midi_btn.Bind(wx.EVT_BUTTON, self.midi_onoff)
         self.midi_btn.Disable()
 
-        self.file_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((90, 45))), label="File")
+        self.file_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="File")
         self.file_btn.Bind(wx.EVT_BUTTON, self.open_file)
 
         self.speed = SpeedSlider(self, callback=self.speed_change)
@@ -79,7 +79,7 @@ class MainFrame(wx.Frame):
         self.bass_vacuum_lv = VacuumGauge(self, caption="Bass Vacuum (inches of water)")
         self.treble_vacuum_lv = VacuumGauge(self, caption="Treble Vacuum (inches of water)")
 
-        self.adjust_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((180, 50))), label="Adjust CIS Image")
+        self.adjust_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((180, 40))), label="Adjust CIS Image")
         self.adjust_btn.Bind(wx.EVT_BUTTON, self.adjust_image)
 
         self.callback = CallBack(None, self.tracking, self.bass_vacuum_lv, self.treble_vacuum_lv)
@@ -204,13 +204,11 @@ class MainFrame(wx.Frame):
         keycode = event.GetUnicodeKey()
         self.spool.set_pressed_key(keycode, True)
         self.callback.key_event(keycode, True)
-        event.Skip()
 
     def on_keyup(self, event):
         keycode = event.GetUnicodeKey()
         self.spool.set_pressed_key(keycode, False)
         self.callback.key_event(keycode, False)
-        event.Skip()
 
     def on_check_manual_expression(self, event):
         checked = event.GetEventObject().IsChecked()
@@ -233,6 +231,7 @@ class MainFrame(wx.Frame):
             player_tmp.tracker_offset = self.tracking.offset
             player_tmp.auto_tracking = self.tracking.auto_tracking
             self.callback.player = player_tmp
+            self.callback.player.manual_expression = self.manual_expression.IsChecked()
 
     def change_scale(self, event=None):
         idx = self.scale_sel.GetSelection()
@@ -271,6 +270,7 @@ class MainFrame(wx.Frame):
         self.callback.player.emulate_off()
         tmp = self.spool
         self.spool = InputScanImg(self, img, self.callback.player.spool_diameter, self.callback.player.roll_width, window_scale=self.conf.window_scale, callback=self.callback)
+        self.spool.manual_expression = self.manual_expression.IsChecked()
         self.Title = APP_TITLE + " - " + os.path.basename(path)
         self.sizer3.Replace(tmp, self.spool)
         tmp.on_destroy()
