@@ -139,7 +139,7 @@ class BasePlayer:
         self.bass_accent_key = ord("A")
         self.treble_accent = False
         self.treble_accent_key = ord("S")
-        self.key_accomp_map = {
+        self.manual_exp_map = {
             ord("J"): {"press": False, "vacuum": 3},
             ord("K"): {"press": False, "vacuum": 7},
             ord("L"): {"press": False, "vacuum": 15},
@@ -192,7 +192,7 @@ class BasePlayer:
         if key == self.treble_accent_key:
             self.treble_accent = pressed
 
-        accomp_map = self.key_accomp_map.get(key, None)
+        accomp_map = self.manual_exp_map.get(key, None)
         if accomp_map is not None:
             if accomp_map["press"] and not pressed:
                 accomp_map["press"] = False
@@ -207,14 +207,14 @@ class BasePlayer:
             return
 
         # override manual expression
-        accomp_vacuum = 6 + sum([v["vacuum"] for v in self.key_accomp_map.values() if v["press"]])
+        accomp_vacuum = 6 + sum([v["vacuum"] for v in self.manual_exp_map.values() if v["press"]])
         self.bass_vacuum = self.treble_vacuum = accomp_vacuum
 
         if self.bass_accent:
-            self.bass_vacuum = min(self.bass_vacuum + 9, self.max_vacuum)
+            self.bass_vacuum = min(self.bass_vacuum + 6, self.max_vacuum)
 
         if self.treble_accent:
-            self.treble_vacuum = min(self.treble_vacuum + 9, self.max_vacuum)
+            self.treble_vacuum = min(self.treble_vacuum + 6, self.max_vacuum)
 
     def emulate_pedals(self):
         # sustain pedal

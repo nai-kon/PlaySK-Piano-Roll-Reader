@@ -5,10 +5,10 @@ from .DuoArt import DuoArt
 from .PhilippsDuca import PhilippsDuca
 from .RecordoA import RecordoA
 from .RecordoB import RecordoB
+from .Themodist import Themodist
 from .WelteLicensee import WelteLicensee
 from .WelteT98 import WelteT98
 from .WelteT100 import WelteT100
-from .Themodist import Themodist
 
 __all__ = [
     "AmpicoB",

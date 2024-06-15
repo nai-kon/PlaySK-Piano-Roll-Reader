@@ -224,8 +224,6 @@ class InputVideo(BasePanel):
 
     def draw_manual_expression(self, dc: wx.PaintDC) -> None:
         # Draw manual expression controls on bottom of screen
-
-        t = time.time()
         dc = wx.GCDC(dc)  # for anti-aliasing
 
         # draw background

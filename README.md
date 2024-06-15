@@ -1,4 +1,4 @@
-# PlaySK Piano Roll Reader Ver3.3
+# PlaySK Piano Roll Reader Ver3.4
 
 Optically reading a piano roll image, emulates expression and output midi signal in real-time.
 
@@ -7,6 +7,7 @@ Optically reading a piano roll image, emulates expression and output midi signal
 The "virtual tracker bar" optically picks up roll holes then emulates note, pedal and expression.
 Currently, 9 virtual tracker bars are available.
 - Standard 88-note
+- Themodist
 - Ampico B
 - Duo-Art
 - Welte-Mignon Licensee
@@ -21,7 +22,6 @@ In the future, Ampico A will be supported.
 Support image formats are `.cis`, `.jpg`, `.tif`, `.png`, `.bmp`. 
 
 `.cis` supports various scanners such as stepper, wheel/shaft encoder, bi-color, twin-array.
-
 
 ## Demo
 
@@ -44,6 +44,13 @@ https://www.paypal.com/paypalme/KatzSasaki
 2. Launch the program and Select MIDI output port and Virtual tracker bar
 3. Select scan image from `sample_scans` folder
 4. Enjoy!
+
+
+## Manual Expression
+
+If you check `☑ Manual Expression`, you can express dynamics using the keyboard.
+* `A`, `S`: bass and treble accent
+* `J`, `K`, `L`: intensity level (can be combined)
 
 
 ## Tips
