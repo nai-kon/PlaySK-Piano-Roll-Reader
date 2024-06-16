@@ -132,7 +132,7 @@ class InputVideo(BasePanel):
         self.repeat_btn_focused = False
         self.manual_expression = False
         self.draw_cache = {}
-        self.expression_btn_pressed = {ord("A"): False, ord("S"): False, ord("J"): False, ord("K"): False, ord("L"): False}
+        self.expression_btn_pressed = {ord("A"): False, ord("S"): False, ord("H"): False, ord("J"): False, ord("K"): False, ord("L"): False}
 
         self.repeat_btn_pos = (0, 0, 0, 0)
         self.play_btn_focused = False
@@ -258,7 +258,7 @@ class InputVideo(BasePanel):
         dc.SetFont(self.draw_cache["other_font"])
 
         # cache
-        for txt in ("Accent", "Intensity", "Bass", "Treble", "Lv1", "Lv2", "Lv4", "A", "S", "J", "K", "L"):
+        for txt in ("Accent", "Intensity", "Bass", "Treble", "Lv1", "Lv2", "Lv3", "Lv4", "A", "S", "H", "J", "K", "L"):
             key = f"{txt}_txt_size"
             if key not in self.draw_cache:
                 self.draw_cache[key] = dc.GetTextExtent(txt)
@@ -290,12 +290,12 @@ class InputVideo(BasePanel):
         # Intensity keys
         txt = "Intensity"
         txt_w, txt_h = self.draw_cache[f"{txt}_txt_size"]
-        x1 = 5 * self.disp_w // 10
+        x1 = 4 * self.disp_w // 10
         dc.DrawText(txt, x1, y1)
 
-        # "J", "K", "L"
+        # "H", "J", "K", "L"
         x1 += txt_w + txt_h // 2
-        for key, title in zip(("J", "K", "L"), ("Lv1", "Lv2", "Lv4")):
+        for key, title in zip(("H", "J", "K", "L"), ("Lv1", "Lv2", "Lv3", "Lv4")):
             # key outer
             color = "#fca5a5" if self.expression_btn_pressed[ord(key)] else "#cccccc"
             dc.SetBrush(wx.Brush(color))

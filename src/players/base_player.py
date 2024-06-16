@@ -140,9 +140,10 @@ class BasePlayer:
         self.treble_accent = False
         self.treble_accent_key = ord("S")
         self.manual_exp_map = {
-            ord("J"): {"press": False, "vacuum": 3},
-            ord("K"): {"press": False, "vacuum": 7},
-            ord("L"): {"press": False, "vacuum": 15},
+            ord("H"): {"press": False, "vacuum": 3},
+            ord("J"): {"press": False, "vacuum": 7},
+            ord("K"): {"press": False, "vacuum": 13},
+            ord("L"): {"press": False, "vacuum": 19},
         }
 
     def calc_velocity(self):
@@ -207,7 +208,7 @@ class BasePlayer:
             return
 
         # override manual expression
-        accomp_vacuum = 6 + sum([v["vacuum"] for v in self.manual_exp_map.values() if v["press"]])
+        accomp_vacuum = 6 + max([v["vacuum"] for v in self.manual_exp_map.values() if v["press"]] + [0])
         self.bass_vacuum = self.treble_vacuum = accomp_vacuum
 
         if self.bass_accent:
