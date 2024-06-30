@@ -13,8 +13,8 @@ cdef enum CurColor:
 @cython.wraparound(False)
 @cython.cdivision(True)
 def _get_decode_params(cnp.ndarray[cnp.uint16_t, ndim=1] data, 
-                    int vert_px, int hol_px, int overlap_twin, int lpt, 
-                    bint is_bicolor, bint is_twin_array, bint is_clocked):
+                    int vert_px, int hol_px, int lpt, bint is_bicolor, 
+                    bint is_twin_array, bint is_clocked, int twin_array_overlap):
 
     cdef:
         int width = hol_px
@@ -39,7 +39,7 @@ def _get_decode_params(cnp.ndarray[cnp.uint16_t, ndim=1] data,
 
     # width
     if is_twin_array:
-        width = hol_px * 2 - overlap_twin
+        width = hol_px * 2 - twin_array_overlap
 
     # height
     if is_clocked:
@@ -87,8 +87,8 @@ def _get_decode_params(cnp.ndarray[cnp.uint16_t, ndim=1] data,
 @cython.wraparound(False)
 def _decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data, 
                 cnp.ndarray[cnp.uint8_t, ndim=3] out_img, 
-                int vert_px, int hol_px, int twin_overlap, int twin_vsep, int end_padding_y,
-                bint is_bicolor, bint is_twin_array, bint is_clocked, list reclock_map):
+                int vert_px, int hol_px, bint is_bicolor, bint is_twin_array, bint is_clocked, 
+                int twin_array_overlap, int twin_array_vsep, int end_padding_y, list reclock_map):
 
     # CIS file format
     # http://semitone440.co.uk/rolls/utils/cisheader/cis-format.htm#scantype
@@ -103,12 +103,12 @@ def _decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
         int i
         int cur_line
         int cur_line_twin
-        int twin_offset_x = hol_px - twin_overlap
+        int twin_offset_x = hol_px - int(twin_array_overlap / 2)
         int sx
         int ex
 
     # decode lines
-    for cur_line in range(vert_px + end_padding_y- 1, end_padding_y, -1):
+    for cur_line in range(vert_px + end_padding_y - 1, end_padding_y, -1):
         last_pos = 0
         cur_pix = ROLL
         while last_pos != hol_px:
@@ -129,7 +129,7 @@ def _decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
         if is_twin_array:
             last_pos = 0
             cur_pix = ROLL
-            cur_line_twin = cur_line + twin_vsep
+            cur_line_twin = cur_line + twin_array_vsep
             while last_pos != hol_px:
                 change_len = data[cur_idx]
                 if cur_pix == BG:
