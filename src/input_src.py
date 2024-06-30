@@ -75,7 +75,7 @@ def _load_cis(parent: wx.Frame, path: str, default_tempo: int, force_manual_adju
     if not obj.load(path):
         return None, default_tempo
     # find center of roll margin or manually set if not found
-    left_edge, right_edge = _find_roll_cut_point(obj.decode_img)
+    left_edge, right_edge = _find_roll_cut_point(obj.decoded_img)
     if left_edge is None or right_edge is None or force_manual_adjust:
         with ImgEditDlg(parent, obj) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
@@ -83,12 +83,12 @@ def _load_cis(parent: wx.Frame, path: str, default_tempo: int, force_manual_adju
             else:
                 return None, default_tempo
     # cut off edge
-    obj.decode_img[:, :left_edge] = (255, 255, 255)
-    obj.decode_img[:, right_edge:] = (255, 255, 255)
+    obj.decoded_img[:, :left_edge] = (255, 255, 255)
+    obj.decoded_img[:, right_edge:] = (255, 255, 255)
 
     # search tempo from CIS header
     tempo = default_tempo if obj.tempo == 0 else obj.tempo
-    return obj.decode_img, tempo
+    return obj.decoded_img, tempo
 
 
 def load_scan(parent: wx.Frame, path: str, default_tempo: int, force_manual_adjust: bool = False) -> tuple[np.ndarray | None, int]:

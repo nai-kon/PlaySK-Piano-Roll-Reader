@@ -8,7 +8,7 @@ class ImgEditDlg(wx.Dialog):
         wx.Dialog.__init__(self, None, title="Adjust roll image")
         self.parent = parent
         self.cis = cis
-        self.panel = SetEdgePane(self, cis.decode_img)
+        self.panel = SetEdgePane(self, cis.decoded_img)
 
         border_size = self.get_dipscaled_size(5)
         sizer1 = wx.BoxSizer(wx.VERTICAL)
