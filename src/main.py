@@ -37,6 +37,7 @@ class SingleInstWin:
                         wx.CallAfter(self.app_frame.Raise)
 
     def is_exists(self) -> bool:
+        # check app is already launched
         try:
             with socket.create_connection(("localhost", self.port), timeout=0.01) as sock:
                 if len(sys.argv) > 1:
@@ -53,10 +54,10 @@ class SingleInstWin:
 
 
 class AppMain(wx.App):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
-    def MacOpenFile(self, path):
+    def MacOpenFile(self, path: str) -> None:
         """
         For Mac, open file with associated program.
         """

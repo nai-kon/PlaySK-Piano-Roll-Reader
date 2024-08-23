@@ -79,7 +79,7 @@ class TestArtecho:
         player.emulate_expression(0)
         assert player.bass_intensity_lock == [False, False, False]
 
-        # bass intensity cancel
+        # treble intensity cancel
         frame = np.full((600, 800, 3), 0, np.uint8)
         x1, y1, x2, y2 = player.holes["treble_cancel"]["pos"][0]
         frame[y1:y2, x1:x2, :] = 255
