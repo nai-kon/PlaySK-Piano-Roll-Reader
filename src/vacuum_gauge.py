@@ -84,7 +84,7 @@ class OscilloGraph(BasePanel):
         dc.SetFont(wx.Font(int(12 * self.scale), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
         dc.SetTextForeground((255, 255, 255))
         _, txt_h = dc.GetTextExtent("0")
-        dc.DrawTextList(["40", "30", "20", "10"], [(2, int(v * self.plot_scale - txt_h // 2)) for v in [10, 20, 30, 40]])
+        dc.DrawTextList(["40", "30", "20", "10"], [(2, int(v * self.plot_scale - txt_h // 2)) for v in (10, 20, 30, 40)])
 
     def load_thread(self):
         while self.thread_enable:

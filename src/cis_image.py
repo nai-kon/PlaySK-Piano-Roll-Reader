@@ -63,6 +63,15 @@ class CisImage:
 
         return False
 
+    def convert_bw(self):
+        """
+        Some cis files are scanned with a black roll background, so convert it to white
+        """
+
+        if self.decoded_img is not None:
+            self.decoded_img[self.decoded_img == 0] = 255
+        
+
     def _get_decode_params_py(self) -> tuple[int, int, list[int, int]]:
         """
         Experimentally decode file and get output image size and re-clock position map.
@@ -211,7 +220,7 @@ class CisImage:
         if self.scanner_type == ScannerType.UNKNOWN:
             self.hol_dpi = 200  # most of unknown type scanner is 200DPI
         else:
-            self.is_clocked = self.scanner_type in [ScannerType.WHEELENCODER, ScannerType.SHAFTENCODER]
+            self.is_clocked = self.scanner_type in (ScannerType.WHEELENCODER, ScannerType.SHAFTENCODER)
             self.is_twin_array = bool(status_flags[0] & 32)
             self.is_bicolor = bool(status_flags[0] & 64)
             self.encoder_division = 2 ** int(status_flags[1] & 15)

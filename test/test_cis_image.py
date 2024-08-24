@@ -89,3 +89,14 @@ class TestCisImage:
         ret = obj.load("test/test_images/broken_data.CIS")
         assert not ret
         wxmsg_mocker.assert_called_once()
+
+    def test_convert_bw(self):
+        obj = CisImage()
+
+        # nothing happens
+        obj.convert_bw()
+
+        # convert black pixel to white
+        obj.decoded_img = np.zeros((100, 100, 3), dtype=np.uint8)
+        obj.convert_bw()
+        assert (obj.decoded_img == 255).all()
