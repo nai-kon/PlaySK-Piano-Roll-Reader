@@ -3,7 +3,7 @@ import sys
 import pytest
 
 sys.path.append("src/")
-from input_src import _find_roll_cut_point, _load_cis, _load_img
+from roll_scroll import _find_roll_cut_point, _load_cis, _load_img
 
 
 @pytest.mark.parametrize("img_path, expect", [
@@ -13,7 +13,8 @@ from input_src import _find_roll_cut_point, _load_cis, _load_img
     ("Welte Licensee 7005 Etude Japonaise with ann.png", (True, 90)),
     ("Welte Licensee 7005 Etude Japonaise.tif", (True, 80)),
 ])
-def test_load_img(img_path, expect):
+def test_load_img(img_path, expect, mocker):
+    mocker.patch("wx.BusyCursor")  # ignore busy cursor
     img, tempo = _load_img("test/test_images/" + img_path, 80)
     assert (img is not None, tempo) == expect
 
@@ -25,6 +26,7 @@ def test_load_img(img_path, expect):
 ])
 def test_load_cis(img_path, expect, mocker):
     mocker.patch("wx.MessageBox")  # ignore msg box
+    mocker.patch("wx.BusyCursor")  # ignore busy cursor
     img, tempo = _load_cis(None, "test/test_images/" + img_path, 80, False)
     assert (img is not None, tempo) == expect
 
@@ -38,7 +40,8 @@ def test_load_cis(img_path, expect, mocker):
     ("find_edge_test_no_padding.png", (None, None)),
     ("find_edge_test_too_little_padding.png", (None, None)),
 ])
-def test_find_roll_edge(img_path, expect):
+def test_find_roll_edge(img_path, expect, mocker):
+    mocker.patch("wx.BusyCursor")  # ignore busy cursor
     img, _ = _load_img("test/test_images/" + img_path, 80)
     left, right = _find_roll_cut_point(img)
     assert (left, right) == expect

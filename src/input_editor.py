@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 import wx
-
 from cis_image import CisImage, ScannerType
 
 
@@ -14,12 +13,12 @@ class ImgEditDlg(wx.Dialog):
 
         border_size = self.get_dipscaled_size(5)
         sizer1 = wx.BoxSizer(wx.VERTICAL)
-        sizer1.Add(wx.StaticText(self, label=self.get_show_text()), 1, wx.EXPAND | wx.ALL)
+        sizer1.Add(wx.StaticText(self, label=self.get_show_text()), 1, wx.EXPAND | wx.ALL, border_size)
         convert_bw_btn = wx.Button(self, label="Convert Black pixel to White")
-        sizer1.Add(convert_bw_btn, 1, wx.EXPAND | wx.ALL)
+        sizer1.Add(convert_bw_btn, 1, wx.EXPAND | wx.ALL, border_size)
         convert_bw_btn.Bind(wx.EVT_BUTTON, self.convert_bw)
-        sizer1.Add(wx.Button(self, wx.ID_OK, label="OK"), 1, wx.EXPAND | wx.ALL)
-        sizer1.Add(wx.Button(self, wx.ID_CANCEL, label="Cancel"), 1, wx.EXPAND | wx.ALL)
+        sizer1.Add(wx.Button(self, wx.ID_OK, label="OK"), 1, wx.EXPAND | wx.ALL, border_size)
+        sizer1.Add(wx.Button(self, wx.ID_CANCEL, label="Cancel"), 1, wx.EXPAND | wx.ALL, border_size)
 
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
         sizer2.Add(self.panel)
@@ -57,12 +56,9 @@ class ImgEditDlg(wx.Dialog):
         return self.panel.get_pos()
 
     def get_dipscaled_size(self, size):
-        return size
-
         return self.parent.get_dipscaled_size(size)
 
     def get_dpiscale_factor(self):
-        return 1
         return self.parent.get_dpiscale_factor()
 
 
@@ -83,8 +79,7 @@ class SetEdgePane(wx.Panel):
         self.guide_font = wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD)
         self.scale = parent.get_dpiscale_factor()
 
-        text = "If there is a margin, set it roughly in the center of the margin. It will be adjusted automatically.\n" \
-            "If there is no margin, set it strictly to the edge."
+        text = "Roll edge could not be detected. Please set it manually."
         guidance = wx.StaticText(self, label=text, size=wx.Size(self.frame_w, 0), style=wx.ALIGN_CENTRE_HORIZONTAL)
         guidance.SetFont(wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
 

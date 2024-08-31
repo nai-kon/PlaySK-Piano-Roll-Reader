@@ -49,9 +49,10 @@ def _find_roll_cut_point(img: np.ndarray) -> tuple[int | None, int | None]:
 def _load_img(path: str, default_tempo: int) -> tuple[np.ndarray | None, int]:
     # cv2.imread can't load path with multi-byte
     try:
-        n = np.fromfile(path, np.uint8)
-        img = cv2.imdecode(n, cv2.IMREAD_COLOR)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        with wx.BusyCursor():
+            n = np.fromfile(path, np.uint8)
+            img = cv2.imdecode(n, cv2.IMREAD_COLOR)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     except Exception:
         return None, default_tempo
 
@@ -72,8 +73,9 @@ def _load_img(path: str, default_tempo: int) -> tuple[np.ndarray | None, int]:
 
 def _load_cis(parent: wx.Frame, path: str, default_tempo: int, force_manual_adjust: bool) -> tuple[np.ndarray | None, int]:
     obj = CisImage()
-    if not obj.load(path):
-        return None, default_tempo
+    with wx.BusyCursor():
+        if not obj.load(path):
+            return None, default_tempo
     # find center of roll margin or manually set if not found
     left_edge, right_edge = _find_roll_cut_point(obj.decoded_img)
     if left_edge is None or right_edge is None or force_manual_adjust:
@@ -92,11 +94,10 @@ def _load_cis(parent: wx.Frame, path: str, default_tempo: int, force_manual_adju
 
 
 def load_scan(parent: wx.Frame, path: str, default_tempo: int, force_manual_adjust: bool = False) -> tuple[np.ndarray | None, int]:
-    with wx.BusyCursor():
-        if Path(path).suffix.lower().endswith(".cis"):
-            return _load_cis(parent, path, default_tempo, force_manual_adjust)
-        else:
-            return _load_img(path, default_tempo)
+    if Path(path).suffix.lower().endswith(".cis"):
+        return _load_cis(parent, path, default_tempo, force_manual_adjust)
+    else:
+        return _load_img(path, default_tempo)
 
 
 class FPScounter:

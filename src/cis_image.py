@@ -31,6 +31,9 @@ class CisImage:
     """
     Decode .CIS file to numpy array. Support bi-color, twin-array, encoder scanner, stepper scanner.
     The encoder scanner file will re-clocked to stepper scanner. Finally the vertical lpi will resize to same size of horizontal dpi.
+
+    # CIS file format
+    # http://semitone440.co.uk/rolls/utils/cisheader/cis-format.htm#scantype
     """
     def __init__(self) -> None:
         self.desc = ""
@@ -39,19 +42,16 @@ class CisImage:
         self.is_twin_array = False
         self.is_bicolor = False
         self.encoder_division = 1
-        # self.mirror = False  # not used now
-        # self.reverse = False
-        # self.clock_doubler = False
         self.twin_array_vert_sep = 0
         self.twin_array_overlap = 0
         self.hol_dpi = 0
         self.hol_px = 0
         self.tempo = 0
-        self.vert_res = 0  # lpi in stepper scanner. tpi in encoder wheel
+        self.vert_res = 0  # lpi in stepper scanner. tpi in encoder wheel scanner
         self.vert_px = 0
         self.raw_img = None
         self.decoded_img = None
-        self.lpt = 0  # lines per tick. only for re-clock
+        self.lpt = 0  # lines per tick. only for re-clocking
 
     def load(self, path: str) -> bool:
         try:
@@ -70,7 +70,6 @@ class CisImage:
 
         if self.decoded_img is not None:
             self.decoded_img[self.decoded_img == 0] = 255
-        
 
     def _get_decode_params_py(self) -> tuple[int, int, list[int, int]]:
         """

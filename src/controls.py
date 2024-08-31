@@ -86,23 +86,23 @@ class WelcomeMsg(BasePanel):
         lnk2.SetBackgroundColour("#555555")
         self.Layout()
 
-    def start_worker(self):
+    def start_worker(self) -> None:
         # compatible with InputVideo classes
         pass
 
-    def set_tempo(self, tempo: float):
+    def set_tempo(self, tempo: float) -> None:
         # compatible with InputVideo classes
         pass
 
-    def set_pressed_key(self, keycode: int, is_pressed: bool):
+    def set_pressed_key(self, keycode: int, is_pressed: bool) -> None:
         # compatible with InputVideo classes
         pass
 
-    def set_manual_expression(self, enabled: bool):
+    def set_manual_expression(self, enabled: bool) -> None:
         # compatible with InputVideo classes
         pass
 
-    def on_destroy(self):
+    def on_destroy(self) -> None:
         # compatible with InputVideo classes
         pass
 
@@ -123,18 +123,18 @@ class SpeedSlider(BasePanel):
         self.SetSizer(sizer)
         self.Fit()
 
-    def _value_changed(self, val):
+    def _value_changed(self, val: float) -> None:
         self.caption.SetLabel(f"{self.label} {val}")
         if self.callback is not None:
             self.callback(val)
 
-    def set(self, label, tempo_range, val):
+    def set(self, label: str, tempo_range: tuple[int, int], val: float) -> None:
         self.label = label
         self.slider.SetRange(tempo_range[0], tempo_range[1])
         self.slider.SetValue(int(val))
         wx.CallAfter(self._value_changed, val)
 
-    def _slider_changed(self, event):
+    def _slider_changed(self, event) -> None:
         val = event.GetEventObject().GetValue()
         self._value_changed(val)
 

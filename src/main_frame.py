@@ -13,21 +13,22 @@ from controls import (
     TrackerCtrl,
     WelcomeMsg,
 )
-from input_src import InputScanImg, load_scan
 from midi_controller import MidiWrap
 from player_mng import PlayerMng
+from players import BasePlayer
+from roll_scroll import InputScanImg, load_scan
 from vacuum_gauge import VacuumGauge
 from version import APP_TITLE
 
 
 class CallBack:
-    def __init__(self, player, tracker, bass_vac_lv, treble_vac_lv) -> None:
+    def __init__(self, player: BasePlayer | None, tracker: TrackerCtrl, bass_vac_meter: VacuumGauge, treble_vac_meter: VacuumGauge) -> None:
         self.player = player
-        self.bass_vac_meter = bass_vac_lv
-        self.treble_vac_meter = treble_vac_lv
+        self.bass_vac_meter = bass_vac_meter
+        self.treble_vac_meter = treble_vac_meter
         self.tracker = tracker
 
-    def emulate(self, frame, curtime) -> None:
+    def emulate(self, frame, curtime: float) -> None:
         if self.player is not None:
             self.player.auto_tracking = self.tracker.is_auto_tracking()
             self.player.tracker_offset = self.tracker.offset
@@ -46,7 +47,7 @@ class FileDrop(wx.FileDropTarget):
         wx.FileDropTarget.__init__(self)
         self.parent = parent
 
-    def OnDropFiles(self, x, y, filenames):
+    def OnDropFiles(self, x: int, y: int, filenames: list[str]):
         wx.CallAfter(self.parent.load_file, path=filenames[0])
         return True
 
@@ -137,20 +138,20 @@ class MainFrame(wx.Frame):
     def get_dpiscale_factor(self):
         return self.GetDPIScaleFactor() * self.conf.window_scale_ratio if platform.system() == "Windows" else self.conf.window_scale_ratio
 
-    def get_scaled_textsize(self, size):
+    def get_scaled_textsize(self, size: int):
         return int(size * self.conf.window_scale_ratio)
 
     def create_status_bar(self):
         self.sbar = self.CreateStatusBar(9)  # midi-port, tracker-bar
         _, h = self.sbar.Size[:2]
-        midiout_caption = "MIDI Output :"
+        midiout_caption = "MIDI Out :"
         tracker_caption = "Tracker Bar :"
         wsize_caption = "Window Size :"
         midiout_caption_w = wx.Window.GetTextExtent(self, midiout_caption).Width
         tracker_caption_w = wx.Window.GetTextExtent(self, tracker_caption).Width
         wsize_caption_w = wx.Window.GetTextExtent(self, wsize_caption).Width
 
-        self.sbar.SetStatusWidths([midiout_caption_w, -3, -1, tracker_caption_w, -4, -1,  -3, wsize_caption_w, -1])
+        self.sbar.SetStatusWidths([midiout_caption_w, -4, -1, tracker_caption_w, -4, -1,  -2, wsize_caption_w, -1])
 
         # midi port
         self.sbar.SetStatusText(midiout_caption, 0)
@@ -188,7 +189,7 @@ class MainFrame(wx.Frame):
         last_sel = scales.index(self.conf.window_scale) if self.conf.window_scale in scales else 0
         self.scale_sel.SetSelection(last_sel)
 
-    def post_status_msg(self, msg):
+    def post_status_msg(self, msg: str):
         wx.CallAfter(self.sbar.SetStatusText, text=msg, i=6)
 
     def on_close(self, event):
@@ -253,7 +254,7 @@ class MainFrame(wx.Frame):
         self.callback.player.emulate_off()
         self.midi_btn.SetLabel("MIDI On")
 
-    def load_file(self, path, force_manual_adjust=False):
+    def load_file(self, path: str, force_manual_adjust: bool=False):
         ext = Path(path).suffix.lower()
         if ext.lower() not in self.supported_imgs:
             wx.MessageBox(f"Supported image formats are {' '.join(self.supported_imgs)}", "Unsupported file")
@@ -291,7 +292,7 @@ class MainFrame(wx.Frame):
                 path = dlg.GetPath()
                 self.load_file(path)
 
-    def speed_change(self, val):
+    def speed_change(self, val: float):
         self.spool.set_tempo(val)
 
     def adjust_image(self, event):

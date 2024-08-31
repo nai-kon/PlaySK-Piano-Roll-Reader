@@ -5,11 +5,11 @@ import time
 import numpy as np
 import wx
 from controls import BasePanel
-from input_src import FPScounter
+from roll_scroll import FPScounter
 
 
 class VacuumGauge(BasePanel):
-    def __init__(self, parent, pos=(0, 0), caption=""):
+    def __init__(self, parent, pos: tuple[int, int]=(0, 0), caption: str="") -> None:
         BasePanel.__init__(self, parent, wx.ID_ANY, pos=pos)
         caption = wx.StaticText(self, wx.ID_ANY, caption)
         scale = parent.get_dpiscale_factor()
@@ -26,7 +26,7 @@ class VacuumGauge(BasePanel):
         return self.meter.val
 
     @vacuum.setter
-    def vacuum(self, val):
+    def vacuum(self, val: float):
         self.meter.val = val
 
     def destroy(self):
@@ -34,7 +34,7 @@ class VacuumGauge(BasePanel):
 
 
 class OscilloGraph(BasePanel):
-    def __init__(self, parent, scale, size, max_vacuum=50):
+    def __init__(self, parent, scale, size, max_vacuum=50) -> None:
         BasePanel.__init__(self, parent, wx.ID_ANY, size=size)
         self.w = size[0]
         self.h = size[1]
@@ -63,12 +63,12 @@ class OscilloGraph(BasePanel):
         self.thread_worker = threading.Thread(target=self.load_thread)
         self.thread_worker.start()
 
-    def on_destroy(self, event):
+    def on_destroy(self, event) -> None:
         self.thread_enable = False
         if self.thread_worker.is_alive():
             self.thread_worker.join(timeout=3)
 
-    def init_grid(self):
+    def init_grid(self) -> None:
         dc = wx.BufferedDC(wx.ClientDC(self), self.grid)
         dc = wx.GCDC(dc)  # for anti-aliasing
 
@@ -86,7 +86,7 @@ class OscilloGraph(BasePanel):
         _, txt_h = dc.GetTextExtent("0")
         dc.DrawTextList(["40", "30", "20", "10"], [(2, int(v * self.plot_scale - txt_h // 2)) for v in (10, 20, 30, 40)])
 
-    def load_thread(self):
+    def load_thread(self) -> None:
         while self.thread_enable:
             t1 = time.perf_counter()
             self.ys[0:-1] = self.ys[1:]
@@ -104,7 +104,7 @@ class OscilloGraph(BasePanel):
             self.count()
         print("end OscilloGraph.load_thread")
 
-    def on_paint(self, event):
+    def on_paint(self, event) -> None:
         dc = wx.PaintDC(self)
         dc.DrawBitmap(self.grid, 0, 0)
         dc = wx.GCDC(dc)  # for anti-aliasing
