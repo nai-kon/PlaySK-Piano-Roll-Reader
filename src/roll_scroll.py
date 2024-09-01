@@ -24,11 +24,12 @@ def _find_roll_cut_point(img: np.ndarray) -> tuple[int | None, int | None]:
     margin_th = 220
     hist_th = samples * 0.8
     h, w = img.shape[:2]
+    is_color = img.ndim == 3
     pad_h = w  # set start/end padding size to same with width
     sample_ys = np.linspace(pad_h, h - pad_h, samples, dtype=int)
     # find left margin center
     sx, ex = 5, w // 4
-    left_sample = img[sample_ys, sx: ex, 0]  # enough with first ch
+    left_sample = img[sample_ys, sx: ex, 0] if is_color else img[sample_ys, sx: ex]
     left_hist = (left_sample > margin_th).sum(axis=0) > hist_th
     left_margin_idx = left_hist.nonzero()[0]
     left_margin_center = None
@@ -36,7 +37,7 @@ def _find_roll_cut_point(img: np.ndarray) -> tuple[int | None, int | None]:
         left_margin_center = int(left_margin_idx[-1])
     # find right margin center
     sx, ex = 3 * w // 4, w - 5
-    right_sample = img[sample_ys, sx: ex, 0]  # enough with first ch
+    right_sample = img[sample_ys, sx: ex, 0] if is_color else img[sample_ys, sx: ex]
     right_hist = (right_sample > margin_th).sum(axis=0) > hist_th
     right_margin_idx = right_hist.nonzero()[0]
     right_margin_center = None
@@ -85,8 +86,8 @@ def _load_cis(parent: wx.Frame, path: str, default_tempo: int, force_manual_adju
             else:
                 return None, default_tempo
     # cut off edge
-    obj.decoded_img[:, :left_edge] = (255, 255, 255)
-    obj.decoded_img[:, right_edge:] = (255, 255, 255)
+    obj.decoded_img[:, :left_edge] = 255
+    obj.decoded_img[:, right_edge:] = 255
 
     # search tempo from CIS header
     tempo = default_tempo if obj.tempo == 0 else obj.tempo
@@ -94,6 +95,7 @@ def _load_cis(parent: wx.Frame, path: str, default_tempo: int, force_manual_adju
 
 
 def load_scan(parent: wx.Frame, path: str, default_tempo: int, force_manual_adjust: bool = False) -> tuple[np.ndarray | None, int]:
+    # notes: CIS image is grayscale. It should be converted to color on roll scrolling process
     if Path(path).suffix.lower().endswith(".cis"):
         return _load_cis(parent, path, default_tempo, force_manual_adjust)
     else:
@@ -427,8 +429,10 @@ class InputScanImg(InputVideo):
         resize_ratio = self.disp_w / self.src.shape[1]
         resize_h = int(self.src.shape[0] * resize_ratio)
         self.src = cv2.resize(self.src, dsize=(self.disp_w, resize_h))
-        self.cur_y = self.src.shape[0] - 1
+        if self.src.ndim == 2:
+            self.src = cv2.cvtColor(self.src, cv2.COLOR_GRAY2RGB)
 
+        self.cur_y = self.src.shape[0] - 1
         self.crop_h = self.disp_h
         self.roll_dpi = resize_ratio * (self.right_side - self.left_side + 1) / self.roll_width
         self.set_tempo(self.tempo)
@@ -463,7 +467,11 @@ class InputScanImg(InputVideo):
         edge_th = 220
         # find roll edges
         sample_ys = np.linspace(0, roll_h - 1, 20, dtype=int)
-        for v in (self.src[sample_ys, :, 0] < edge_th):
+        if self.src.ndim == 3:
+            binarized_img = self.src[sample_ys, :, 0] < edge_th
+        else:
+            binarized_img = self.src[sample_ys, :] < edge_th
+        for v in binarized_img:
             t = v.nonzero()[0]
             if len(t) < 2:
                 edges.append((0, roll_w - 1))

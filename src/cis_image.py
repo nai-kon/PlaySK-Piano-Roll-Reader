@@ -29,7 +29,7 @@ class ScannerType(Enum):
 
 class CisImage:
     """
-    Decode .CIS file to numpy array. Support bi-color, twin-array, encoder scanner, stepper scanner.
+    Decode .CIS file to grayscale image of numpy array. Support bi-color, twin-array, encoder scanner, stepper scanner.
     The encoder scanner file will re-clocked to stepper scanner. Finally the vertical lpi will resize to same size of horizontal dpi.
 
     # CIS file format
@@ -137,8 +137,8 @@ class CisImage:
             MARK = auto()
 
         # decode CIS
-        bg_color = (255, 255, 255)
-        black_color = (0, 0, 0)
+        bg_color = 255
+        lyrics_color = 0
         cur_idx = 0
         twin_offset_x = self.hol_px - self.twin_array_overlap // 2
         for cur_line in range(self.vert_px + end_padding_y - 1, end_padding_y, -1):
@@ -181,7 +181,7 @@ class CisImage:
                 while last_pos != self.hol_px:
                     change_len = self.raw_img[cur_idx]
                     if cur_pix == CurColor.MARK:
-                        output_img[cur_line, last_pos:last_pos + change_len] = black_color
+                        output_img[cur_line, last_pos:last_pos + change_len] = lyrics_color
                         cur_pix = CurColor.BG
                     elif cur_pix == CurColor.BG:
                         cur_pix = CurColor.MARK
@@ -254,7 +254,7 @@ class CisImage:
         # reserve decoded image with padding on start/end
         start_padding_y = out_w // 2
         end_padding_y = out_w // 2
-        self.decoded_img = np.full((out_h + start_padding_y + end_padding_y, out_w, 3), 120, np.uint8)
+        self.decoded_img = np.full((out_h + start_padding_y + end_padding_y, out_w), 120, np.uint8)
         self.decoded_img[out_h + end_padding_y:] = 255
 
         # decode

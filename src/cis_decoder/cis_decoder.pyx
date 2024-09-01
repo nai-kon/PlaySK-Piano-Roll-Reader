@@ -86,7 +86,7 @@ def _get_decode_params(cnp.ndarray[cnp.uint16_t, ndim=1] data,
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def _decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data, 
-                cnp.ndarray[cnp.uint8_t, ndim=3] out_img, 
+                cnp.ndarray[cnp.uint8_t, ndim=2] out_img, 
                 int vert_px, int hol_px, bint is_bicolor, bint is_twin_array, bint is_clocked, 
                 int twin_array_overlap, int twin_array_vsep, int end_padding_y, list reclock_map):
 
@@ -95,7 +95,7 @@ def _decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
 
     cdef:
         cnp.uint8_t bg_color = 255
-        cnp.uint8_t black_color = 0
+        cnp.uint8_t lyrics_color = 0
         int cur_idx = 0
         int last_pos = 0
         CurColor cur_pix = ROLL
@@ -115,9 +115,7 @@ def _decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
             change_len = data[cur_idx]
             if cur_pix == BG:
                 for i in range(last_pos, last_pos + change_len):
-                    out_img[cur_line, i, 0] = bg_color
-                    out_img[cur_line, i, 1] = bg_color
-                    out_img[cur_line, i, 2] = bg_color
+                    out_img[cur_line, i] = bg_color
                 cur_pix = ROLL
             elif cur_pix == ROLL:
                 cur_pix = BG
@@ -136,9 +134,7 @@ def _decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
                     sx = 2 * twin_offset_x - min(last_pos + change_len, twin_offset_x)
                     ex = 2 * twin_offset_x - min(last_pos, twin_offset_x)
                     for i in range(sx, ex):
-                        out_img[cur_line_twin, i, 0] = bg_color
-                        out_img[cur_line_twin, i, 1] = bg_color
-                        out_img[cur_line_twin, i, 2] = bg_color
+                        out_img[cur_line_twin, i] = bg_color
                     cur_pix = ROLL
                 elif cur_pix == ROLL:
                     cur_pix = BG
@@ -154,9 +150,7 @@ def _decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
                 change_len = data[cur_idx]
                 if cur_pix == MARK:
                     for i in range(last_pos, last_pos + change_len):
-                        out_img[cur_line, i, 0] = black_color
-                        out_img[cur_line, i, 1] = black_color
-                        out_img[cur_line, i, 2] = black_color
+                        out_img[cur_line, i] = lyrics_color
                     cur_pix = BG
                 elif cur_pix == BG:
                     cur_pix = MARK

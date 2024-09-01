@@ -58,7 +58,7 @@ class TestCisImage:
     def test_decode_cis(self, cis_path, gt_path):
         # check pixel values are same to gt
         for use_cython in (True, False):
-            gt_img = cv2.imread("test/test_images/" + gt_path)
+            gt_img = cv2.imread("test/test_images/" + gt_path, cv2.IMREAD_GRAYSCALE)
             obj = CisImage()
             obj._load_file("test/test_images/" + cis_path)
             obj._decode(use_cython)
@@ -97,6 +97,6 @@ class TestCisImage:
         obj.convert_bw()
 
         # convert black pixel to white
-        obj.decoded_img = np.zeros((100, 100, 3), dtype=np.uint8)
+        obj.decoded_img = np.zeros((100, 100), dtype=np.uint8)
         obj.convert_bw()
         assert (obj.decoded_img == 255).all()

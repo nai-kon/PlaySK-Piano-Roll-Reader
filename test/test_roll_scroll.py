@@ -1,5 +1,6 @@
 import sys
 
+import cv2
 import pytest
 
 sys.path.append("src/")
@@ -41,7 +42,13 @@ def test_load_cis(img_path, expect, mocker):
     ("find_edge_test_too_little_padding.png", (None, None)),
 ])
 def test_find_roll_edge(img_path, expect, mocker):
+    # Color
     mocker.patch("wx.BusyCursor")  # ignore busy cursor
     img, _ = _load_img("test/test_images/" + img_path, 80)
+    left, right = _find_roll_cut_point(img)
+    assert (left, right) == expect
+
+    # Gray Scale
+    img = cv2.cvtColor(img ,cv2.COLOR_RGB2GRAY)
     left, right = _find_roll_cut_point(img)
     assert (left, right) == expect

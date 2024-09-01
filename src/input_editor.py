@@ -17,8 +17,8 @@ class ImgEditDlg(wx.Dialog):
         convert_bw_btn = wx.Button(self, label="Convert Black pixel to White")
         sizer1.Add(convert_bw_btn, 1, wx.EXPAND | wx.ALL, border_size)
         convert_bw_btn.Bind(wx.EVT_BUTTON, self.convert_bw)
-        sizer1.Add(wx.Button(self, wx.ID_OK, label="OK"), 1, wx.EXPAND | wx.ALL, border_size)
         sizer1.Add(wx.Button(self, wx.ID_CANCEL, label="Cancel"), 1, wx.EXPAND | wx.ALL, border_size)
+        sizer1.Add(wx.Button(self, wx.ID_OK, label="OK"), 1, wx.EXPAND | wx.ALL, border_size)
 
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
         sizer2.Add(self.panel)
@@ -91,6 +91,8 @@ class SetEdgePane(wx.Panel):
         org_img_h, self.org_img_w = img.shape[:2]
         resized_h = org_img_h * self.frame_w // self.org_img_w
         img = cv2.resize(img, dsize=(self.frame_w, resized_h))
+        if img.ndim == 2:
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
         self.left_margin_x, self.right_margin_x = 100, img.shape[1] - 100
         self.img = wx.Bitmap.FromBuffer(img.shape[1], img.shape[0], img)
         self.img_h = self.img.GetHeight()
