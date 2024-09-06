@@ -270,7 +270,7 @@ class CisImage:
         # Resize horizontal and vertical to the same dpi
         self.hol_px = self.decoded_img.shape[1]
         if self.vert_res != self.hol_dpi:
-            self.decoded_img = cv2.resize(self.decoded_img, dsize=None, fx=1, fy=self.hol_dpi / self.vert_res)
+            self.decoded_img = cv2.resize(self.decoded_img, dsize=None, fx=1, fy=self.hol_dpi / self.vert_res, interpolation=cv2.INTER_LINEAR_EXACT)
 
 
 if __name__ == "__main__":
