@@ -90,7 +90,7 @@ if __name__ == "__main__":
         wx.MessageBox("config directory is not found. Exit software.", "Config error")
         exit(-1)
 
-    from main_frame import MainFrame
+    from main_ui import MainFrame
     frame = MainFrame()
     if pf == "Windows":
         single_inst.app_frame = frame
