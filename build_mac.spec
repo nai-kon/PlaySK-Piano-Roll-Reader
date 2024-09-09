@@ -46,5 +46,5 @@ app = BUNDLE(
     name='PlaySK Piano Roll Reader.app',
     icon='src/playsk_config/PlaySK_icon.ico',
     bundle_identifier=None,
-    version='3.4.0'
+    version='3.4.1'
 )
