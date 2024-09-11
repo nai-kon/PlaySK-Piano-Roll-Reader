@@ -42,6 +42,7 @@ class PlayerMng:
             "RecordoB": players.RecordoB,
             "Artecho": players.Artecho,
             "Themodist": players.Themodist,
+            "Themodist_eValve": players.Themodist_eValve,
         }
         clsobj = cls_map.get(cls_name, None)
         if clsobj is not None:
