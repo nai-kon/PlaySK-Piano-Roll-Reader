@@ -30,8 +30,8 @@ class MidiWrap:
 
     def close_port(self) -> None:
         if self.enable:
-            self.enable = False
             self.all_off()
+            self.enable = False
             self.output.close()
 
     def all_off(self) -> None:
