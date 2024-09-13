@@ -40,10 +40,10 @@ class TestNotifyUpdate:
         assert not obj.need_notify("3.3.0")
         assert not obj.need_notify(None)
         # notify
-        assert obj.need_notify("3.4.1")
+        assert obj.need_notify("3.4.0")
         # already notified this version. skip
-        conf.update_notified_version = "3.4.1"
-        assert not obj.need_notify("3.4.1")
+        conf.update_notified_version = "3.4.0"
+        assert not obj.need_notify("3.4.0")
         # more new version is coming. notify
         assert obj.need_notify("3.4.1")
 
@@ -52,11 +52,11 @@ class TestNotifyUpdate:
         conf.update_notified_version = "3.3.0"
         wxcallafter_mock = mocker.patch("wx.CallAfter")
         obj = NotifyUpdate(None, conf)
-        obj.notify("3.4.1")
+        obj.notify("3.4.0")
         # version in conf is updated
-        assert conf.update_notified_version == "3.4.1"
+        assert conf.update_notified_version == "3.4.0"
         # call notify dlg with desired param
-        wxcallafter_mock.assert_called_once_with(NotifyDialog, None, "3.4.1")
+        wxcallafter_mock.assert_called_once_with(NotifyDialog, None, "3.4.0")
 
     def test_check(self, mocker, monkeypatch):
         # integration testing
@@ -75,10 +75,10 @@ class TestNotifyUpdate:
         wxcallafter_mock.assert_not_called()
 
         # notify
-        monkeypatch.setattr(NotifyUpdate, "fetch_latest_version", lambda self: "3.4.1")
+        monkeypatch.setattr(NotifyUpdate, "fetch_latest_version", lambda self: "3.4.0")
         start = time.time()
         th = NotifyUpdate.check(None, conf)
         end = time.time()
         th.join()
         assert end - start < 0.5  # return immediately
-        wxcallafter_mock.assert_called_once_with(NotifyDialog, None, "3.4.1")
+        wxcallafter_mock.assert_called_once_with(NotifyDialog, None, "3.4.0")

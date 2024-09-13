@@ -1,4 +1,4 @@
-# PlaySK Piano Roll Reader Ver3.4
+# PlaySK Piano Roll Reader Ver3.5
 
 Optically reading a piano roll image, emulates expression and output midi signal in real-time.
 
@@ -7,7 +7,6 @@ Optically reading a piano roll image, emulates expression and output midi signal
 The "virtual tracker bar" optically picks up roll holes then emulates note, pedal and expression.
 Currently, 9 virtual tracker bars are available.
 - Standard 88-note
-- Themodist
 - Ampico B
 - Duo-Art
 - Welte-Mignon Licensee
@@ -16,6 +15,8 @@ Currently, 9 virtual tracker bars are available.
 - Philipps Duca (no expression. experimental)
 - Recordo version A / B
 - Artecho
+- Themodist
+    - `Themodist e-Valve` supports e-valve midi note output. (18 for sustain, 19 for bass snakebite, 109 for treble snakebite)
 
 In the future, Ampico A will be supported.
 
