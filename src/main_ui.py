@@ -228,6 +228,7 @@ class MainFrame(wx.Frame):
         self.conf.last_tracker = name
         player_tmp = self.player_mng.get_player_obj(name, self.midiobj)
         if player_tmp is not None:
+            self.midiobj.all_off()
             self.midi_btn.SetLabel("MIDI On")
             player_tmp.tracker_offset = self.tracking.offset
             player_tmp.auto_tracking = self.tracking.auto_tracking
