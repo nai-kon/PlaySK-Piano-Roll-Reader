@@ -6,7 +6,7 @@ import wx
 
 sys.path.append("../src/")
 os.chdir("../src/")
-from main_frame import MainFrame
+from main_ui import MainFrame
 
 faulthandler.enable()
 

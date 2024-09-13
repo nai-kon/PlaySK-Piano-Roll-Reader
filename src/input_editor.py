@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 import wx
 from cis_image import CisImage, ScannerType
 
@@ -8,13 +9,16 @@ class ImgEditDlg(wx.Dialog):
         wx.Dialog.__init__(self, None, title="Adjust roll image")
         self.parent = parent
         self.cis = cis
-        self.panel = SetEdgePane(self, cis.decode_img)
+        self.panel = SetEdgePane(self, cis.decoded_img)
 
         border_size = self.get_dipscaled_size(5)
         sizer1 = wx.BoxSizer(wx.VERTICAL)
-        sizer1.Add(wx.StaticText(self, label=self.get_show_text()), 1, wx.EXPAND | wx.ALL, border=border_size)
-        sizer1.Add(wx.Button(self, wx.ID_OK, label="OK"), 1, wx.EXPAND | wx.ALL)
-        sizer1.Add(wx.Button(self, wx.ID_CANCEL, label="Cancel"), 1, wx.EXPAND | wx.ALL)
+        sizer1.Add(wx.StaticText(self, label=self.get_show_text()), 1, wx.EXPAND | wx.ALL, border_size)
+        convert_bw_btn = wx.Button(self, label="Convert Black pixel to White")
+        sizer1.Add(convert_bw_btn, 1, wx.EXPAND | wx.ALL, border_size)
+        convert_bw_btn.Bind(wx.EVT_BUTTON, self.convert_bw)
+        sizer1.Add(wx.Button(self, wx.ID_CANCEL, label="Cancel"), 1, wx.EXPAND | wx.ALL, border_size)
+        sizer1.Add(wx.Button(self, wx.ID_OK, label="OK"), 1, wx.EXPAND | wx.ALL, border_size)
 
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
         sizer2.Add(self.panel)
@@ -25,7 +29,15 @@ class ImgEditDlg(wx.Dialog):
         x, y = self.GetPosition()
         self.SetPosition((x, 0))
 
+    def convert_bw(self, event):
+        # some cis scan has black background so convert it to white
+        with wx.BusyCursor():
+            self.cis.convert_bw()
+        self.panel.set_image(self.cis.decoded_img)
+        self.panel.Refresh()
+
     def get_show_text(self):
+        # get roll info text
         out = [f"Type: {self.cis.scanner_type.value}"]
         if self.cis.is_twin_array:
             out.append("Twin Array scan")
@@ -33,7 +45,7 @@ class ImgEditDlg(wx.Dialog):
             out.append("Bi-Color scan")
         out.append(f"Tempo: {self.cis.tempo}")
         out.append(f"Horizontal: {self.cis.hol_dpi} Dots / inch")
-        if self.cis.scanner_type in [ScannerType.WHEELENCODER, ScannerType.SHAFTENCODER]:
+        if self.cis.scanner_type in (ScannerType.WHEELENCODER, ScannerType.SHAFTENCODER):
             out.append(f"Vertical: {self.cis.vert_res} Ticks / inch (Re-clocked)")
         else:
             out.append(f"Vertical: {self.cis.vert_res} Lines / inch")
@@ -51,19 +63,13 @@ class ImgEditDlg(wx.Dialog):
 
 
 class SetEdgePane(wx.Panel):
-    def __init__(self, parent, img):
+    def __init__(self, parent, img: np.ndarray):
         self.frame_w = parent.get_dipscaled_size(950)
         self.frame_h = wx.Display().GetClientArea().height  # display height
         wx.Panel.__init__(self, parent, size=(self.frame_w, self.frame_h))
         self.SetDoubleBuffered(True)
+        self.set_image(img)
 
-        org_img_h, self.org_img_w = img.shape[:2]
-        resized_h = org_img_h * self.frame_w // self.org_img_w
-        img = cv2.resize(img, dsize=(self.frame_w, resized_h))
-        self.left_margin_x, self.right_margin_x = 100, img.shape[1] - 100
-        self.img = wx.Bitmap.FromBuffer(img.shape[1], img.shape[0], img)
-        self.img_h = self.img.GetHeight()
-        self.scroll_y1 = self.img_h // 2
         self.scroll_size = 500  # @px
         self.norm_cursor = wx.Cursor()
         self.guild_line_w = parent.get_dipscaled_size(2)
@@ -73,14 +79,24 @@ class SetEdgePane(wx.Panel):
         self.guide_font = wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD)
         self.scale = parent.get_dpiscale_factor()
 
-        text = "If there is a margin, set it roughly in the center of the margin. It will be adjusted automatically.\n" \
-            "If there is no margin, set it strictly to the edge."
+        text = "Roll edge could not be detected. Please set it manually."
         guidance = wx.StaticText(self, label=text, size=wx.Size(self.frame_w, 0), style=wx.ALIGN_CENTRE_HORIZONTAL)
         guidance.SetFont(wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
 
         self.Bind(wx.EVT_PAINT, self.on_paint)
         self.Bind(wx.EVT_MOUSEWHEEL, self.on_scroll)
         self.Bind(wx.EVT_MOTION, self.on_mouse)
+
+    def set_image(self, img: np.ndarray):
+        org_img_h, self.org_img_w = img.shape[:2]
+        resized_h = org_img_h * self.frame_w // self.org_img_w
+        img = cv2.resize(img, dsize=(self.frame_w, resized_h))
+        if img.ndim == 2:
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+        self.left_margin_x, self.right_margin_x = 100, img.shape[1] - 100
+        self.img = wx.Bitmap.FromBuffer(img.shape[1], img.shape[0], img)
+        self.img_h = self.img.GetHeight()
+        self.scroll_y1 = self.img_h // 2
 
     def on_paint(self, event):
         dc = wx.PaintDC(self)
@@ -144,8 +160,10 @@ if __name__ == "__main__":
 
     app = wx.App()
 
+    frame = wx.Frame(None, wx.ID_ANY, "Frame", size=(1280, 720))
+
     obj = CisImage()
     if obj.load("../sample_scans/Ampico B 2551 If God Left Only You.CIS"):
-        with ImgEditDlg(obj) as dlg:
+        with ImgEditDlg(frame, obj) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 print(dlg.get_margin_pos())

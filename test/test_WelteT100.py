@@ -102,7 +102,7 @@ class TestWelteT100:
         player.emulate_expression(0)
         assert player.bass_cres_state == "slow_decres"
 
-        # bass mf on/off
+        # treble mf on/off
         frame = np.full((600, 800, 3), 0, np.uint8)
         x1, y1, x2, y2 = player.holes["treble_mf_on"]["pos"][0]
         frame[y1:y2, x1:x2, :] = 255

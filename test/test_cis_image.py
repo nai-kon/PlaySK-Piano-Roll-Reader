@@ -22,7 +22,7 @@ class TestCisImage:
         obj = CisImage()
         obj._load_file("test/test_images/" + cis_path)
         res = (obj.tempo, obj.scanner_type, obj.hol_dpi, obj.hol_px, obj.vert_res, obj.vert_px, obj.is_clocked,
-               obj.is_twin_array, obj.is_bicolor, obj.encoder_division, obj.vert_sep_twin, obj.overlap_twin, obj.lpt)
+               obj.is_twin_array, obj.is_bicolor, obj.encoder_division, obj.twin_array_vert_sep, obj.twin_array_overlap, obj.lpt)
         assert res == expect
 
     @pytest.mark.parametrize("cis_path, expect", [
@@ -38,14 +38,14 @@ class TestCisImage:
         obj = CisImage()
         obj._load_file("test/test_images/" + cis_path)
         # reclock map will be checked in output image comparesion test
-        width, height, _ = obj._get_decode_params_py(obj.raw_img)
+        width, height, _ = obj._get_decode_params_py()
         assert (width, height) == expect
 
         # cython version
         obj = CisImage()
         obj._load_file("test/test_images/" + cis_path)
         # reclock map will be checked in output image comparesion test
-        width, height, _ = _get_decode_params(obj.raw_img, obj.vert_px, obj.hol_px, obj.overlap_twin, obj.lpt, obj.is_bicolor, obj.is_twin_array, obj.is_clocked)
+        width, height, _ = _get_decode_params(obj.raw_img, obj.vert_px, obj.hol_px, obj.lpt, obj.is_bicolor, obj.is_twin_array, obj.is_clocked, obj.twin_array_overlap)
         assert (width, height) == expect
 
     @pytest.mark.parametrize("cis_path, gt_path", [
@@ -58,11 +58,11 @@ class TestCisImage:
     def test_decode_cis(self, cis_path, gt_path):
         # check pixel values are same to gt
         for use_cython in (True, False):
-            gt_img = cv2.imread("test/test_images/" + gt_path)
+            gt_img = cv2.imread("test/test_images/" + gt_path, cv2.IMREAD_GRAYSCALE)
             obj = CisImage()
             obj._load_file("test/test_images/" + cis_path)
             obj._decode(use_cython)
-            assert np.array_equal(obj.decode_img, gt_img)
+            assert np.array_equal(obj.decoded_img, gt_img)
 
     def test_decode_error_cis(self):
         for use_cython in (True, False):
@@ -89,3 +89,14 @@ class TestCisImage:
         ret = obj.load("test/test_images/broken_data.CIS")
         assert not ret
         wxmsg_mocker.assert_called_once()
+
+    def test_convert_bw(self):
+        obj = CisImage()
+
+        # nothing happens
+        obj.convert_bw()
+
+        # convert black pixel to white
+        obj.decoded_img = np.zeros((100, 100), dtype=np.uint8)
+        obj.convert_bw()
+        assert (obj.decoded_img == 255).all()
