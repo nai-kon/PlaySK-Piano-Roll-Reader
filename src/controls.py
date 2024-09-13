@@ -229,6 +229,7 @@ class NotifyUpdate:
             context = ssl.create_default_context(cafile=certifi.where())
             req = urllib.request.Request(self.url, headers={
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:92.0) Gecko/20100101 Firefox/92.0",
+                "X-Identifier": "PlaySK",
             })
             with urllib.request.urlopen(req, timeout=10, context=context) as res:
                 title = json.loads(res.read().decode("utf8")).get("name", None)
