@@ -82,7 +82,7 @@ def _load_cis(parent: wx.Frame, path: str, default_tempo: int, force_manual_adju
     if left_edge is None or right_edge is None or force_manual_adjust:
         with ImgEditDlg(parent, obj) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
-                left_edge, right_edge = dlg.get_margin_pos()
+                left_edge, right_edge = dlg.get_edge_pos()
             else:
                 return None, default_tempo
     # cut off edge
