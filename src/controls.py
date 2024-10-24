@@ -239,8 +239,8 @@ class NotifyUpdate:
                 matched = re.findall(r"^Ver(\d.\d.\d)$", title)
                 ver = matched[0] if matched else None
 
-        except Exception:
-            ver = None
+        except Exception as e:
+            ver = str(e)
 
         return ver
 
