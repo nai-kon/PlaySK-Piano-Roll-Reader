@@ -52,8 +52,8 @@ class ImgEditDlg(wx.Dialog):
 
         return "\n".join(out)
 
-    def get_margin_pos(self):
-        return self.panel.get_pos()
+    def get_edge_pos(self):
+        return self.panel.get_edge_pos()
 
     def get_dipscaled_size(self, size):
         return self.parent.get_dipscaled_size(size)
@@ -142,10 +142,10 @@ class SetEdgePane(wx.Panel):
             self.right_margin_x = pos.x
             self.Refresh()
 
-    def get_pos(self):
-        left = self.ToDIP(self.left_margin_x) * self.org_img_w * self.scale / self.frame_w
-        right = self.ToDIP(self.right_margin_x) * self.org_img_w * self.scale / self.frame_w
-        return int(left), int(right)
+    def get_edge_pos(self):
+        left = int(self.left_margin_x * self.org_img_w / self.frame_w)
+        right = int(self.right_margin_x * self.org_img_w / self.frame_w)
+        return left, right
 
 
 if __name__ == "__main__":
