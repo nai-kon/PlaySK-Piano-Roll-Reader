@@ -132,13 +132,16 @@ class InputVideo(BasePanel):
         self.scale = parent.get_dpiscale_factor()
 
         self.start_play = False
-        self.repeat_btn_focused = False
         self.manual_expression = False
+        self.manual_expression_draw_h = self.disp_h // 5
         self.draw_cache = {}
         self.expression_btn_pressed = {ord("A"): False, ord("S"): False, ord("J"): False, ord("K"): False, ord("L"): False}
 
+        self.repeat_btn_focused = False
         self.repeat_btn_pos = (0, 0, 0, 0)
         self.play_btn_focused = False
+        self.seek_bar_focused = True
+        self.seek_bar_h = self.disp_h // 20
         self.thread_enable = True
         self.thread_worker = threading.Thread(target=self.load_thread)
         self.worker_fps = 60
@@ -181,8 +184,13 @@ class InputVideo(BasePanel):
         if not self.start_play:
             self.draw_buttons(dc)
 
+        # manual expression controls
         if self.manual_expression:
             self.draw_manual_expression(dc)
+
+        # seek bar
+        if self.seek_bar_focused:
+            self.draw_seekbar(dc)
 
     def draw_buttons(self, dc: wx.PaintDC) -> None:
         # Draw Play/Repeat button
@@ -225,6 +233,10 @@ class InputVideo(BasePanel):
                         (center_x - rad, center_y)])
         dc.DrawRectangle(center_x - rad, center_y - int(math.sqrt(3) * rad) // 2, 5, int(math.sqrt(3) * rad))
 
+    def draw_seekbar(self, dc: wx.PaintDC) -> None:
+        # only available on scan image
+        pass
+
     def draw_manual_expression(self, dc: wx.PaintDC) -> None:
         # Draw manual expression controls on bottom of screen
         dc = wx.GCDC(dc)  # for anti-aliasing
@@ -232,8 +244,7 @@ class InputVideo(BasePanel):
         # draw background
         dc.SetBrush(wx.Brush("#eeeeee"))
         dc.SetPen(wx.Pen("#eeeeee"))
-        base_x, base_y = 0, 4 * self.disp_h // 5
-        base_h = self.disp_h // 5
+        base_x, base_y = 0, self.disp_h - self.manual_expression_draw_h
         dc.DrawRectangle((base_x, base_y), (self.disp_w, self.disp_h))
 
         # guidance
@@ -269,7 +280,7 @@ class InputVideo(BasePanel):
         txt = "Accent"
         txt_w, txt_h = self.draw_cache[f"{txt}_txt_size"]
         x1 = self.disp_w // 10
-        y1 = base_y + 2 * base_h // 3
+        y1 = base_y + 2 * self.manual_expression_draw_h // 3
         dc.DrawText(txt, x1, y1)
 
         # "A", "B"
@@ -319,14 +330,19 @@ class InputVideo(BasePanel):
             self.repeat_btn_focused = False
             self.play_btn_focused = False
         else:
+            # play button focues area is entire screen by default
+            play_btn_pos_y2 = self.disp_h
+            play_btn_pos_y2 -= self.manual_expression_draw_h if self.manual_expression else 0
+            play_btn_pos_y2 -= self.seek_bar_h if self.seek_bar_focused else 0
+
+            self.repeat_btn_focused = False
+            self.play_btn_focused = False
             pos = event.GetPosition()
             if not self.start_play and \
                 self.repeat_btn_pos[0] < pos.x // self.scale < self.repeat_btn_pos[0] + self.repeat_btn_pos[2] and \
                 self.repeat_btn_pos[1] < pos.y // self.scale < self.repeat_btn_pos[1] + self.repeat_btn_pos[3]:
                 self.repeat_btn_focused = True
-                self.play_btn_focused = False
-            else:
-                self.repeat_btn_focused = False
+            elif 0 < pos.y // self.scale < play_btn_pos_y2:
                 self.play_btn_focused = True
 
         if self.repeat_btn_focused and event.LeftDown():
@@ -427,17 +443,63 @@ class InputScanImg(InputVideo):
         crop_x2 = min(self.right_side + margin, self.src.shape[1])
         self.src = self.src[:, crop_x1:crop_x2 + 1]
         resize_ratio = self.disp_w / self.src.shape[1]
-        resize_h = int(self.src.shape[0] * resize_ratio)
-        self.src = cv2.resize(self.src, dsize=(self.disp_w, resize_h))
+        self.resize_h = int(self.src.shape[0] * resize_ratio)
+        self.src = cv2.resize(self.src, dsize=(self.disp_w, self.resize_h))
         if self.src.ndim == 2:
             self.src = cv2.cvtColor(self.src, cv2.COLOR_GRAY2RGB)
 
-        self.cur_y = self.src.shape[0] - 1
+        self.cur_y = self.resize_h - 1
         self.crop_h = self.disp_h
         self.roll_dpi = resize_ratio * (self.right_side - self.left_side + 1) / self.roll_width
         self.set_tempo(self.tempo)
         self._load_next_frame()
         self.thread_worker.start()
+
+    def draw_seekbar(self, dc: wx.PaintDC) -> None:
+        # Draw seek bar on bottom of screen.
+        # The default is hidden and appears on mouse hover.
+        dc = wx.GCDC(dc)  # for anti-aliasing
+
+        base_x = self.disp_w // 40
+        base_y = self.disp_h - self.disp_h // 20
+        if self.manual_expression:
+            base_y -= self.manual_expression_draw_h
+
+        seek_bar_w = self.disp_w - base_x * 2
+        seek_bar_line_h = self.seek_bar_h // 3
+
+        # draw seek bar
+        color =  "#ffffff"
+        dc.SetBrush(wx.Brush(color))
+        dc.SetPen(wx.Pen(color))
+        dc.DrawRectangle((base_x, base_y + seek_bar_line_h), (seek_bar_w, seek_bar_line_h))
+
+        # change color played
+        cur_roll_pos = 1 - ((self.cur_y  - self.crop_h) / (self.resize_h - self.crop_h))  # range in 0-1
+        seek_bar_played_w = int(cur_roll_pos * seek_bar_w)
+        color =  "#3b82f6"  # tailwind bg-blue-500 color
+        dc.SetBrush(wx.Brush(color))
+        dc.SetPen(wx.Pen(color))
+        dc.DrawRectangle((base_x, base_y + seek_bar_line_h), (seek_bar_played_w, seek_bar_line_h))
+
+        # draw seekbar circle (outer with blue, inner with white)
+        center_x = base_x + seek_bar_played_w
+        center_y = base_y + seek_bar_line_h + seek_bar_line_h // 2 - 1
+        dc.DrawCircle(center_x, center_y, self.seek_bar_h // 3)
+
+        color =  "#ffffff"
+        dc.SetBrush(wx.Brush(color))
+        dc.SetPen(wx.Pen(color))
+        dc.DrawCircle(center_x, center_y, int(seek_bar_line_h // 2))
+
+
+    def on_mouse(self, event):
+        super().on_mouse(event)
+
+        self.seek_bar_focused = True
+        if self.start_play and event.Leaving():
+            self.seek_bar_focused = False
+
 
     def on_repeat(self) -> None:
         self.parent.midi_off()
