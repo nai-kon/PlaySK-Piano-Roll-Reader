@@ -19,6 +19,10 @@ class MidiWrap:
         self.close_port()
         try:
             self.output = mido.open_output(name, autoreset=True)
+
+            self.output.send(mido.Message("program_change", program=19, channel=0))
+            self.output.send(mido.Message("program_change", program=19, channel=1))
+
             self.enable = True
         except Exception as e:
             print(e)
@@ -44,15 +48,15 @@ class MidiWrap:
 
             self.output.reset()
 
-    def note_on(self, note: int, velocity: int) -> None:
+    def note_on(self, note: int, velocity: int, channel: int = 0) -> None:
         if self.enable:
             if self.hammer_lift:
                 velocity -= 8
-            self.output.send(Message("note_on", note=note, velocity=velocity))
+            self.output.send(Message("note_on", note=note, velocity=velocity, channel=channel))
 
-    def note_off(self, note: int, velocity: int = 90) -> None:
+    def note_off(self, note: int, velocity: int = 90, channel: int = 0) -> None:
         if self.enable:
-            self.output.send(Message("note_off", note=note, velocity=velocity))
+            self.output.send(Message("note_off", note=note, velocity=velocity, channel=channel))
 
     def sustain_on(self) -> None:
         if self.enable:
