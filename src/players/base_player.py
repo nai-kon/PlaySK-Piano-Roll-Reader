@@ -27,7 +27,11 @@ class TrackerHoles:
                 self.group_by_size.setdefault(key, {"pos": [], "pos_xs": None, "pos_ys": None, "on_apatures": [], "off_apatures": []})
                 si = len(self.group_by_size[key]["pos"])
 
-                xs = v["x"] if isinstance(v["x"], list) else [v["x"]]
+                xs = [v["x"]]
+                if isinstance(v["x"], list):
+                    xs = v["x"]
+                elif isinstance(v["x"], dict):
+                    xs = list(v["x"].values())
                 tmp = [(x, v["y"], x + v["w"], v["y"] + v["h"]) for x in xs]
                 self.group_by_size[key]["pos"].extend(tmp)
                 tmp = [v["on_apature"]] * len(xs)
@@ -171,7 +175,6 @@ class BasePlayer:
 
         self.tracker_offset = int(right_end - left_end)
 
-    @final
     def emulate(self, frame, curtime):
         if self.emulate_enable:
             self.during_emulate_evt.clear()

@@ -34,6 +34,22 @@ class DuoArtOrgan(BasePlayer):
         for key in note["to_close"].nonzero()[0]:
             self.midi.note_off(key + offset, channel=1)
 
+    def emulate_controls(self):
+        pass
+
+
+
+    def emulate(self, frame, curtime):
+        if self.emulate_enable:
+            self.during_emulate_evt.clear()
+
+            self.auto_track(frame)
+            self.holes.set_frame(frame, self.tracker_offset)
+            self.emulate_controls()
+            self.emulate_notes()
+
+            self.during_emulate_evt.set()
+
 if __name__ == "__main__":
     import os
     import time
@@ -41,7 +57,7 @@ if __name__ == "__main__":
     import numpy as np
     from midi_controller import MidiWrap
     midiobj = MidiWrap()
-    player = DuoArt(os.path.join("playsk_config", "Duo-Art white back.json"), midiobj)
+    player = DuoArtOrgan(os.path.join("playsk_config", "Aeolian Duo-Art Pipe Organ.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)
     start = time.perf_counter()
     for _ in range(10000):
