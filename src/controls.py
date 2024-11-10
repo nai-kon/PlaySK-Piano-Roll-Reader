@@ -109,7 +109,7 @@ class WelcomeMsg(BasePanel):
 
 
 class SpeedSlider(BasePanel):
-    def __init__(self, parent, pos=(0, 0), label="Tempo", tempo_range=(50, 140), val=80, callback=None):
+    def __init__(self, parent, pos=(0, 0), label="Tempo", tempo_range=(30, 140), val=80, callback=None):
         BasePanel.__init__(self, parent, wx.ID_ANY, pos)
         self.callback = callback
         self.label = label

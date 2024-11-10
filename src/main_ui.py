@@ -287,7 +287,7 @@ class MainFrame(wx.Frame):
         self.midi_btn.Enable()
 
         # Set tempo
-        self.speed.set("Tempo", (50, 140), tempo)
+        self.speed.set("Tempo", (30, 140), tempo)
 
     def open_file(self, event):
         tmp = ";".join(f"*{v}" for v in self.supported_imgs)
