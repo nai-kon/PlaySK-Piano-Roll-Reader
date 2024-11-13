@@ -22,6 +22,7 @@ class MidiWrap:
 
             self.output.send(mido.Message("program_change", program=19, channel=0))
             self.output.send(mido.Message("program_change", program=19, channel=1))
+            self.output.send(mido.Message("program_change", program=19, channel=2))
 
             self.enable = True
         except Exception as e:
@@ -44,7 +45,10 @@ class MidiWrap:
             self.sustain_off()
             self.soft_off()
             self.hammer_lift_off()
-            [self.note_off(k) for k in range(128)]
+            [self.note_off(k, channel=0) for k in range(128)]
+            [self.note_off(k, channel=1) for k in range(128)]
+            [self.note_off(k, channel=2) for k in range(128)]
+            [self.note_off(k, channel=3) for k in range(128)]
 
             self.output.reset()
 
