@@ -1,4 +1,4 @@
-from collections import deque
+import json
 
 from .base_player import BasePlayer
 
@@ -6,11 +6,25 @@ from .base_player import BasePlayer
 class DuoArtOrgan(BasePlayer):
     def __init__(self, confpath, midiobj):
         super().__init__(confpath, midiobj)
+
+        with open(confpath, encoding="utf-8") as f:
+            conf = json.load(f)
+        self.shade = conf["expression"]["expression_shade"]
+        self.pre_time = None
         self.init_controls()
 
     def init_controls(self):
         # Aeolian Duo-Art Organ tracker bar
         # https://www.mmdigest.com/Gallery/Tech/Scales/Aeo176.html
+
+        # expression shade. swell shade: ch=0 ctrl=11. great shade: ch=1 ctrl=11
+        self.shade_change_rate = (self.shade["shade6"] - self.shade["shade1"]) / self.shade["min_to_max_second"]
+        self.swell_shade_val = self.shade["shade6"]
+        self.swell_shade_desired_val = self.shade["shade6"]
+        self.great_shade_val = self.shade["shade6"]
+        self.great_shade_desired_val = self.shade["shade6"]
+        self.midi.expression(self.swell_shade_val, 0)
+        self.midi.expression(self.great_shade_val, 1)
 
         # upper control holes of tracker bar
         self.swell_echo = False
@@ -111,7 +125,11 @@ class DuoArtOrgan(BasePlayer):
             for key in note["to_close"].nonzero()[0]:
                 self.midi.note_off(key + offset, channel=2)
 
-    def emulate_controls(self):
+    def emulate_controls(self, curtime):
+        if self.pre_time is None:
+            self.pre_time = curtime
+        delta_time = curtime - self.pre_time
+
         # swell controls
         controls = self.holes["swell_controls"]
         if controls["to_open"][0]:
@@ -243,17 +261,32 @@ class DuoArtOrgan(BasePlayer):
                 self.midi.note_off(15, channel=3)
 
         if controls["to_open"][16]:
+            self.swell_shade_desired_val = self.shade["shade1"]
             print("swell_shade1")
         if controls["to_open"][17]:
+            self.swell_shade_desired_val = self.shade["shade2"]
             print("swell_shade2")
         if controls["to_open"][18]:
+            self.swell_shade_desired_val = self.shade["shade3"]
             print("swell_shade3")
         if controls["to_open"][19]:
+            self.swell_shade_desired_val = self.shade["shade4"]
             print("swell_shade4")
         if controls["to_open"][20]:
+            self.swell_shade_desired_val = self.shade["shade5"]
             print("swell_shade5")
         if controls["to_open"][21]:
+            self.swell_shade_desired_val = self.shade["shade6"]
             print("swell_shade6")
+
+        if self.swell_shade_desired_val > self.swell_shade_val:
+            self.swell_shade_val += delta_time * self.shade_change_rate
+            self.swell_shade_val = min(self.swell_shade_val, self.swell_shade_desired_val)
+            self.midi.expression(int(self.swell_shade_val), 0)
+        elif self.swell_shade_desired_val < self.swell_shade_val:
+            self.swell_shade_val -= delta_time * self.shade_change_rate
+            self.swell_shade_val = max(self.swell_shade_val, self.swell_shade_desired_val)
+            self.midi.expression(int(self.swell_shade_val), 0)
 
         if controls["to_open"][22]:
             self.swell_extension = not self.swell_extension
@@ -333,17 +366,32 @@ class DuoArtOrgan(BasePlayer):
                 self.midi.note_off(23, channel=3)
 
         if controls["to_open"][6]:
+            self.great_shade_desired_val = self.shade["shade1"]
             print("great_shade1")
         if controls["to_open"][7]:
+            self.great_shade_desired_val = self.shade["shade2"]
             print("great_shade2")
         if controls["to_open"][8]:
+            self.great_shade_desired_val = self.shade["shade3"]
             print("great_shade3")
         if controls["to_open"][9]:
+            self.great_shade_desired_val = self.shade["shade4"]
             print("great_shade4")
         if controls["to_open"][10]:
+            self.great_shade_desired_val = self.shade["shade5"]
             print("great_shade5")
         if controls["to_open"][11]:
+            self.great_shade_desired_val = self.shade["shade6"]
             print("great_shade6")
+
+        if self.great_shade_desired_val > self.great_shade_val:
+            self.great_shade_val += delta_time * self.shade_change_rate
+            self.great_shade_val = min(self.great_shade_val, self.great_shade_desired_val)
+            self.midi.expression(int(self.great_shade_val), 1)
+        elif self.great_shade_desired_val < self.great_shade_val:
+            self.great_shade_val -= delta_time * self.shade_change_rate
+            self.great_shade_val = max(self.great_shade_val, self.great_shade_desired_val)
+            self.midi.expression(int(self.great_shade_val), 1)
 
         if controls["to_open"][12]:
             self.great_pedal_bassoon16 = not self.great_pedal_bassoon16
@@ -469,6 +517,7 @@ class DuoArtOrgan(BasePlayer):
             self.great_ventil = not self.great_ventil
             print("great_ventil", self.great_ventil)
 
+        self.pre_time = curtime
 
     def emulate(self, frame, curtime):
         if self.emulate_enable:
@@ -476,7 +525,7 @@ class DuoArtOrgan(BasePlayer):
 
             self.auto_track(frame)
             self.holes.set_frame(frame, self.tracker_offset)
-            self.emulate_controls()
+            self.emulate_controls(curtime)
             self.emulate_notes()
 
             self.during_emulate_evt.set()

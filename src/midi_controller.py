@@ -84,6 +84,10 @@ class MidiWrap:
     def hammer_lift_off(self) -> None:
         self.hammer_lift = False
 
+    def expression(self, value: int, channel: int = 0) -> None:
+        if self.enable:
+            self.output.send(Message("control_change", control=11, value=value, channel=channel))
+            print("expression", value, channel)
 
 if __name__ == "__main__":
     import time

@@ -3,10 +3,20 @@
   "base_class": "DuoArtOrgan",
   "roll_width": 15.25,
   "spool_diameter": 1.9,
-  "default_tempo": 80,
+  "default_tempo": 40,
   "expression": {
     "vacuum": 6,
-    "stack_split_point": 43
+    "stack_split_point": 43,
+    "expression_shade":{
+      "note": "midi expression(ctrl 11) value in each shade position. 0 min (no sound), 127 max.",
+      "shade1": 50,
+      "shade2": 60,
+      "shade3": 70,
+      "shade4": 80,
+      "shade5": 90,
+      "shade6": 100,
+      "min_to_max_second": 0.5
+    }
   },
   "tracker_holes": {
     "is_dark_hole": false,
