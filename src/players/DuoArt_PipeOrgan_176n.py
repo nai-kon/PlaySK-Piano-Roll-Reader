@@ -18,11 +18,9 @@ class DuoArtOrgan(BasePlayer):
         # https://www.mmdigest.com/Gallery/Tech/Scales/Aeo176.html
 
         # expression shade. swell shade: ch=0 ctrl=11. great shade: ch=1 ctrl=11
-        self.shade_change_rate = (self.shade["shade6"] - self.shade["shade1"]) / self.shade["min_to_max_second"]
+        self.shade_change_rate = (self.shade["shade6"] - self.shade["shade0"]) / self.shade["min_to_max_second"]
         self.swell_shade_val = self.shade["shade6"]
-        self.swell_shade_desired_val = self.shade["shade6"]
         self.great_shade_val = self.shade["shade6"]
-        self.great_shade_desired_val = self.shade["shade6"]
         self.midi.expression(self.swell_shade_val, 0)
         self.midi.expression(self.great_shade_val, 1)
 
@@ -43,12 +41,12 @@ class DuoArtOrgan(BasePlayer):
         self.swell_string_mf = False
         self.swell_string_p = False
         self.swell_string_pp = False
-        self.swell_shade1 = False
-        self.swell_shade2 = False
-        self.swell_shade3 = False
-        self.swell_shade4 = False
-        self.swell_shade5 = False
-        self.swell_shade6 = False
+        self.swell_shade1 = True
+        self.swell_shade2 = True
+        self.swell_shade3 = True
+        self.swell_shade4 = True
+        self.swell_shade5 = True
+        self.swell_shade6 = True
         self.swell_extension = False
         self.LCW1 = False
         self.LCW2 = False
@@ -65,12 +63,12 @@ class DuoArtOrgan(BasePlayer):
         self.great_extension = False
         self.great_pedal_2nd_oct = False
         self.great_pedal_3rd_oct = False
-        self.great_shade1 = False
-        self.great_shade2 = False
-        self.great_shade3 = False
-        self.great_shade4 = False
-        self.great_shade5 = False
-        self.great_shade6 = False
+        self.great_shade1 = True
+        self.great_shade2 = True
+        self.great_shade3 = True
+        self.great_shade4 = True
+        self.great_shade5 = True
+        self.great_shade6 = True
         self.great_pedal_bassoon16 = False
         self.great_pedal_string16 = False
         self.great_pedal_flute_f16 = False
@@ -261,31 +259,45 @@ class DuoArtOrgan(BasePlayer):
                 self.midi.note_off(15, channel=3)
 
         if controls["to_open"][16]:
-            self.swell_shade_desired_val = self.shade["shade1"]
+            self.swell_shade1 = not self.swell_shade1
             print("swell_shade1")
         if controls["to_open"][17]:
-            self.swell_shade_desired_val = self.shade["shade2"]
+            self.swell_shade2 = not self.swell_shade2
             print("swell_shade2")
         if controls["to_open"][18]:
-            self.swell_shade_desired_val = self.shade["shade3"]
+            self.swell_shade3 = not self.swell_shade3
             print("swell_shade3")
         if controls["to_open"][19]:
-            self.swell_shade_desired_val = self.shade["shade4"]
+            self.swell_shade4 = not self.swell_shade4
             print("swell_shade4")
         if controls["to_open"][20]:
-            self.swell_shade_desired_val = self.shade["shade5"]
+            self.swell_shade5 = not self.swell_shade5
             print("swell_shade5")
         if controls["to_open"][21]:
-            self.swell_shade_desired_val = self.shade["shade6"]
+            self.swell_shade6 = not self.swell_shade6
             print("swell_shade6")
 
-        if self.swell_shade_desired_val > self.swell_shade_val:
+        target_val = self.shade["shade0"]
+        if self.swell_shade1:
+            target_val = self.shade["shade1"]
+        if self.swell_shade2:
+            target_val = self.shade["shade2"]
+        if self.swell_shade3:
+            target_val = self.shade["shade3"]
+        if self.swell_shade4:
+            target_val = self.shade["shade4"]
+        if self.swell_shade5:
+            target_val = self.shade["shade5"]
+        if self.swell_shade6:
+            target_val = self.shade["shade6"]
+
+        if target_val > self.swell_shade_val:
             self.swell_shade_val += delta_time * self.shade_change_rate
-            self.swell_shade_val = min(self.swell_shade_val, self.swell_shade_desired_val)
+            self.swell_shade_val = min(self.swell_shade_val, target_val)
             self.midi.expression(int(self.swell_shade_val), 0)
-        elif self.swell_shade_desired_val < self.swell_shade_val:
+        elif target_val < self.swell_shade_val:
             self.swell_shade_val -= delta_time * self.shade_change_rate
-            self.swell_shade_val = max(self.swell_shade_val, self.swell_shade_desired_val)
+            self.swell_shade_val = max(self.swell_shade_val, target_val)
             self.midi.expression(int(self.swell_shade_val), 0)
 
         if controls["to_open"][22]:
@@ -366,31 +378,45 @@ class DuoArtOrgan(BasePlayer):
                 self.midi.note_off(23, channel=3)
 
         if controls["to_open"][6]:
-            self.great_shade_desired_val = self.shade["shade1"]
+            self.great_shade1 = not self.great_shade1
             print("great_shade1")
         if controls["to_open"][7]:
-            self.great_shade_desired_val = self.shade["shade2"]
+            self.great_shade2 = not self.great_shade2
             print("great_shade2")
         if controls["to_open"][8]:
-            self.great_shade_desired_val = self.shade["shade3"]
+            self.great_shade3 = not self.great_shade3
             print("great_shade3")
         if controls["to_open"][9]:
-            self.great_shade_desired_val = self.shade["shade4"]
+            self.great_shade4 = not self.great_shade4
             print("great_shade4")
         if controls["to_open"][10]:
-            self.great_shade_desired_val = self.shade["shade5"]
+            self.great_shade5 = not self.great_shade5
             print("great_shade5")
         if controls["to_open"][11]:
-            self.great_shade_desired_val = self.shade["shade6"]
+            self.great_shade6 = not self.great_shade6
             print("great_shade6")
 
-        if self.great_shade_desired_val > self.great_shade_val:
+        target_val = self.shade["shade0"]
+        if self.great_shade1:
+            target_val = self.shade["shade1"]
+        if self.great_shade2:
+            target_val = self.shade["shade2"]
+        if self.great_shade3:
+            target_val = self.shade["shade3"]
+        if self.great_shade4:
+            target_val = self.shade["shade4"]
+        if self.great_shade5:
+            target_val = self.shade["shade5"]
+        if self.great_shade6:
+            target_val = self.shade["shade6"]
+
+        if target_val > self.great_shade_val:
             self.great_shade_val += delta_time * self.shade_change_rate
-            self.great_shade_val = min(self.great_shade_val, self.great_shade_desired_val)
+            self.great_shade_val = min(self.great_shade_val, target_val)
             self.midi.expression(int(self.great_shade_val), 1)
-        elif self.great_shade_desired_val < self.great_shade_val:
+        elif target_val < self.great_shade_val:
             self.great_shade_val -= delta_time * self.shade_change_rate
-            self.great_shade_val = max(self.great_shade_val, self.great_shade_desired_val)
+            self.great_shade_val = max(self.great_shade_val, target_val)
             self.midi.expression(int(self.great_shade_val), 1)
 
         if controls["to_open"][12]:
