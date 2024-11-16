@@ -98,12 +98,15 @@ class DuoArtOrgan(BasePlayer):
 
         # swell notes
         note = self.holes["swell_note"]
-
         for key in note["to_open"].nonzero()[0]:
             self.midi.note_on(key + offset, velocity, channel=0)
+            # if self.swell_extension:
+            #     self.midi.note_on(key + offset + 12, velocity, channel=0)
 
         for key in note["to_close"].nonzero()[0]:
             self.midi.note_off(key + offset, channel=0)
+            # if self.swell_extension:
+            #     self.midi.note_off(key + offset + 12, channel=0)
 
         # great notes
         note = self.holes["great_note"]
@@ -260,22 +263,16 @@ class DuoArtOrgan(BasePlayer):
 
         if controls["to_open"][16]:
             self.swell_shade1 = not self.swell_shade1
-            print("swell_shade1")
         if controls["to_open"][17]:
             self.swell_shade2 = not self.swell_shade2
-            print("swell_shade2")
         if controls["to_open"][18]:
             self.swell_shade3 = not self.swell_shade3
-            print("swell_shade3")
         if controls["to_open"][19]:
             self.swell_shade4 = not self.swell_shade4
-            print("swell_shade4")
         if controls["to_open"][20]:
             self.swell_shade5 = not self.swell_shade5
-            print("swell_shade5")
         if controls["to_open"][21]:
             self.swell_shade6 = not self.swell_shade6
-            print("swell_shade6")
 
         target_val = self.shade["shade0"]
         if self.swell_shade1:
@@ -300,13 +297,7 @@ class DuoArtOrgan(BasePlayer):
             self.swell_shade_val = max(self.swell_shade_val, target_val)
             self.midi.expression(int(self.swell_shade_val), 0)
 
-        if controls["to_open"][22]:
-            self.swell_extension = not self.swell_extension
-            print("swell_extension", self.swell_extension)
-            if self.swell_extension:
-                self.midi.note_on(16, 64, channel=3)
-            else:
-                self.midi.note_off(16, channel=3)
+        self.swell_extension = controls["is_open"][22]
 
         if controls["to_open"][25]:
             self.swell_soft_chimes = not self.swell_soft_chimes
@@ -353,13 +344,7 @@ class DuoArtOrgan(BasePlayer):
             else:
                 self.midi.note_off(20, channel=3)
 
-        if controls["to_open"][3]:
-            self.great_extension = not self.great_extension
-            print("great_extension", self.great_extension)
-            if self.great_extension:
-                self.midi.note_on(21, 64, channel=3)
-            else:
-                self.midi.note_off(21, channel=3)
+        self.great_extension = controls["is_open"][3]
 
         if controls["to_open"][4]:
             self.great_pedal_2nd_oct = not self.great_pedal_2nd_oct
@@ -379,22 +364,16 @@ class DuoArtOrgan(BasePlayer):
 
         if controls["to_open"][6]:
             self.great_shade1 = not self.great_shade1
-            print("great_shade1")
         if controls["to_open"][7]:
             self.great_shade2 = not self.great_shade2
-            print("great_shade2")
         if controls["to_open"][8]:
             self.great_shade3 = not self.great_shade3
-            print("great_shade3")
         if controls["to_open"][9]:
             self.great_shade4 = not self.great_shade4
-            print("great_shade4")
         if controls["to_open"][10]:
             self.great_shade5 = not self.great_shade5
-            print("great_shade5")
         if controls["to_open"][11]:
             self.great_shade6 = not self.great_shade6
-            print("great_shade6")
 
         target_val = self.shade["shade0"]
         if self.great_shade1:
