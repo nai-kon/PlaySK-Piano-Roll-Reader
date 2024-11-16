@@ -1,18 +1,18 @@
 import math
 import os
+
+os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2, 42).__str__()
 import re
 import threading
 import time
 from pathlib import Path
 
+import cv2
 import numpy as np
 import wx
 from cis_image import CisImage
 from controls import BasePanel
 from input_editor import ImgEditDlg
-
-os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2, 42).__str__()
-import cv2
 
 
 def _find_roll_cut_point(img: np.ndarray) -> tuple[int | None, int | None]:
@@ -54,7 +54,8 @@ def _load_img(path: str, default_tempo: int) -> tuple[np.ndarray | None, int]:
             n = np.fromfile(path, np.uint8)
             img = cv2.imdecode(n, cv2.IMREAD_COLOR)
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    except Exception:
+    except Exception as e:
+        print(e)
         return None, default_tempo
 
     # search tempo from ANN file
@@ -432,7 +433,7 @@ class InputScanImg(InputVideo):
         if self.src.ndim == 2:
             self.src = cv2.cvtColor(self.src, cv2.COLOR_GRAY2RGB)
 
-        self.cur_y = self.src.shape[0] - 1
+        self.cur_y = self.src.shape[0] - 1100
         self.crop_h = self.disp_h
         self.roll_dpi = resize_ratio * (self.right_side - self.left_side + 1) / self.roll_width
         self.set_tempo(self.tempo)

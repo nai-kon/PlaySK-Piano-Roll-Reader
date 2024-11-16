@@ -88,6 +88,8 @@ class DuoArtOrgan(BasePlayer):
         self.LCW4 = False
         self.great_ventil = False
 
+        self.pedal_all_off = True
+
     def emulate_off(self):
         super().emulate_off()
         self.init_controls()
@@ -119,12 +121,16 @@ class DuoArtOrgan(BasePlayer):
         # pedal notes
         if self.great_pedal_bassoon16 or self.great_pedal_flute_f16 or \
             self.great_pedal_flute_p16 or self.great_pedal_string16:
+            self.pedal_all_off = False
             note = self.holes["swell_note"] if self.pedal_to_upper else self.holes["great_note"]
             for key in note["to_open"].nonzero()[0]:
                 self.midi.note_on(key + offset, velocity, channel=2)
 
             for key in note["to_close"].nonzero()[0]:
                 self.midi.note_off(key + offset, channel=2)
+        elif not self.pedal_all_off:
+            [self.midi.note_off(k, channel=2) for k in range(128)]
+            self.pedal_all_off = True
 
     def emulate_controls(self, curtime):
         if self.pre_time is None:
@@ -316,6 +322,7 @@ class DuoArtOrgan(BasePlayer):
             print("swell_ventil", self.swell_ventil)
         if controls["to_open"][29]:
             self.pedal_to_upper = not self.pedal_to_upper
+            [self.midi.note_off(k, channel=2) for k in range(128)]
             print("pedal_to_upper", self.pedal_to_upper)
 
         # great controls
