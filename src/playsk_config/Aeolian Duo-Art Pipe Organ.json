@@ -9,14 +9,14 @@
     "stack_split_point": 43,
     "expression_shade":{
       "note": "midi expression(ctrl 11) value in each shade position. 0 min (no sound), 127 max.",
-      "shade0": 40,
-      "shade1": 50,
-      "shade2": 60,
-      "shade3": 75,
-      "shade4": 90,
-      "shade5": 105,
-      "shade6": 120,
-      "min_to_max_second": 0.5
+      "shade0": 30,
+      "shade1": 43,
+      "shade2": 58,
+      "shade3": 74,
+      "shade4": 91,
+      "shade5": 108,
+      "shade6": 127,
+      "min_to_max_second": 0.7
     }
   },
   "tracker_holes": {

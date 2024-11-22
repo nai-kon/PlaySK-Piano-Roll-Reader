@@ -19,11 +19,6 @@ class MidiWrap:
         self.close_port()
         try:
             self.output = mido.open_output(name, autoreset=True)
-
-            self.output.send(mido.Message("program_change", program=19, channel=0))
-            self.output.send(mido.Message("program_change", program=19, channel=1))
-            self.output.send(mido.Message("program_change", program=19, channel=2))
-
             self.enable = True
         except Exception as e:
             print(e)
