@@ -1,18 +1,19 @@
 import math
 import os
+
+os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2, 42).__str__()
+
 import re
 import threading
 import time
 from pathlib import Path
 
+import cv2
 import numpy as np
 import wx
 from cis_image import CisImage
 from controls import BasePanel
 from input_editor import ImgEditDlg
-
-os.environ["OPENCV_IO_MAX_IMAGE_PIXELS"] = pow(2, 42).__str__()
-import cv2
 
 
 def _find_roll_cut_point(img: np.ndarray) -> tuple[int | None, int | None]:

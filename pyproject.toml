@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "PlaySK-Piano-Roll-Reader"
-version = "3.5.1"
+version = "3.5.2"
 description = "Optically reading a piano roll image, emulates expression and output midi signal in real-time."
 authors = ["nai-kon <fxtch686@yahoo.co.jp>"]
 readme = "README.md"
