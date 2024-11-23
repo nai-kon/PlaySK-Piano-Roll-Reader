@@ -11,6 +11,7 @@ class DuoArtOrgan(BasePlayer):
             conf = json.load(f)
         self.shade = conf["expression"]["expression_shade"]
         self.pre_time = None
+        self.prevent_chattering_wait = 0.3  # toggle switch reaction threshold seconds to prevent chattering
         self.init_controls()
 
     def init_controls(self):
@@ -26,22 +27,22 @@ class DuoArtOrgan(BasePlayer):
 
         self.ctrls = {
             # upper control holes of tracker bar
-            "swell_echo" : {"part": "swell", "hole_no": 0, "is_on": False, "note_no": 0},
-            "swell_chimes" : {"part": "swell", "hole_no":  1, "is_on": False, "note_no": 1},
-            "swell_tremolo" : {"part": "swell", "hole_no": 2, "is_on": False, "note_no": 2},
-            "swell_harp" : {"part": "swell", "hole_no": 3, "is_on": False, "note_no": 3},
-            "swell_trumpet" : {"part": "swell", "hole_no": 4, "is_on": False, "note_no": 4},
-            "swell_oboe" : {"part": "swell", "hole_no": 5, "is_on": False, "note_no": 5},
-            "swell_vox_humana" : {"part": "swell", "hole_no": 6, "is_on": False, "note_no": 6},
-            "swell_diapason_mf" : {"part": "swell", "hole_no": 7, "is_on": False, "note_no": 7},
-            "swell_flute16" : {"part": "swell", "hole_no": 8, "is_on": False, "note_no": 8},
-            "swell_flute4" : {"part": "swell", "hole_no": 9, "is_on": False, "note_no": 9},
-            "swell_fluteP" : {"part": "swell", "hole_no": 10, "is_on": False, "note_no": 9},
-            "swell_string_vibrato_f" : {"part": "swell", "hole_no": 11, "is_on": False, "note_no": 11},
-            "swell_string_f" : {"part": "swell", "hole_no": 12, "is_on": False, "note_no": 12},
-            "swell_string_mf" : {"part": "swell", "hole_no": 13, "is_on": False, "note_no": 12},
-            "swell_string_p" : {"part": "swell", "hole_no": 14, "is_on": False, "note_no": 12},
-            "swell_string_pp" : {"part": "swell", "hole_no": 15, "is_on": False, "note_no": 12},
+            "swell_echo" : {"part": "swell", "hole_no": 0, "is_on": False, "last_time": 0, "note_no": 0},
+            "swell_chimes" : {"part": "swell", "hole_no":  1, "is_on": False, "last_time": 0, "note_no": 1},
+            "swell_tremolo" : {"part": "swell", "hole_no": 2, "is_on": False, "last_time": 0, "note_no": 2},
+            "swell_harp" : {"part": "swell", "hole_no": 3, "is_on": False, "last_time": 0, "note_no": 3},
+            "swell_trumpet" : {"part": "swell", "hole_no": 4, "is_on": False, "last_time": 0, "note_no": 4},
+            "swell_oboe" : {"part": "swell", "hole_no": 5, "is_on": False, "last_time": 0, "note_no": 5},
+            "swell_vox_humana" : {"part": "swell", "hole_no": 6, "is_on": False, "last_time": 0, "note_no": 6},
+            "swell_diapason_mf" : {"part": "swell", "hole_no": 7, "is_on": False, "last_time": 0, "note_no": 7},
+            "swell_flute16" : {"part": "swell", "hole_no": 8, "is_on": False, "last_time": 0, "note_no": 8},
+            "swell_flute4" : {"part": "swell", "hole_no": 9, "is_on": False, "last_time": 0, "note_no": 9},
+            "swell_fluteP" : {"part": "swell", "hole_no": 10, "is_on": False, "last_time": 0, "note_no": 9},
+            "swell_string_vibrato_f" : {"part": "swell", "hole_no": 11, "is_on": False, "last_time": 0, "note_no": 11},
+            "swell_string_f" : {"part": "swell", "hole_no": 12, "is_on": False, "last_time": 0, "note_no": 12},
+            "swell_string_mf" : {"part": "swell", "hole_no": 13, "is_on": False, "last_time": 0, "note_no": 12},
+            "swell_string_p" : {"part": "swell", "hole_no": 14, "is_on": False, "last_time": 0, "note_no": 12},
+            "swell_string_pp" : {"part": "swell", "hole_no": 15, "is_on": False, "last_time": 0, "note_no": 12},
             "swell_shade1" : {"part": "swell", "hole_no": 16, "is_on": True},
             "swell_shade2" : {"part": "swell", "hole_no": 17, "is_on": True},
             "swell_shade3" : {"part": "swell", "hole_no": 18, "is_on": True},
@@ -49,18 +50,18 @@ class DuoArtOrgan(BasePlayer):
             "swell_shade5" : {"part": "swell", "hole_no": 20, "is_on": True},
             "swell_shade6" : {"part": "swell", "hole_no": 21, "is_on": True},
             # "swell_extension" : {"part": "swell", "hole_no": 22, "is_on": False},
-            # "LCW1" : {"part": "swell", "hole_no": 23, "is_on": False, "note_no": },
-            # "LCW2" : {"part": "swell", "hole_no": 24, "is_on": False, "note_no": },
-            "swell_soft_chimes" : {"part": "swell", "hole_no": 25, "is_on": False, "note_no": 17},
-            # "reroll" : {"part": "swell", "hole_no": , "is_on": False, "note_no": },
-            # "swell_ventil" : {"part": "swell", "hole_no": , "is_on": False, "note_no": },
-            # "normal" : {"part": "swell", "hole_no": , "is_on": False, "note_no": },
+            # "LCW1" : {"part": "swell", "hole_no": 23, "is_on": False, "last_time": 0, "note_no": },
+            # "LCW2" : {"part": "swell", "hole_no": 24, "is_on": False, "last_time": 0, "note_no": },
+            "swell_soft_chimes" : {"part": "swell", "hole_no": 25, "is_on": False, "last_time": 0, "note_no": 17},
+            # "reroll" : {"part": "swell", "hole_no": , "is_on": False, "last_time": 0, "note_no": },
+            # "swell_ventil" : {"part": "swell", "hole_no": , "is_on": False, "last_time": 0, "note_no": },
+            # "normal" : {"part": "swell", "hole_no": , "is_on": False, "last_time": 0, "note_no": },
             "pedal_to_upper" : {"part": "swell", "hole_no": 29, "is_on": False},
 
             # lower control holes of tracker bar
-            "great_tremolo" : {"part": "great", "hole_no": 0, "is_on": False, "note_no": 18},
-            "great_tonal" : {"part": "great", "hole_no": 1, "is_on": False, "note_no": 19},
-            "great_harp" : {"part": "great", "hole_no": 2, "is_on": False, "note_no": 20},
+            "great_tremolo" : {"part": "great", "hole_no": 0, "is_on": False, "last_time": 0, "note_no": 18},
+            "great_tonal" : {"part": "great", "hole_no": 1, "is_on": False, "last_time": 0, "note_no": 19},
+            "great_harp" : {"part": "great", "hole_no": 2, "is_on": False, "last_time": 0, "note_no": 20},
             # "great_extension" : {"part": "great", "hole_no": 3, "is_on": False},
             # "great_pedal_2nd_oct" : {"part": "great", "hole_no": 4, "is_on": False},
             # "great_pedal_3rd_oct" : {"part": "great", "hole_no": 5, "is_on": False},
@@ -70,24 +71,24 @@ class DuoArtOrgan(BasePlayer):
             "great_shade4" : {"part": "great", "hole_no": 9, "is_on": True},
             "great_shade5" : {"part": "great", "hole_no": 10, "is_on": True},
             "great_shade6" : {"part": "great", "hole_no": 11, "is_on": True},
-            "great_pedal_bassoon16" : {"part": "great", "hole_no": 12, "is_on": False, "note_no": 24},
-            "great_pedal_string16" : {"part": "great", "hole_no": 13, "is_on": False, "note_no": 25},
-            "great_pedal_flute_f16" : {"part": "great", "hole_no": 14, "is_on": False, "note_no": 26},
-            "great_pedal_flute_p16" : {"part": "great", "hole_no": 15, "is_on": False, "note_no": 26},
-            "great_string_pp" : {"part": "great", "hole_no": 16, "is_on": False, "note_no": 28},
-            "great_string_p" : {"part": "great", "hole_no": 17, "is_on": False, "note_no": 29},
-            "great_string_f" : {"part": "great", "hole_no": 18, "is_on": False, "note_no": 30},
-            "great_flute_p" : {"part": "great", "hole_no": 19, "is_on": False, "note_no": 33},
-            "great_flute_f" : {"part": "great", "hole_no": 20, "is_on": False, "note_no": 33},
-            "great_flute_4" : {"part": "great", "hole_no": 21, "is_on": False, "note_no": 33},
-            "great_diapason_f" : {"part": "great", "hole_no": 22, "is_on": False, "note_no": 34},
-            "great_piccolo" : {"part": "great", "hole_no": 23, "is_on": False, "note_no": 35},
-            "great_clarinet" : {"part": "great", "hole_no": 24, "is_on": False, "note_no": 36},
-            "great_trumpet" : {"part": "great", "hole_no": 25, "is_on": False, "note_no": 37},
-            "chimes_dampers_off" : {"part": "great", "hole_no": 26, "is_on": False, "note_no": 38},
-            # "LCW3" : {"part": "great", "hole_no": , "is_on": False, "note_no": },
-            # "LCW4" : {"part": "great", "hole_no": , "is_on": False, "note_no": },
-            # "great_ventil" : {"part": "great", "hole_no": , "is_on": False, "note_no": }
+            "great_pedal_bassoon16" : {"part": "great", "hole_no": 12, "is_on": False, "last_time": 0, "note_no": 24},
+            "great_pedal_string16" : {"part": "great", "hole_no": 13, "is_on": False, "last_time": 0, "note_no": 25},
+            "great_pedal_flute_f16" : {"part": "great", "hole_no": 14, "is_on": False, "last_time": 0, "note_no": 26},
+            "great_pedal_flute_p16" : {"part": "great", "hole_no": 15, "is_on": False, "last_time": 0, "note_no": 26},
+            "great_string_pp" : {"part": "great", "hole_no": 16, "is_on": False, "last_time": 0, "note_no": 28},
+            "great_string_p" : {"part": "great", "hole_no": 17, "is_on": False, "last_time": 0, "note_no": 29},
+            "great_string_f" : {"part": "great", "hole_no": 18, "is_on": False, "last_time": 0, "note_no": 30},
+            "great_flute_p" : {"part": "great", "hole_no": 19, "is_on": False, "last_time": 0, "note_no": 33},
+            "great_flute_f" : {"part": "great", "hole_no": 20, "is_on": False, "last_time": 0, "note_no": 33},
+            "great_flute_4" : {"part": "great", "hole_no": 21, "is_on": False, "last_time": 0, "note_no": 33},
+            "great_diapason_f" : {"part": "great", "hole_no": 22, "is_on": False, "last_time": 0, "note_no": 34},
+            "great_piccolo" : {"part": "great", "hole_no": 23, "is_on": False, "last_time": 0, "note_no": 35},
+            "great_clarinet" : {"part": "great", "hole_no": 24, "is_on": False, "last_time": 0, "note_no": 36},
+            "great_trumpet" : {"part": "great", "hole_no": 25, "is_on": False, "last_time": 0, "note_no": 37},
+            "chimes_dampers_off" : {"part": "great", "hole_no": 26, "is_on": False, "last_time": 0, "note_no": 38},
+            # "LCW3" : {"part": "great", "hole_no": , "is_on": False, "last_time": 0, "note_no": },
+            # "LCW4" : {"part": "great", "hole_no": , "is_on": False, "last_time": 0, "note_no": },
+            # "great_ventil" : {"part": "great", "hole_no": , "is_on": False, "last_time": 0, "note_no": }
         }
 
         self.pedal_all_off = True
@@ -151,8 +152,17 @@ class DuoArtOrgan(BasePlayer):
             if not controls["to_open"][hole_no]:
                 continue
 
+            if "last_time" in val:
+                if curtime - val["last_time"] < self.prevent_chattering_wait:
+                    # skip to prevent toggle switch chattering
+                    print("prevent chattering")
+                    continue
+                else:
+                    val["last_time"] = curtime
+
+
             val["is_on"] = not val["is_on"]
-            print(key, val["is_on"])
+            # print(key, val["is_on"])
 
             note_no = val.get("note_no")
             if note_no is not None:
