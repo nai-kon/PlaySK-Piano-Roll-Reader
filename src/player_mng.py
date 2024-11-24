@@ -43,7 +43,7 @@ class PlayerMng:
             "Artecho": players.Artecho,
             "Themodist": players.Themodist,
             "Themodist_eValve": players.Themodist_eValve,
-            "DuoArtOrgan": players.DuoArtOrgan,
+            "Aeolian176note": players.Aeolian176note,
         }
         clsobj = cls_map.get(cls_name, None)
         if clsobj is not None:

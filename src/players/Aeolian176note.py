@@ -3,7 +3,7 @@ import json
 from .base_player import BasePlayer
 
 
-class DuoArtOrgan(BasePlayer):
+class Aeolian176note(BasePlayer):
     def __init__(self, confpath, midiobj):
         super().__init__(confpath, midiobj)
 
@@ -22,6 +22,8 @@ class DuoArtOrgan(BasePlayer):
         self.shade_change_rate = (self.shade["shade6"] - self.shade["shade0"]) / self.shade["min_to_max_second"]
         self.swell_shade_val = self.shade["shade6"]
         self.great_shade_val = self.shade["shade6"]
+        self.shade_error_detector = {"swell": [], "great": []}
+
         self.midi.expression(self.swell_shade_val, 0)
         self.midi.expression(self.great_shade_val, 1)
 
@@ -253,6 +255,9 @@ class DuoArtOrgan(BasePlayer):
                 # reset all pedal note
                 [self.midi.note_off(k, channel=2) for k in range(128)]
 
+        # fix shade error
+        self.fix_shade_error()
+
         # swell expression shade position
         target_val = self.shade["shade0"]
         for no in range(1, 6 + 1):
@@ -285,6 +290,28 @@ class DuoArtOrgan(BasePlayer):
 
         self.pre_time = curtime
 
+    def fix_shade_error(self):
+        # Sometimes, shade errors occurs due to inconsistent on/off for each shade by the perforation error etc...
+        # So if the shade perforations are in order 3→2→1, force reset all shade off
+        for part in ("swell", "great"):
+            for no in range(1, 3 + 1):
+                hole_no = self.ctrls[f"{part}_shade{no}"]["hole_no"]
+                if self.holes[f"{part}_controls"]["to_close"][hole_no]:
+                    if no == 3:
+                        self.shade_error_detector[part] = []  # reset list
+                    self.shade_error_detector[part].append(no)
+
+                    # There were perforations in order 3, 2, 1 → shade is fully closed
+                    if self.shade_error_detector[part] == [3, 2, 1]:
+                        self.shade_error_detector[part] = []
+                        # set all shade to off to fix error
+                        for no in range(1, 6 + 1):
+                            self.ctrls[f"{part}_shade{no}"]["is_on"] = False
+
+                    if len(self.shade_error_detector[part]) > 3:
+                        # if list length is too much, reset
+                        self.shade_error_detector[part] = []
+
     def emulate(self, frame, curtime):
         if self.emulate_enable:
             self.during_emulate_evt.clear()
@@ -296,14 +323,14 @@ class DuoArtOrgan(BasePlayer):
 
             self.during_emulate_evt.set()
 
-if __name__ == "__main__":
+if __name__ == "__main__":#
     import os
     import time
 
     import numpy as np
     from midi_controller import MidiWrap
     midiobj = MidiWrap()
-    player = DuoArtOrgan(os.path.join("playsk_config", "Aeolian Duo-Art Pipe Organ.json"), midiobj)
+    player = Aeolian176note(os.path.join("playsk_config", "Aeolian Duo-Art Pipe Organ.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)
     start = time.perf_counter()
     for _ in range(10000):

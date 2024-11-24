@@ -1,6 +1,6 @@
 {
   "note": "Aeolian 176-note Duo-Art Pipe Organ setting",
-  "base_class": "DuoArtOrgan",
+  "base_class": "Aeolian176note",
   "roll_width": 15.25,
   "spool_diameter": 2.0,
   "default_tempo": 40,
