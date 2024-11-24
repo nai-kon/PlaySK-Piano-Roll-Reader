@@ -39,8 +39,8 @@ class DuoArtOrgan(BasePlayer):
             "swell_flute4" : {"part": "swell", "hole_no": 9, "is_on": False, "last_time": 0, "note_no": 9},
             "swell_fluteP" : {"part": "swell", "hole_no": 10, "is_on": False, "last_time": 0, "note_no": 9},
             "swell_string_vibrato_f" : {"part": "swell", "hole_no": 11, "is_on": False, "last_time": 0, "note_no": 11},
-            "swell_string_f" : {"part": "swell", "hole_no": 12, "is_on": False, "last_time": 0, "note_no": 12},
-            "swell_string_mf" : {"part": "swell", "hole_no": 13, "is_on": False, "last_time": 0, "note_no": 12},
+            "swell_string_f" : {"part": "swell", "hole_no": 12, "is_on": False, "last_time": 0, "note_no": 11},
+            "swell_string_mf" : {"part": "swell", "hole_no": 13, "is_on": False, "last_time": 0, "note_no": 11},
             "swell_string_p" : {"part": "swell", "hole_no": 14, "is_on": False, "last_time": 0, "note_no": 12},
             "swell_string_pp" : {"part": "swell", "hole_no": 15, "is_on": False, "last_time": 0, "note_no": 12},
             "swell_shade1" : {"part": "swell", "hole_no": 16, "is_on": True},
@@ -105,21 +105,37 @@ class DuoArtOrgan(BasePlayer):
         note = self.holes["swell_note"]
         for key in note["to_open"].nonzero()[0]:
             self.midi.note_on(key + offset, velocity, channel=0)
-            # if self.swell_extension:
-            #     self.midi.note_on(key + offset + 12, velocity, channel=0)
+            if key in [46, 47, 48] and self.holes["swell_controls"]["is_open"][22]:
+                # swell extension of 59, 60, 61 note
+                self.midi.note_on(key + offset + 12, velocity, channel=0)
 
         for key in note["to_close"].nonzero()[0]:
             self.midi.note_off(key + offset, channel=0)
-            # if self.swell_extension:
-            #     self.midi.note_off(key + offset + 12, channel=0)
+            if key in [46, 47, 48] and self.holes["swell_controls"]["is_open"][22]:
+                # swell extension of 59, 60, 61 note
+                self.midi.note_off(key + offset + 12, channel=0)
+
+        # cancel swell extension notes when extension perforation is end
+        if self.holes["swell_controls"]["to_close"][22]:
+            [self.midi.note_off(k + offset, channel=0) for k in range(58, 61)]
 
         # great notes
         note = self.holes["great_note"]
         for key in note["to_open"].nonzero()[0]:
             self.midi.note_on(key + offset, velocity, channel=1)
+            if key in [46, 47, 48] and self.holes["great_controls"]["is_open"][3]:
+                # great extension of 59, 60, 61 note
+                self.midi.note_on(key + offset + 12, velocity, channel=1)
 
         for key in note["to_close"].nonzero()[0]:
             self.midi.note_off(key + offset, channel=1)
+            if key in [46, 47, 48] and self.holes["great_controls"]["is_open"][3]:
+                # great extension of 59, 60, 61 note
+                self.midi.note_off(key + offset + 12, channel=1)
+
+        # cancel great extension notes when extension perforation is end
+        if self.holes["great_controls"]["to_close"][3]:
+            [self.midi.note_off(k + offset, channel=1) for k in range(58, 61)]
 
         # pedal notes
         if self.ctrls["great_pedal_bassoon16"]["is_on"] or \
@@ -132,10 +148,44 @@ class DuoArtOrgan(BasePlayer):
             if self.ctrls["pedal_to_upper"]["is_on"]:
                 note = self.holes["swell_note"]
             for key in note["to_open"].nonzero()[0]:
+                if key >= 13:
+                    # pedal only takes lower 13 notes of great or swell
+                    continue
+
                 self.midi.note_on(key + offset, velocity, channel=2)
 
+                if self.holes["great_controls"]["is_open"][4]:
+                    # add one octave upper note
+                    self.midi.note_on(key + offset + 12, velocity, channel=2)
+
+                if self.holes["great_controls"]["is_open"][5] and key + 24 < 30:
+                    # add two octave upper note, but limit to 30th notes
+                    pedal_note = key + offset + 24
+                    self.midi.note_on(pedal_note, velocity, channel=2)
+
             for key in note["to_close"].nonzero()[0]:
+                if key >= 13:
+                    # pedal only takes lower 13 notes of great or swell
+                    continue
+
                 self.midi.note_off(key + offset, channel=2)
+
+                if self.holes["great_controls"]["is_open"][4]:
+                    # add one octave upper note
+                    self.midi.note_off(key + offset + 12, channel=2)
+
+                if self.holes["great_controls"]["is_open"][5] and key + 24 < 30:
+                    # add two octave upper note, but limit to 30th notes
+                    pedal_note = key + offset + 24
+                    self.midi.note_off(pedal_note, channel=2)
+
+            # cancel all pedal extension notes when extension perforation is end
+            if not self.holes["great_controls"]["to_close"][4]:
+                [self.midi.note_off(k + offset, channel=2) for k in range(13, 24)]
+
+            if not self.holes["great_controls"]["to_close"][5]:
+                [self.midi.note_off(k + offset, channel=2) for k in range(24, 30)]
+
         elif not self.pedal_all_off:
             [self.midi.note_off(k, channel=2) for k in range(128)]
             self.pedal_all_off = True
@@ -145,7 +195,7 @@ class DuoArtOrgan(BasePlayer):
             self.pre_time = curtime
         delta_time = curtime - self.pre_time
 
-        # check control holes
+        # check toggle switch holes
         for key, val in self.ctrls.items():
             controls = self.holes[f"{val['part']}_controls"]
             hole_no = val["hole_no"]
@@ -160,7 +210,7 @@ class DuoArtOrgan(BasePlayer):
                 else:
                     val["last_time"] = curtime
 
-
+            # toggle switch function
             val["is_on"] = not val["is_on"]
             # print(key, val["is_on"])
 
@@ -170,11 +220,14 @@ class DuoArtOrgan(BasePlayer):
                     self.midi.note_on(note_no, 64, channel=3)
                 else:
                     # When treating multiple stops with the same note number, note-off after all stops is off
-                    if "swell_string_" in key and \
+                    if key in ("swell_string_vibrato_f", "swell_string_f", "swell_string_mf") and \
                         (self.ctrls["swell_string_vibrato_f"]["is_on"] or \
                         self.ctrls["swell_string_f"]["is_on"] or \
-                        self.ctrls["swell_string_mf"]["is_on"] or \
-                        self.ctrls["swell_string_p"]["is_on"] or \
+                        self.ctrls["swell_string_mf"]["is_on"]):
+                            continue
+
+                    if key in ("swell_string_p", "swell_string_pp") and \
+                        (self.ctrls["swell_string_p"]["is_on"] or \
                         self.ctrls["swell_string_pp"]["is_on"]):
                             continue
 
