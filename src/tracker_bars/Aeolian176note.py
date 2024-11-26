@@ -101,7 +101,7 @@ class Aeolian176note(BasePlayer):
 
     def emulate_notes(self):
         offset = 15 + 21
-        velocity = 60
+        velocity = 64
 
         # swell notes
         note = self.holes["swell_note"]

@@ -9,7 +9,7 @@ import pytest
 
 sys.path.append("src/")
 from midi_controller import MidiWrap
-from players.base_player import BasePlayer, TrackerHoles
+from tracker_bars.base_player import BasePlayer, TrackerHoles
 
 
 class TestTrackerHoles:

@@ -15,7 +15,7 @@ from controls import (
 )
 from midi_controller import MidiWrap
 from player_mng import PlayerMng
-from players import BasePlayer
+from tracker_bars import BasePlayer
 from roll_scroll import InputScanImg, load_scan
 from vacuum_gauge import VacuumGauge
 from version import APP_TITLE

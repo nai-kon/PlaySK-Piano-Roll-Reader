@@ -6,7 +6,7 @@ import pytest
 sys.path.append("src/")
 from collections import deque
 
-import players
+import tracker_bars
 from midi_controller import MidiWrap
 
 
@@ -14,7 +14,7 @@ class TestDuoArt:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = players.DuoArt("src/playsk_config/Duo-Art white back.json", midiobj)
+        obj = tracker_bars.DuoArt("src/playsk_config/Duo-Art white back.json", midiobj)
         return obj
 
     def test_emulate_off(self, player):
