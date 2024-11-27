@@ -18,33 +18,34 @@ class Aeolian176note(BasePlayer):
         # Aeolian Duo-Art Organ tracker bar
         # https://www.mmdigest.com/Gallery/Tech/Scales/Aeo176.html
 
-        # expression shade. swell shade: ch=0 ctrl=11. great shade: ch=1 ctrl=11
+        # expression shade. MIDI assignment is swell shade: ch=3 cc=14. great shade: ch=3 cc=15
         self.shade_change_rate = (self.shade["shade6"] - self.shade["shade0"]) / self.shade["min_to_max_second"]
         self.swell_shade_val = self.shade["shade6"]
         self.great_shade_val = self.shade["shade6"]
         self.shade_error_detector = {"swell": [], "great": []}
 
-        self.midi.expression(self.swell_shade_val, 0)
-        self.midi.expression(self.great_shade_val, 1)
+        self.midi.control_change(14, self.swell_shade_val, 3)
+        self.midi.control_change(15, self.great_shade_val, 3)
 
+        # toggle switch controls. MIDI assignment is switch ON: ch=3, CC=20, value:{midi_val}, switch OFF: ch=3, CC=110, value={midi_val}
         self.ctrls = {
             # upper control holes of tracker bar
-            "swell_echo" : {"part": "swell", "hole_no": 0, "is_on": False, "last_time": 0, "note_no": 0},
-            "swell_chimes" : {"part": "swell", "hole_no":  1, "is_on": False, "last_time": 0, "note_no": 1},
-            "swell_tremolo" : {"part": "swell", "hole_no": 2, "is_on": False, "last_time": 0, "note_no": 2},
-            "swell_harp" : {"part": "swell", "hole_no": 3, "is_on": False, "last_time": 0, "note_no": 3},
-            "swell_trumpet" : {"part": "swell", "hole_no": 4, "is_on": False, "last_time": 0, "note_no": 4},
-            "swell_oboe" : {"part": "swell", "hole_no": 5, "is_on": False, "last_time": 0, "note_no": 5},
-            "swell_vox_humana" : {"part": "swell", "hole_no": 6, "is_on": False, "last_time": 0, "note_no": 6},
-            "swell_diapason_mf" : {"part": "swell", "hole_no": 7, "is_on": False, "last_time": 0, "note_no": 7},
-            "swell_flute16" : {"part": "swell", "hole_no": 8, "is_on": False, "last_time": 0, "note_no": 8},
-            "swell_flute4" : {"part": "swell", "hole_no": 9, "is_on": False, "last_time": 0, "note_no": 9},
-            "swell_fluteP" : {"part": "swell", "hole_no": 10, "is_on": False, "last_time": 0, "note_no": 9},
-            "swell_string_vibrato_f" : {"part": "swell", "hole_no": 11, "is_on": False, "last_time": 0, "note_no": 11},
-            "swell_string_f" : {"part": "swell", "hole_no": 12, "is_on": False, "last_time": 0, "note_no": 11},
-            "swell_string_mf" : {"part": "swell", "hole_no": 13, "is_on": False, "last_time": 0, "note_no": 11},
-            "swell_string_p" : {"part": "swell", "hole_no": 14, "is_on": False, "last_time": 0, "note_no": 12},
-            "swell_string_pp" : {"part": "swell", "hole_no": 15, "is_on": False, "last_time": 0, "note_no": 12},
+            "swell_echo" : {"part": "swell", "hole_no": 0, "is_on": False, "last_time": 0, "midi_val": 0},
+            "swell_chimes" : {"part": "swell", "hole_no":  1, "is_on": False, "last_time": 0, "midi_val": 1},
+            "swell_tremolo" : {"part": "swell", "hole_no": 2, "is_on": False, "last_time": 0, "midi_val": 2},
+            "swell_harp" : {"part": "swell", "hole_no": 3, "is_on": False, "last_time": 0, "midi_val": 3},
+            "swell_trumpet" : {"part": "swell", "hole_no": 4, "is_on": False, "last_time": 0, "midi_val": 4},
+            "swell_oboe" : {"part": "swell", "hole_no": 5, "is_on": False, "last_time": 0, "midi_val": 5},
+            "swell_vox_humana" : {"part": "swell", "hole_no": 6, "is_on": False, "last_time": 0, "midi_val": 6},
+            "swell_diapason_mf" : {"part": "swell", "hole_no": 7, "is_on": False, "last_time": 0, "midi_val": 7},
+            "swell_flute16" : {"part": "swell", "hole_no": 8, "is_on": False, "last_time": 0, "midi_val": 8},
+            "swell_flute4" : {"part": "swell", "hole_no": 9, "is_on": False, "last_time": 0, "midi_val": 9},
+            "swell_fluteP" : {"part": "swell", "hole_no": 10, "is_on": False, "last_time": 0, "midi_val": 9},
+            "swell_string_vibrato_f" : {"part": "swell", "hole_no": 11, "is_on": False, "last_time": 0, "midi_val": 11},
+            "swell_string_f" : {"part": "swell", "hole_no": 12, "is_on": False, "last_time": 0, "midi_val": 11},
+            "swell_string_mf" : {"part": "swell", "hole_no": 13, "is_on": False, "last_time": 0, "midi_val": 11},
+            "swell_string_p" : {"part": "swell", "hole_no": 14, "is_on": False, "last_time": 0, "midi_val": 12},
+            "swell_string_pp" : {"part": "swell", "hole_no": 15, "is_on": False, "last_time": 0, "midi_val": 12},
             "swell_shade1" : {"part": "swell", "hole_no": 16, "is_on": True},
             "swell_shade2" : {"part": "swell", "hole_no": 17, "is_on": True},
             "swell_shade3" : {"part": "swell", "hole_no": 18, "is_on": True},
@@ -52,18 +53,18 @@ class Aeolian176note(BasePlayer):
             "swell_shade5" : {"part": "swell", "hole_no": 20, "is_on": True},
             "swell_shade6" : {"part": "swell", "hole_no": 21, "is_on": True},
             # "swell_extension" : {"part": "swell", "hole_no": 22, "is_on": False},
-            # "LCW1" : {"part": "swell", "hole_no": 23, "is_on": False, "last_time": 0, "note_no": },
-            # "LCW2" : {"part": "swell", "hole_no": 24, "is_on": False, "last_time": 0, "note_no": },
-            "swell_soft_chimes" : {"part": "swell", "hole_no": 25, "is_on": False, "last_time": 0, "note_no": 17},
-            # "reroll" : {"part": "swell", "hole_no": , "is_on": False, "last_time": 0, "note_no": },
-            # "swell_ventil" : {"part": "swell", "hole_no": , "is_on": False, "last_time": 0, "note_no": },
-            # "normal" : {"part": "swell", "hole_no": , "is_on": False, "last_time": 0, "note_no": },
+            # "LCW1" : {"part": "swell", "hole_no": 23, "is_on": False, "last_time": 0, "midi_val": },
+            # "LCW2" : {"part": "swell", "hole_no": 24, "is_on": False, "last_time": 0, "midi_val": },
+            "swell_soft_chimes" : {"part": "swell", "hole_no": 25, "is_on": False, "last_time": 0, "midi_val": 17},
+            # "reroll" : {"part": "swell", "hole_no": , "is_on": False, "last_time": 0, "midi_val": },
+            # "swell_ventil" : {"part": "swell", "hole_no": , "is_on": False, "last_time": 0, "midi_val": },
+            # "normal" : {"part": "swell", "hole_no": , "is_on": False, "last_time": 0, "midi_val": },
             "pedal_to_upper" : {"part": "swell", "hole_no": 29, "is_on": False},
 
             # lower control holes of tracker bar
-            "great_tremolo" : {"part": "great", "hole_no": 0, "is_on": False, "last_time": 0, "note_no": 18},
-            "great_tonal" : {"part": "great", "hole_no": 1, "is_on": False, "last_time": 0, "note_no": 19},
-            "great_harp" : {"part": "great", "hole_no": 2, "is_on": False, "last_time": 0, "note_no": 20},
+            "great_tremolo" : {"part": "great", "hole_no": 0, "is_on": False, "last_time": 0, "midi_val": 18},
+            "great_tonal" : {"part": "great", "hole_no": 1, "is_on": False, "last_time": 0, "midi_val": 19},
+            "great_harp" : {"part": "great", "hole_no": 2, "is_on": False, "last_time": 0, "midi_val": 20},
             # "great_extension" : {"part": "great", "hole_no": 3, "is_on": False},
             # "great_pedal_2nd_oct" : {"part": "great", "hole_no": 4, "is_on": False},
             # "great_pedal_3rd_oct" : {"part": "great", "hole_no": 5, "is_on": False},
@@ -73,26 +74,27 @@ class Aeolian176note(BasePlayer):
             "great_shade4" : {"part": "great", "hole_no": 9, "is_on": True},
             "great_shade5" : {"part": "great", "hole_no": 10, "is_on": True},
             "great_shade6" : {"part": "great", "hole_no": 11, "is_on": True},
-            "great_pedal_bassoon16" : {"part": "great", "hole_no": 12, "is_on": False, "last_time": 0, "note_no": 24},
-            "great_pedal_string16" : {"part": "great", "hole_no": 13, "is_on": False, "last_time": 0, "note_no": 25},
-            "great_pedal_flute_f16" : {"part": "great", "hole_no": 14, "is_on": False, "last_time": 0, "note_no": 26},
-            "great_pedal_flute_p16" : {"part": "great", "hole_no": 15, "is_on": False, "last_time": 0, "note_no": 26},
-            "great_string_pp" : {"part": "great", "hole_no": 16, "is_on": False, "last_time": 0, "note_no": 28},
-            "great_string_p" : {"part": "great", "hole_no": 17, "is_on": False, "last_time": 0, "note_no": 29},
-            "great_string_f" : {"part": "great", "hole_no": 18, "is_on": False, "last_time": 0, "note_no": 30},
-            "great_flute_p" : {"part": "great", "hole_no": 19, "is_on": False, "last_time": 0, "note_no": 33},
-            "great_flute_f" : {"part": "great", "hole_no": 20, "is_on": False, "last_time": 0, "note_no": 33},
-            "great_flute_4" : {"part": "great", "hole_no": 21, "is_on": False, "last_time": 0, "note_no": 33},
-            "great_diapason_f" : {"part": "great", "hole_no": 22, "is_on": False, "last_time": 0, "note_no": 34},
-            "great_piccolo" : {"part": "great", "hole_no": 23, "is_on": False, "last_time": 0, "note_no": 35},
-            "great_clarinet" : {"part": "great", "hole_no": 24, "is_on": False, "last_time": 0, "note_no": 36},
-            "great_trumpet" : {"part": "great", "hole_no": 25, "is_on": False, "last_time": 0, "note_no": 37},
-            "chimes_dampers_off" : {"part": "great", "hole_no": 26, "is_on": False, "last_time": 0, "note_no": 38},
-            # "LCW3" : {"part": "great", "hole_no": , "is_on": False, "last_time": 0, "note_no": },
-            # "LCW4" : {"part": "great", "hole_no": , "is_on": False, "last_time": 0, "note_no": },
-            # "great_ventil" : {"part": "great", "hole_no": , "is_on": False, "last_time": 0, "note_no": }
+            "great_pedal_bassoon16" : {"part": "great", "hole_no": 12, "is_on": False, "last_time": 0, "midi_val": 24},
+            "great_pedal_string16" : {"part": "great", "hole_no": 13, "is_on": False, "last_time": 0, "midi_val": 25},
+            "great_pedal_flute_f16" : {"part": "great", "hole_no": 14, "is_on": False, "last_time": 0, "midi_val": 26},
+            "great_pedal_flute_p16" : {"part": "great", "hole_no": 15, "is_on": False, "last_time": 0, "midi_val": 26},
+            "great_string_pp" : {"part": "great", "hole_no": 16, "is_on": False, "last_time": 0, "midi_val": 28},
+            "great_string_p" : {"part": "great", "hole_no": 17, "is_on": False, "last_time": 0, "midi_val": 29},
+            "great_string_f" : {"part": "great", "hole_no": 18, "is_on": False, "last_time": 0, "midi_val": 30},
+            "great_flute_p" : {"part": "great", "hole_no": 19, "is_on": False, "last_time": 0, "midi_val": 33},
+            "great_flute_f" : {"part": "great", "hole_no": 20, "is_on": False, "last_time": 0, "midi_val": 33},
+            "great_flute_4" : {"part": "great", "hole_no": 21, "is_on": False, "last_time": 0, "midi_val": 33},
+            "great_diapason_f" : {"part": "great", "hole_no": 22, "is_on": False, "last_time": 0, "midi_val": 34},
+            "great_piccolo" : {"part": "great", "hole_no": 23, "is_on": False, "last_time": 0, "midi_val": 35},
+            "great_clarinet" : {"part": "great", "hole_no": 24, "is_on": False, "last_time": 0, "midi_val": 36},
+            "great_trumpet" : {"part": "great", "hole_no": 25, "is_on": False, "last_time": 0, "midi_val": 37},
+            "chimes_dampers_off" : {"part": "great", "hole_no": 26, "is_on": False, "last_time": 0, "midi_val": 38},
+            # "LCW3" : {"part": "great", "hole_no": , "is_on": False, "last_time": 0, "midi_val": },
+            # "LCW4" : {"part": "great", "hole_no": , "is_on": False, "last_time": 0, "midi_val": },
+            # "great_ventil" : {"part": "great", "hole_no": , "is_on": False, "last_time": 0, "midi_val": }
         }
 
+        [self.midi.control_change(110, v, 3) for v in range(128)]
         self.pedal_all_off = True
 
     def emulate_off(self):
@@ -216,10 +218,10 @@ class Aeolian176note(BasePlayer):
             val["is_on"] = not val["is_on"]
             # print(key, val["is_on"])
 
-            note_no = val.get("note_no")
+            note_no = val.get("midi_val")
             if note_no is not None:
                 if val["is_on"]:
-                    self.midi.note_on(note_no, 64, channel=3)
+                    self.midi.control_change(20, note_no, channel=3)
                 else:
                     # When treating multiple stops with the same note number, note-off after all stops is off
                     if key in ("swell_string_vibrato_f", "swell_string_f", "swell_string_mf") and \
@@ -249,7 +251,7 @@ class Aeolian176note(BasePlayer):
                         self.ctrls["great_pedal_flute_p16"]["is_on"]):
                             continue
 
-                    self.midi.note_off(note_no, channel=3)
+                    self.midi.control_change(110, note_no, channel=3)
 
             if key == "pedal_to_upper":
                 # reset all pedal note
@@ -267,11 +269,11 @@ class Aeolian176note(BasePlayer):
         if target_val > self.swell_shade_val:
             self.swell_shade_val += delta_time * self.shade_change_rate
             self.swell_shade_val = min(self.swell_shade_val, target_val)
-            self.midi.expression(int(self.swell_shade_val), 0)
+            self.midi.control_change(14, int(self.swell_shade_val), 3)
         elif target_val < self.swell_shade_val:
             self.swell_shade_val -= delta_time * self.shade_change_rate
             self.swell_shade_val = max(self.swell_shade_val, target_val)
-            self.midi.expression(int(self.swell_shade_val), 0)
+            self.midi.control_change(14, int(self.swell_shade_val), 3)
 
         # great expression shade position
         target_val = self.shade["shade0"]
@@ -282,11 +284,11 @@ class Aeolian176note(BasePlayer):
         if target_val > self.great_shade_val:
             self.great_shade_val += delta_time * self.shade_change_rate
             self.great_shade_val = min(self.great_shade_val, target_val)
-            self.midi.expression(int(self.great_shade_val), 1)
+            self.midi.control_change(15, int(self.great_shade_val), 3)
         elif target_val < self.great_shade_val:
             self.great_shade_val -= delta_time * self.shade_change_rate
             self.great_shade_val = max(self.great_shade_val, target_val)
-            self.midi.expression(int(self.great_shade_val), 1)
+            self.midi.control_change(15, int(self.great_shade_val), 3)
 
         self.pre_time = curtime
 
