@@ -11,7 +11,7 @@ class Aeolian176note(BasePlayer):
             conf = json.load(f)
         self.shade = conf["expression"]["expression_shade"]
         self.pre_time = None
-        self.prevent_chattering_wait = 0.3  # toggle switch reaction threshold seconds to prevent chattering
+        self.prevent_chattering_wait = 0.2  # toggle switch reaction threshold seconds to prevent chattering
         self.init_controls()
 
     def init_controls(self):
@@ -81,8 +81,8 @@ class Aeolian176note(BasePlayer):
             "great_string_pp" : {"part": "great", "hole_no": 16, "is_on": False, "last_time": 0, "midi_val": 28},
             "great_string_p" : {"part": "great", "hole_no": 17, "is_on": False, "last_time": 0, "midi_val": 29},
             "great_string_f" : {"part": "great", "hole_no": 18, "is_on": False, "last_time": 0, "midi_val": 30},
-            "great_flute_p" : {"part": "great", "hole_no": 19, "is_on": False, "last_time": 0, "midi_val": 33},
-            "great_flute_f" : {"part": "great", "hole_no": 20, "is_on": False, "last_time": 0, "midi_val": 33},
+            "great_flute_p" : {"part": "great", "hole_no": 19, "is_on": False, "last_time": 0, "midi_val": 31},
+            "great_flute_f" : {"part": "great", "hole_no": 20, "is_on": False, "last_time": 0, "midi_val": 31},
             "great_flute_4" : {"part": "great", "hole_no": 21, "is_on": False, "last_time": 0, "midi_val": 33},
             "great_diapason_f" : {"part": "great", "hole_no": 22, "is_on": False, "last_time": 0, "midi_val": 34},
             "great_piccolo" : {"part": "great", "hole_no": 23, "is_on": False, "last_time": 0, "midi_val": 35},
@@ -105,41 +105,25 @@ class Aeolian176note(BasePlayer):
         offset = 15 + 21
         velocity = 64
 
-        # swell notes
-        note = self.holes["swell_note"]
-        for key in note["to_open"].nonzero()[0]:
-            self.midi.note_on(key + offset, velocity, channel=0)
-            if key in [46, 47, 48] and self.holes["swell_controls"]["is_open"][22]:
-                # swell extension of 59, 60, 61 note
-                self.midi.note_on(key + offset + 12, velocity, channel=0)
+        # notes
+        for part, extension_port, midi_ch in zip(("swell", "great"), (22, 3), (0, 1)):
+            note = self.holes[f"{part}_note"]
+            notes_on = [key + offset for key in note["to_open"].nonzero()[0]]
+            notes_off = [key + offset for key in note["to_close"].nonzero()[0]]
 
-        for key in note["to_close"].nonzero()[0]:
-            self.midi.note_off(key + offset, channel=0)
-            if key in [46, 47, 48] and self.holes["swell_controls"]["is_open"][22]:
-                # swell extension of 59, 60, 61 note
-                self.midi.note_off(key + offset + 12, channel=0)
+            # extension
+            if self.holes[f"{part}_controls"]["to_open"][extension_port]:
+                # already ON notes when extension begin
+                notes_on.extend([key + offset + 12 for key in note["is_open"].nonzero()[0] if key in (46, 47, 48)])
+            elif self.holes[f"{part}_controls"]["is_open"][extension_port]:
+                notes_on.extend([key + offset + 12 for key in note["to_open"].nonzero()[0] if key in (46, 47, 48)])
+                notes_off.extend([key + offset + 12 for key in note["to_close"].nonzero()[0] if key in (46, 47, 48)])
+            elif self.holes[f"{part}_controls"]["to_close"][extension_port]:
+                notes_off.extend([key + offset for key in range(58, 61)])
 
-        # cancel swell extension notes when extension perforation is end
-        if self.holes["swell_controls"]["to_close"][22]:
-            [self.midi.note_off(k + offset, channel=0) for k in range(58, 61)]
-
-        # great notes
-        note = self.holes["great_note"]
-        for key in note["to_open"].nonzero()[0]:
-            self.midi.note_on(key + offset, velocity, channel=1)
-            if key in [46, 47, 48] and self.holes["great_controls"]["is_open"][3]:
-                # great extension of 59, 60, 61 note
-                self.midi.note_on(key + offset + 12, velocity, channel=1)
-
-        for key in note["to_close"].nonzero()[0]:
-            self.midi.note_off(key + offset, channel=1)
-            if key in [46, 47, 48] and self.holes["great_controls"]["is_open"][3]:
-                # great extension of 59, 60, 61 note
-                self.midi.note_off(key + offset + 12, channel=1)
-
-        # cancel great extension notes when extension perforation is end
-        if self.holes["great_controls"]["to_close"][3]:
-            [self.midi.note_off(k + offset, channel=1) for k in range(58, 61)]
+            # send MIDI signal
+            [self.midi.note_on(note, velocity, midi_ch) for note in notes_on]
+            [self.midi.note_off(note, channel=midi_ch) for note in notes_off]
 
         # pedal notes
         if self.ctrls["great_pedal_bassoon16"]["is_on"] or \
@@ -151,47 +135,38 @@ class Aeolian176note(BasePlayer):
             note = self.holes["great_note"]
             if self.ctrls["pedal_to_upper"]["is_on"]:
                 note = self.holes["swell_note"]
-            for key in note["to_open"].nonzero()[0]:
-                if key >= 13:
-                    # pedal only takes lower 13 notes of great or swell
-                    continue
 
-                self.midi.note_on(key + offset, velocity, channel=2)
+            # pedal notes ON
+            pedal_notes_on = [key + offset for key in note["to_open"].nonzero()[0] if key < 13]
+            pedal_notes_off = [key + offset for key in note["to_close"].nonzero()[0] if key < 13]
 
-                if self.holes["great_controls"]["is_open"][4]:
-                    # add one octave upper note
-                    self.midi.note_on(key + offset + 12, velocity, channel=2)
+            # pedal 2nd octave notes
+            if self.holes["great_controls"]["to_open"][4] or self.holes["great_controls"]["to_open"][5]:
+                # already ON notes when extension begin
+                pedal_notes_on.extend([key + offset + 12 for key in note["is_open"].nonzero()[0] if key < 13])
+            elif self.holes["great_controls"]["is_open"][4] or self.holes["great_controls"]["is_open"][5]:
+                pedal_notes_on.extend([key + offset + 12 for key in note["to_open"].nonzero()[0] if key < 13])
+                pedal_notes_off.extend([key + offset + 12 for key in note["to_close"].nonzero()[0] if key < 13])
+            elif self.holes["great_controls"]["to_close"][4] or self.holes["great_controls"]["to_close"][5]:
+                pedal_notes_off.extend([key + offset for key in range(13, 25)])
 
-                if self.holes["great_controls"]["is_open"][5] and key + 24 < 30:
-                    # add two octave upper note, but limit to 30th notes
-                    pedal_note = key + offset + 24
-                    self.midi.note_on(pedal_note, velocity, channel=2)
+            # pedal 3rd octave notes
+            if self.holes["great_controls"]["to_open"][5]:
+                # already ON notes when extension begin
+                pedal_notes_on.extend([key + offset + 24 for key in note["is_open"].nonzero()[0] if key < 8])
+            elif self.holes["great_controls"]["is_open"][5]:
+                pedal_notes_on.extend([key + offset + 24 for key in note["to_open"].nonzero()[0] if key < 8])
+                pedal_notes_off.extend([key + offset + 24 for key in note["to_close"].nonzero()[0] if key < 8])
+            elif self.holes["great_controls"]["to_close"][5]:
+                pedal_notes_off.extend([key + offset for key in range(25, 32)])
 
-            for key in note["to_close"].nonzero()[0]:
-                if key >= 13:
-                    # pedal only takes lower 13 notes of great or swell
-                    continue
-
-                self.midi.note_off(key + offset, channel=2)
-
-                if self.holes["great_controls"]["is_open"][4]:
-                    # add one octave upper note
-                    self.midi.note_off(key + offset + 12, channel=2)
-
-                if self.holes["great_controls"]["is_open"][5] and key + 24 < 30:
-                    # add two octave upper note, but limit to 30th notes
-                    pedal_note = key + offset + 24
-                    self.midi.note_off(pedal_note, channel=2)
-
-            # cancel all pedal extension notes when extension perforation is end
-            if not self.holes["great_controls"]["to_close"][4]:
-                [self.midi.note_off(k + offset, channel=2) for k in range(13, 24)]
-
-            if not self.holes["great_controls"]["to_close"][5]:
-                [self.midi.note_off(k + offset, channel=2) for k in range(24, 30)]
+            # send MIDI signal
+            [self.midi.note_on(note, velocity, channel=2) for note in pedal_notes_on]
+            [self.midi.note_off(note, channel=2) for note in pedal_notes_off]
 
         elif not self.pedal_all_off:
-            [self.midi.note_off(k, channel=2) for k in range(128)]
+            # all off 32 notes
+            [self.midi.note_off(k + offset, channel=2) for k in range(0, 32)]
             self.pedal_all_off = True
 
     def emulate_controls(self, curtime):
@@ -235,15 +210,14 @@ class Aeolian176note(BasePlayer):
                         self.ctrls["swell_string_pp"]["is_on"]):
                             continue
 
-                    if key in ("swell_flute4" , "swell_flutep") and \
+                    if key in ("swell_flute4" , "swell_fluteP") and \
                         (self.ctrls["swell_flute4"]["is_on"] or \
                         self.ctrls["swell_fluteP"]["is_on"]):
                             continue
 
-                    if "great_flute" in key and \
+                    if key in ("great_flute_p", "great_flute_f") and \
                         (self.ctrls["great_flute_p"]["is_on"] or \
-                        self.ctrls["great_flute_f"]["is_on"] or \
-                        self.ctrls["great_flute_4"]["is_on"]):
+                        self.ctrls["great_flute_f"]["is_on"]):
                             continue
 
                     if "great_pedal_flute" in key and \
