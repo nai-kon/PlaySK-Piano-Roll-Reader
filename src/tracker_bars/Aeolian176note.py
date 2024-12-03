@@ -12,7 +12,19 @@ class Aeolian176note(BasePlayer):
         self.shade = conf["expression"]["expression_shade"]
         self.pre_time = None
         self.prevent_chattering_wait = 0.2  # toggle switch reaction threshold seconds to prevent chattering
+        self.stop_indicator = None
         self.init_controls()
+
+    def init_stop_indicator(self, swell_indicator, great_indicator, pedal_indicator) -> None:
+        self.stop_indicator = {
+            "swell": swell_indicator,
+            "great": great_indicator,
+            "pedal": pedal_indicator,
+        }
+
+        self.stop_indicator["swell"].init_stop({k: v["is_on"] for k, v in self.ctrls["swell"].items() if "Pedal" not in k and "Shade" not in k})
+        self.stop_indicator["great"].init_stop({k: v["is_on"] for k, v in self.ctrls["great"].items() if "Pedal" not in k and "Shade" not in k})
+        self.stop_indicator["pedal"].init_stop({k.lstrip("Pedal "): v["is_on"] for part in self.ctrls for k, v in self.ctrls[part].items() if "Pedal" in k})
 
     def init_controls(self):
         # Aeolian Duo-Art Organ tracker bar
@@ -30,72 +42,80 @@ class Aeolian176note(BasePlayer):
         # toggle switch controls. MIDI assignment is switch ON: ch=3, CC=20, value:{midi_val}, switch OFF: ch=3, CC=110, value={midi_val}
         self.ctrls = {
             # upper control holes of tracker bar
-            "swell_echo" : {"part": "swell", "hole_no": 0, "is_on": False, "last_time": 0, "midi_val": 0},
-            "swell_chimes" : {"part": "swell", "hole_no":  1, "is_on": False, "last_time": 0, "midi_val": 1},
-            "swell_tremolo" : {"part": "swell", "hole_no": 2, "is_on": False, "last_time": 0, "midi_val": 2},
-            "swell_harp" : {"part": "swell", "hole_no": 3, "is_on": False, "last_time": 0, "midi_val": 3},
-            "swell_trumpet" : {"part": "swell", "hole_no": 4, "is_on": False, "last_time": 0, "midi_val": 4},
-            "swell_oboe" : {"part": "swell", "hole_no": 5, "is_on": False, "last_time": 0, "midi_val": 5},
-            "swell_vox_humana" : {"part": "swell", "hole_no": 6, "is_on": False, "last_time": 0, "midi_val": 6},
-            "swell_diapason_mf" : {"part": "swell", "hole_no": 7, "is_on": False, "last_time": 0, "midi_val": 7},
-            "swell_flute16" : {"part": "swell", "hole_no": 8, "is_on": False, "last_time": 0, "midi_val": 8},
-            "swell_flute4" : {"part": "swell", "hole_no": 9, "is_on": False, "last_time": 0, "midi_val": 9},
-            "swell_fluteP" : {"part": "swell", "hole_no": 10, "is_on": False, "last_time": 0, "midi_val": 9},
-            "swell_string_vibrato_f" : {"part": "swell", "hole_no": 11, "is_on": False, "last_time": 0, "midi_val": 11},
-            "swell_string_f" : {"part": "swell", "hole_no": 12, "is_on": False, "last_time": 0, "midi_val": 11},
-            "swell_string_mf" : {"part": "swell", "hole_no": 13, "is_on": False, "last_time": 0, "midi_val": 11},
-            "swell_string_p" : {"part": "swell", "hole_no": 14, "is_on": False, "last_time": 0, "midi_val": 12},
-            "swell_string_pp" : {"part": "swell", "hole_no": 15, "is_on": False, "last_time": 0, "midi_val": 12},
-            "swell_shade1" : {"part": "swell", "hole_no": 16, "is_on": True},
-            "swell_shade2" : {"part": "swell", "hole_no": 17, "is_on": True},
-            "swell_shade3" : {"part": "swell", "hole_no": 18, "is_on": True},
-            "swell_shade4" : {"part": "swell", "hole_no": 19, "is_on": True},
-            "swell_shade5" : {"part": "swell", "hole_no": 20, "is_on": True},
-            "swell_shade6" : {"part": "swell", "hole_no": 21, "is_on": True},
-            # "swell_extension" : {"part": "swell", "hole_no": 22, "is_on": False},
-            # "LCW1" : {"part": "swell", "hole_no": 23, "is_on": False, "last_time": 0, "midi_val": },
-            # "LCW2" : {"part": "swell", "hole_no": 24, "is_on": False, "last_time": 0, "midi_val": },
-            "swell_soft_chimes" : {"part": "swell", "hole_no": 25, "is_on": False, "last_time": 0, "midi_val": 17},
-            # "reroll" : {"part": "swell", "hole_no": , "is_on": False, "last_time": 0, "midi_val": },
-            # "swell_ventil" : {"part": "swell", "hole_no": , "is_on": False, "last_time": 0, "midi_val": },
-            # "normal" : {"part": "swell", "hole_no": , "is_on": False, "last_time": 0, "midi_val": },
-            "pedal_to_upper" : {"part": "swell", "hole_no": 29, "is_on": False},
-
-            # lower control holes of tracker bar
-            "great_tremolo" : {"part": "great", "hole_no": 0, "is_on": False, "last_time": 0, "midi_val": 18},
-            "great_tonal" : {"part": "great", "hole_no": 1, "is_on": False, "last_time": 0, "midi_val": 19},
-            "great_harp" : {"part": "great", "hole_no": 2, "is_on": False, "last_time": 0, "midi_val": 20},
-            # "great_extension" : {"part": "great", "hole_no": 3, "is_on": False},
-            # "great_pedal_2nd_oct" : {"part": "great", "hole_no": 4, "is_on": False},
-            # "great_pedal_3rd_oct" : {"part": "great", "hole_no": 5, "is_on": False},
-            "great_shade1" : {"part": "great", "hole_no": 6, "is_on": True},
-            "great_shade2" : {"part": "great", "hole_no": 7, "is_on": True},
-            "great_shade3" : {"part": "great", "hole_no": 8, "is_on": True},
-            "great_shade4" : {"part": "great", "hole_no": 9, "is_on": True},
-            "great_shade5" : {"part": "great", "hole_no": 10, "is_on": True},
-            "great_shade6" : {"part": "great", "hole_no": 11, "is_on": True},
-            "great_pedal_bassoon16" : {"part": "great", "hole_no": 12, "is_on": False, "last_time": 0, "midi_val": 24},
-            "great_pedal_string16" : {"part": "great", "hole_no": 13, "is_on": False, "last_time": 0, "midi_val": 25},
-            "great_pedal_flute_f16" : {"part": "great", "hole_no": 14, "is_on": False, "last_time": 0, "midi_val": 26},
-            "great_pedal_flute_p16" : {"part": "great", "hole_no": 15, "is_on": False, "last_time": 0, "midi_val": 26},
-            "great_string_pp" : {"part": "great", "hole_no": 16, "is_on": False, "last_time": 0, "midi_val": 28},
-            "great_string_p" : {"part": "great", "hole_no": 17, "is_on": False, "last_time": 0, "midi_val": 29},
-            "great_string_f" : {"part": "great", "hole_no": 18, "is_on": False, "last_time": 0, "midi_val": 30},
-            "great_flute_p" : {"part": "great", "hole_no": 19, "is_on": False, "last_time": 0, "midi_val": 31},
-            "great_flute_f" : {"part": "great", "hole_no": 20, "is_on": False, "last_time": 0, "midi_val": 31},
-            "great_flute_4" : {"part": "great", "hole_no": 21, "is_on": False, "last_time": 0, "midi_val": 33},
-            "great_diapason_f" : {"part": "great", "hole_no": 22, "is_on": False, "last_time": 0, "midi_val": 34},
-            "great_piccolo" : {"part": "great", "hole_no": 23, "is_on": False, "last_time": 0, "midi_val": 35},
-            "great_clarinet" : {"part": "great", "hole_no": 24, "is_on": False, "last_time": 0, "midi_val": 36},
-            "great_trumpet" : {"part": "great", "hole_no": 25, "is_on": False, "last_time": 0, "midi_val": 37},
-            "chimes_dampers_off" : {"part": "great", "hole_no": 26, "is_on": False, "last_time": 0, "midi_val": 38},
-            # "LCW3" : {"part": "great", "hole_no": , "is_on": False, "last_time": 0, "midi_val": },
-            # "LCW4" : {"part": "great", "hole_no": , "is_on": False, "last_time": 0, "midi_val": },
-            # "great_ventil" : {"part": "great", "hole_no": , "is_on": False, "last_time": 0, "midi_val": }
+            "swell":{
+                "Echo" : {"hole_no": 0, "is_on": False, "last_time": 0, "midi_val": 0},
+                "Chimes" : {"hole_no":  1, "is_on": False, "last_time": 0, "midi_val": 1},
+                "Tremolo" : {"hole_no": 2, "is_on": False, "last_time": 0, "midi_val": 2},
+                "Harp" : {"hole_no": 3, "is_on": False, "last_time": 0, "midi_val": 3},
+                "Trumpet" : {"hole_no": 4, "is_on": False, "last_time": 0, "midi_val": 4},
+                "Oboe" : {"hole_no": 5, "is_on": False, "last_time": 0, "midi_val": 5},
+                "Vox Humana" : {"hole_no": 6, "is_on": False, "last_time": 0, "midi_val": 6},
+                "Diapason mf" : {"hole_no": 7, "is_on": False, "last_time": 0, "midi_val": 7},
+                "Flute 16" : {"hole_no": 8, "is_on": False, "last_time": 0, "midi_val": 8},
+                "Flute 4" : {"hole_no": 9, "is_on": False, "last_time": 0, "midi_val": 9},
+                "Flute p" : {"hole_no": 10, "is_on": False, "last_time": 0, "midi_val": 9},
+                "String Vibrato f" : {"hole_no": 11, "is_on": False, "last_time": 0, "midi_val": 11},
+                "String f" : {"hole_no": 12, "is_on": False, "last_time": 0, "midi_val": 11},
+                "String mf" : {"hole_no": 13, "is_on": False, "last_time": 0, "midi_val": 11},
+                "String p" : {"hole_no": 14, "is_on": False, "last_time": 0, "midi_val": 12},
+                "String pp" : {"hole_no": 15, "is_on": False, "last_time": 0, "midi_val": 12},
+                "Shade1" : {"hole_no": 16, "is_on": True},
+                "Shade2" : {"hole_no": 17, "is_on": True},
+                "Shade3" : {"hole_no": 18, "is_on": True},
+                "Shade4" : {"hole_no": 19, "is_on": True},
+                "Shade5" : {"hole_no": 20, "is_on": True},
+                "Shade6" : {"hole_no": 21, "is_on": True},
+                # "extension" : {"hole_no": 22, "is_on": False},
+                # "LCW1" : {"hole_no": 23, "is_on": False, "last_time": 0, "midi_val": },
+                # "LCW2" : {"hole_no": 24, "is_on": False, "last_time": 0, "midi_val": },
+                "Soft Chimes" : {"hole_no": 25, "is_on": False, "last_time": 0, "midi_val": 17},
+                # "reroll" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
+                # "ventil" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
+                # "normal" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
+                "Pedal to upper" : {"hole_no": 29, "is_on": False},
+            },
+            "great":{
+                # lower control holes of tracker bar
+                "Tremolo" : {"hole_no": 0, "is_on": False, "last_time": 0, "midi_val": 18},
+                "Tonal" : {"hole_no": 1, "is_on": False, "last_time": 0, "midi_val": 19},
+                "Harp" : {"hole_no": 2, "is_on": False, "last_time": 0, "midi_val": 20},
+                # "extension" : {"hole_no": 3, "is_on": False},
+                # "pedal_2nd_oct" : {"hole_no": 4, "is_on": False},
+                # "pedal_3rd_oct" : {"hole_no": 5, "is_on": False},
+                "Shade1" : {"hole_no": 6, "is_on": True},
+                "Shade2" : {"hole_no": 7, "is_on": True},
+                "Shade3" : {"hole_no": 8, "is_on": True},
+                "Shade4" : {"hole_no": 9, "is_on": True},
+                "Shade5" : {"hole_no": 10, "is_on": True},
+                "Shade6" : {"hole_no": 11, "is_on": True},
+                "Pedal Bassoon16" : {"hole_no": 12, "is_on": False, "last_time": 0, "midi_val": 24},
+                "Pedal String16" : {"hole_no": 13, "is_on": False, "last_time": 0, "midi_val": 25},
+                "Pedal Flute f16" : {"hole_no": 14, "is_on": False, "last_time": 0, "midi_val": 26},
+                "Pedal Flute p16" : {"hole_no": 15, "is_on": False, "last_time": 0, "midi_val": 26},
+                "String pp" : {"hole_no": 16, "is_on": False, "last_time": 0, "midi_val": 28},
+                "String p" : {"hole_no": 17, "is_on": False, "last_time": 0, "midi_val": 29},
+                "String f" : {"hole_no": 18, "is_on": False, "last_time": 0, "midi_val": 30},
+                "Flute p" : {"hole_no": 19, "is_on": False, "last_time": 0, "midi_val": 31},
+                "Flute f" : {"hole_no": 20, "is_on": False, "last_time": 0, "midi_val": 31},
+                "Flute 4" : {"hole_no": 21, "is_on": False, "last_time": 0, "midi_val": 33},
+                "Diapason f" : {"hole_no": 22, "is_on": False, "last_time": 0, "midi_val": 34},
+                "Piccolo" : {"hole_no": 23, "is_on": False, "last_time": 0, "midi_val": 35},
+                "Clarinet" : {"hole_no": 24, "is_on": False, "last_time": 0, "midi_val": 36},
+                "Trumpet" : {"hole_no": 25, "is_on": False, "last_time": 0, "midi_val": 37},
+                "Chimes damper off" : {"hole_no": 26, "is_on": False, "last_time": 0, "midi_val": 38},
+                # "LCW3" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
+                # "LCW4" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
+                # "ventil" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": }
+            },
         }
 
         [self.midi.control_change(110, v, 3) for v in range(128)]
         self.pedal_all_off = True
+
+        if self.stop_indicator is not None:
+            self.stop_indicator["swell"].change_stop({k: v["is_on"] for k, v in self.ctrls["swell"].items() if "Pedal" not in k and "Shade" not in k})
+            self.stop_indicator["great"].change_stop({k: v["is_on"] for k, v in self.ctrls["great"].items() if "Pedal" not in k and "Shade" not in k})
+            self.stop_indicator["pedal"].change_stop({k.lstrip("Pedal "): v["is_on"] for part in self.ctrls for k, v in self.ctrls[part].items() if "Pedal" in k})
 
     def emulate_off(self):
         super().emulate_off()
@@ -126,14 +146,14 @@ class Aeolian176note(BasePlayer):
             [self.midi.note_off(note, channel=midi_ch) for note in notes_off]
 
         # pedal notes
-        if self.ctrls["great_pedal_bassoon16"]["is_on"] or \
-            self.ctrls["great_pedal_flute_f16"]["is_on"] or \
-            self.ctrls["great_pedal_flute_p16"]["is_on"] or \
-            self.ctrls["great_pedal_string16"]["is_on"]:
+        if self.ctrls["great"]["Pedal Bassoon16"]["is_on"] or \
+            self.ctrls["great"]["Pedal Flute f16"]["is_on"] or \
+            self.ctrls["great"]["Pedal Flute p16"]["is_on"] or \
+            self.ctrls["great"]["Pedal String16"]["is_on"]:
 
             self.pedal_all_off = False
             note = self.holes["great_note"]
-            if self.ctrls["pedal_to_upper"]["is_on"]:
+            if self.ctrls["swell"]["Pedal to upper"]["is_on"]:
                 note = self.holes["swell_note"]
 
             # pedal notes ON
@@ -175,61 +195,70 @@ class Aeolian176note(BasePlayer):
         delta_time = curtime - self.pre_time
 
         # check toggle switch holes
-        for key, val in self.ctrls.items():
-            controls = self.holes[f"{val['part']}_controls"]
-            hole_no = val["hole_no"]
-            if not controls["to_open"][hole_no]:
-                continue
-
-            if "last_time" in val:
-                if curtime - val["last_time"] < self.prevent_chattering_wait:
-                    # skip to prevent toggle switch chattering
-                    print("prevent chattering")
+        for part, ctrls in self.ctrls.items():
+            for key, val in ctrls.items():
+                controls = self.holes[f"{part}_controls"]
+                hole_no = val["hole_no"]
+                if not controls["to_open"][hole_no]:
                     continue
-                else:
-                    val["last_time"] = curtime
 
-            # toggle switch function
-            val["is_on"] = not val["is_on"]
-            # print(key, val["is_on"])
+                if "last_time" in val:
+                    if curtime - val["last_time"] < self.prevent_chattering_wait:
+                        # skip to prevent toggle switch chattering
+                        print("prevent chattering")
+                        continue
+                    else:
+                        val["last_time"] = curtime
 
-            note_no = val.get("midi_val")
-            if note_no is not None:
-                if val["is_on"]:
-                    self.midi.control_change(20, note_no, channel=3)
-                else:
-                    # When treating multiple stops with the same note number, note-off after all stops is off
-                    if key in ("swell_string_vibrato_f", "swell_string_f", "swell_string_mf") and \
-                        (self.ctrls["swell_string_vibrato_f"]["is_on"] or \
-                        self.ctrls["swell_string_f"]["is_on"] or \
-                        self.ctrls["swell_string_mf"]["is_on"]):
-                            continue
+                # toggle switch function
+                val["is_on"] = not val["is_on"]
 
-                    if key in ("swell_string_p", "swell_string_pp") and \
-                        (self.ctrls["swell_string_p"]["is_on"] or \
-                        self.ctrls["swell_string_pp"]["is_on"]):
-                            continue
+                # update stop panel
+                if self.stop_indicator is not None and "Shade" not in key:
+                    panel_part = part
+                    if "Pedal" in key:
+                        panel_part = "pedal"
+                        key = key.lstrip("Pedal ")
 
-                    if key in ("swell_flute4" , "swell_fluteP") and \
-                        (self.ctrls["swell_flute4"]["is_on"] or \
-                        self.ctrls["swell_fluteP"]["is_on"]):
-                            continue
+                    self.stop_indicator[panel_part].change_stop({key: val["is_on"]})
 
-                    if key in ("great_flute_p", "great_flute_f") and \
-                        (self.ctrls["great_flute_p"]["is_on"] or \
-                        self.ctrls["great_flute_f"]["is_on"]):
-                            continue
+                note_no = val.get("midi_val")
+                if note_no is not None:
+                    if val["is_on"]:
+                        self.midi.control_change(20, note_no, channel=3)
+                    else:
+                        # When treating multiple stops with the same note number, note-off after all stops is off
+                        if part == "swell" and key in ("String Vibrato f", "String f", "String mf") and \
+                            (self.ctrls["swell"]["String Vibrato f"]["is_on"] or \
+                            self.ctrls["swell"]["String f"]["is_on"] or \
+                            self.ctrls["swell"]["String mf"]["is_on"]):
+                                continue
 
-                    if "great_pedal_flute" in key and \
-                        (self.ctrls["great_pedal_flute_f16"]["is_on"] or \
-                        self.ctrls["great_pedal_flute_p16"]["is_on"]):
-                            continue
+                        if part == "swell" and key in ("String p", "String pp") and \
+                            (self.ctrls["swell"]["String p"]["is_on"] or \
+                            self.ctrls["swell"]["String pp"]["is_on"]):
+                                continue
 
-                    self.midi.control_change(110, note_no, channel=3)
+                        if part == "swell" and key in ("Flute 4" , "Flute p") and \
+                            (self.ctrls["swell"]["Flute 4"]["is_on"] or \
+                            self.ctrls["swell"]["Flute p"]["is_on"]):
+                                continue
 
-            if key == "pedal_to_upper":
-                # reset all pedal note
-                [self.midi.note_off(k, channel=2) for k in range(128)]
+                        if part == "great" and key in ("Flute p", "Flute f") and \
+                            (self.ctrls["Flute p"]["is_on"] or \
+                            self.ctrls["Flute f"]["is_on"]):
+                                continue
+
+                        if part == "great" and "Pedal Flute" in key and \
+                            (self.ctrls["Pedal Flute f16"]["is_on"] or \
+                            self.ctrls["Pedal Flute p16"]["is_on"]):
+                                continue
+
+                        self.midi.control_change(110, note_no, channel=3)
+
+                if key == "pedal_to_upper":
+                    # reset all pedal note
+                    [self.midi.note_off(k, channel=2) for k in range(128)]
 
         # fix shade error
         self.fix_shade_error()
@@ -237,7 +266,7 @@ class Aeolian176note(BasePlayer):
         # swell expression shade position
         target_val = self.shade["shade0"]
         for no in range(1, 6 + 1):
-            if self.ctrls[f"swell_shade{no}"]["is_on"]:
+            if self.ctrls["swell"][f"Shade{no}"]["is_on"]:
                 target_val = self.shade[f"shade{no}"]
 
         if target_val > self.swell_shade_val:
@@ -252,7 +281,7 @@ class Aeolian176note(BasePlayer):
         # great expression shade position
         target_val = self.shade["shade0"]
         for no in range(1, 6 + 1):
-            if self.ctrls[f"great_shade{no}"]["is_on"]:
+            if self.ctrls["great"][f"Shade{no}"]["is_on"]:
                 target_val = self.shade[f"shade{no}"]
 
         if target_val > self.great_shade_val:
@@ -267,11 +296,11 @@ class Aeolian176note(BasePlayer):
         self.pre_time = curtime
 
     def fix_shade_error(self):
-        # Sometimes, shade errors occurs due to inconsistent on/off for each shade by the perforation error etc...
-        # So if the shade perforations are in order 3→2→1, force reset all shade off
+        # Sometimes, shade errors occurs due to inconsistent on/off for each shade caused by perforation error etc...
+        # So if the shade perforations are in order 3→2→1 to close, force reset all shade off
         for part in ("swell", "great"):
             for no in range(1, 3 + 1):
-                hole_no = self.ctrls[f"{part}_shade{no}"]["hole_no"]
+                hole_no = self.ctrls[part][f"Shade{no}"]["hole_no"]
                 if self.holes[f"{part}_controls"]["to_close"][hole_no]:
                     if no == 3:
                         self.shade_error_detector[part] = []  # reset list
@@ -282,7 +311,7 @@ class Aeolian176note(BasePlayer):
                         self.shade_error_detector[part] = []
                         # set all shade to off to fix error
                         for no in range(1, 6 + 1):
-                            self.ctrls[f"{part}_shade{no}"]["is_on"] = False
+                            self.ctrls[part][f"Shade{no}"]["is_on"] = False
 
                     if len(self.shade_error_detector[part]) > 3:
                         # if list length is too much, reset
