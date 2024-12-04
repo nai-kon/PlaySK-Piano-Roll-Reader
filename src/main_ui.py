@@ -84,9 +84,7 @@ class MainFrame(wx.Frame):
         self.adjust_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((180, 40))), label="Adjust CIS Image")
         self.adjust_btn.Bind(wx.EVT_BUTTON, self.adjust_image)
 
-        self.organ_swell_indicator = OrganStopIndicator(self, "Swell Stops")
-        self.organ_great_indicator = OrganStopIndicator(self, "Great Stops")
-        self.organ_pedal_indicator = OrganStopIndicator(self, "Pedal Stops")
+        self.organ_stop_indicator = OrganStopIndicator(self)
 
         self.callback = CallBack(None, self.tracking, self.bass_vacuum_lv, self.treble_vacuum_lv)
         self.midiobj = MidiWrap()
@@ -103,9 +101,7 @@ class MainFrame(wx.Frame):
         self.sizer2.Add(self.speed, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.tracking, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.manual_expression, flag=wx.EXPAND | wx.ALL, border=border_size)
-        self.sizer2.Add(self.organ_swell_indicator, flag=wx.EXPAND | wx.ALL, border=border_size)
-        self.sizer2.Add(self.organ_great_indicator, flag=wx.EXPAND | wx.ALL, border=border_size)
-        self.sizer2.Add(self.organ_pedal_indicator, flag=wx.EXPAND | wx.ALL, border=border_size)
+        self.sizer2.Add(self.organ_stop_indicator, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.bass_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.treble_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.adjust_btn, flag=wx.EXPAND | wx.ALL, border=border_size)
@@ -263,20 +259,16 @@ class MainFrame(wx.Frame):
             self.callback.player.manual_expression = self.manual_expression.IsChecked()
 
         if name == "Aeolian 176-note Pipe Organ":
-            self.callback.player.init_stop_indicator(self.organ_swell_indicator, self.organ_great_indicator, self.organ_pedal_indicator)
+            self.callback.player.init_stop_indicator(self.organ_stop_indicator)
             self.manual_expression.Hide()
             self.bass_vacuum_lv.Hide()
             self.treble_vacuum_lv.Hide()
-            self.organ_swell_indicator.Show()
-            self.organ_great_indicator.Show()
-            self.organ_pedal_indicator.Show()
+            self.organ_stop_indicator.Show()
         else:
             self.manual_expression.Show()
             self.bass_vacuum_lv.Show()
             self.treble_vacuum_lv.Show()
-            self.organ_swell_indicator.Hide()
-            self.organ_great_indicator.Hide()
-            self.organ_pedal_indicator.Hide()
+            self.organ_stop_indicator.Hide()
         self.Fit()
 
     def change_scale(self, event=None):

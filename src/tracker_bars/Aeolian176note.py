@@ -15,16 +15,15 @@ class Aeolian176note(BasePlayer):
         self.stop_indicator = None
         self.init_controls()
 
-    def init_stop_indicator(self, swell_indicator, great_indicator, pedal_indicator) -> None:
-        self.stop_indicator = {
-            "swell": swell_indicator,
-            "great": great_indicator,
-            "pedal": pedal_indicator,
-        }
+    def init_stop_indicator(self, stop_indicator) -> None:
+        self.stop_indicator = stop_indicator
 
-        self.stop_indicator["swell"].init_stop({k: v["is_on"] for k, v in self.ctrls["swell"].items() if "Pedal" not in k and "Shade" not in k})
-        self.stop_indicator["great"].init_stop({k: v["is_on"] for k, v in self.ctrls["great"].items() if "Pedal" not in k and "Shade" not in k})
-        self.stop_indicator["pedal"].init_stop({k.lstrip("Pedal "): v["is_on"] for part in self.ctrls for k, v in self.ctrls[part].items() if "Pedal" in k})
+        stops = {
+            "Swell Stops": {k: v["is_on"] for k, v in self.ctrls["swell"].items() if "Pedal" not in k and "Shade" not in k},
+            "Great Stops": {k: v["is_on"] for k, v in self.ctrls["great"].items() if "Pedal" not in k and "Shade" not in k},
+            "Pedal Stops": {k.lstrip("Pedal "): v["is_on"] for part in self.ctrls for k, v in self.ctrls[part].items() if "Pedal" in k},
+        }
+        self.stop_indicator.init_stop(stops)
 
     def init_controls(self):
         # Aeolian Duo-Art Organ tracker bar
@@ -113,9 +112,12 @@ class Aeolian176note(BasePlayer):
         self.pedal_all_off = True
 
         if self.stop_indicator is not None:
-            self.stop_indicator["swell"].change_stop({k: v["is_on"] for k, v in self.ctrls["swell"].items() if "Pedal" not in k and "Shade" not in k})
-            self.stop_indicator["great"].change_stop({k: v["is_on"] for k, v in self.ctrls["great"].items() if "Pedal" not in k and "Shade" not in k})
-            self.stop_indicator["pedal"].change_stop({k.lstrip("Pedal "): v["is_on"] for part in self.ctrls for k, v in self.ctrls[part].items() if "Pedal" in k})
+            stops = {
+                "Swell Stops": {k: v["is_on"] for k, v in self.ctrls["swell"].items() if "Pedal" not in k and "Shade" not in k},
+                "Great Stops": {k: v["is_on"] for k, v in self.ctrls["great"].items() if "Pedal" not in k and "Shade" not in k},
+                "Pedal Stops": {k.lstrip("Pedal "): v["is_on"] for part in self.ctrls for k, v in self.ctrls[part].items() if "Pedal" in k},
+            }
+            self.stop_indicator.change_stop(stops)
 
     def emulate_off(self):
         super().emulate_off()
@@ -215,8 +217,9 @@ class Aeolian176note(BasePlayer):
 
                 # update stop panel
                 if self.stop_indicator is not None and "Shade" not in key:
-                    panel_part = "pedal" if "Pedal" in key else part
-                    self.stop_indicator[panel_part].change_stop({key.lstrip("Pedal "): val["is_on"]})
+                    part_name = "Swell Stops" if part == "swell" else "Great Stops"
+                    part_name = "Pedal Stops" if "Pedal" in key else part_name
+                    self.stop_indicator.change_stop({part_name: {key.lstrip("Pedal "): val["is_on"]}})
 
                 note_no = val.get("midi_val")
                 if note_no is not None:

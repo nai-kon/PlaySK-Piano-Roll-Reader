@@ -6,9 +6,9 @@ from controls import BasePanel
 
 
 class OrganStopIndicator(BasePanel):
-    def __init__(self, parent, caption: str="") -> None:
+    def __init__(self, parent) -> None:
         BasePanel.__init__(self, parent, wx.ID_ANY)
-        self.caption = wx.StaticText(self, wx.ID_ANY, caption)
+        self.parent = parent
 
         self.data = {}
         self.grid = wx.grid.Grid(self)
@@ -33,45 +33,66 @@ class OrganStopIndicator(BasePanel):
         self.text_color_on = "black"
         self.grid.SetDefaultCellBackgroundColour(self.cell_color_off)
 
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.caption, flag=wx.EXPAND)
-        sizer.Add(self.grid, flag=wx.EXPAND)
-        self.SetSizer(sizer)
-        self.Fit()
-
-    def init_stop(self, data: dict[str, bool]) -> None:
+    def init_stop(self, data: dict[str, dict[str, bool]]) -> None:
         if self.grid.GetNumberRows() > 0:
-            # already initialized
+            # already created
             return
 
-        # initialize stop
+        # calc each cell position
         cols = 3
-        rows = math.ceil(len(data) / cols)
-        self.grid.CreateGrid(rows, cols)
-        for i, label in enumerate(data):
-            row = i % rows
-            col = i // rows
-            self.data[label] = {"col": col, "row": row}
-            self.grid.SetCellValue(row, col, label)
+        cur_row = 0
+        for part, stops in data.items():
+            self.data[part] = {}
+            cur_row += 1
+            rows = math.ceil(len(stops) / cols)
+            for i, stop in enumerate(stops):
+                row = i % rows + cur_row
+                col = i // rows
+                self.data[part][stop] = {"col": col, "row": row}
+
+            cur_row += rows
+
+        # create grid
+        self.grid.CreateGrid(cur_row, cols)
+
+        header_bg_color = self.parent.GetBackgroundColour()
+
+        # set cells
+        cur_row = 0
+        for part in data:
+            # part cell
+            self.grid.SetCellValue(cur_row, 0, part)
+            self.grid.SetCellBackgroundColour(cur_row, 0, header_bg_color)
+            # self.grid.SetCellTextColour(cur_row, 0, header_text_color)
+            self.grid.SetCellSize(cur_row, 0, 1, 3)
+
+            # stop cells
+            max_row = 0
+            for stop, pos in self.data[part].items():
+                row, col = pos["row"], pos["col"]
+                self.grid.SetCellValue(row, col, stop)
+                max_row = max(row, max_row)
+            cur_row = max_row + 1
 
         self.change_stop(data)
-        self.grid.AutoSizeRows()
+        self.grid.AutoSize()
         self.Fit()
 
-    def _change_stop_inner(self, data: dict[str, bool]) -> None:
-        # change stop on/off
-        for label, is_on in data.items():
-            pos = self.data.get(label, None)
-            if pos is None:
-                continue
+    def _change_stop_inner(self, data: dict[str, dict[str, bool]]) -> None:
+        # change stop indicator on/off
+        for part, stops in data.items():
+            for label, is_on in stops.items():
+                pos = self.data[part].get(label, None)
+                if pos is None:
+                    continue
 
-            row, col = pos["row"], pos["col"]
-            if is_on:
-                self.grid.SetCellBackgroundColour(row, col, self.cell_color_on)
-                self.grid.SetCellTextColour(row, col, self.text_color_on)
-            else:
-                self.grid.SetCellBackgroundColour(row, col, self.cell_color_off)
-                self.grid.SetCellTextColour(row, col, self.text_color_off)
+                row, col = pos["row"], pos["col"]
+                if is_on:
+                    self.grid.SetCellBackgroundColour(row, col, self.cell_color_on)
+                    self.grid.SetCellTextColour(row, col, self.text_color_on)
+                else:
+                    self.grid.SetCellBackgroundColour(row, col, self.cell_color_off)
+                    self.grid.SetCellTextColour(row, col, self.text_color_off)
 
         self.Refresh()
 
@@ -87,22 +108,31 @@ if __name__ == "__main__":
     panel1 = OrganStopIndicator(frame, "Swell")
 
     data = {
-        "Chimes": False,
-        "Flute4": True,
-        "Tremolo": False,
-        "FluteP": True,
-        "Harp": False,
-        "String Vibrato f": False,
-        "Trumpet": False,
-        "String f": True,
-        "Oboe": False,
-        "String mf": True,
-        "Vox Humana": False,
-        "String p": False,
-        "Diapason mf": True,
-        "String pp": True,
-        "Flute16": False,
-        "Soft chimes": False,
+        "Swell":{
+            "Chimes": False,
+            "Flute4": True,
+            "Tremolo": False,
+            "FluteP": True,
+            "Harp": False,
+            "String Vibrato f": False,
+            "Trumpet": False,
+            "String f": True,
+            "Oboe": False,
+            "String mf": True,
+            "Vox Humana": False,
+            "String p": False,
+            "Diapason mf": True,
+            "String pp": True,
+            "Flute16": False,
+            "Soft chimes": False,
+        },
+        "Great":{
+            "Chimes": False,
+            "Flute4": True,
+            "Tremolo": False,
+            "FluteP": True,
+            "Harp": False,
+        }
     }
     panel1.init_stop(data)
 
