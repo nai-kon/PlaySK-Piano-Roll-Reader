@@ -12,6 +12,8 @@ class OrganStopIndicator(BasePanel):
 
         self.data = {}
         self.grid = wx.grid.Grid(self)
+        # font = wx.Font(9, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        # self.grid.SetDefaultCellFont(font)
         self.grid.EnableGridLines(False)
         # disable edit
         self.grid.EnableEditing(False)
@@ -31,8 +33,6 @@ class OrganStopIndicator(BasePanel):
         self.text_color_on = "black"
         self.grid.SetDefaultCellBackgroundColour(self.cell_color_off)
 
-        self.grid.AutoSize()
-
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.caption, flag=wx.EXPAND)
         sizer.Add(self.grid, flag=wx.EXPAND)
@@ -40,8 +40,12 @@ class OrganStopIndicator(BasePanel):
         self.Fit()
 
     def init_stop(self, data: dict[str, bool]) -> None:
+        if self.grid.GetNumberRows() > 0:
+            # already initialized
+            return
+
         # initialize stop
-        cols = 2
+        cols = 3
         rows = math.ceil(len(data) / cols)
         self.grid.CreateGrid(rows, cols)
         for i, label in enumerate(data):
@@ -51,7 +55,7 @@ class OrganStopIndicator(BasePanel):
             self.grid.SetCellValue(row, col, label)
 
         self.change_stop(data)
-        self.grid.AutoSize()
+        self.grid.AutoSizeRows()
         self.Fit()
 
     def _change_stop_inner(self, data: dict[str, bool]) -> None:

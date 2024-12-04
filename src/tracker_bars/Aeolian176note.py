@@ -44,7 +44,7 @@ class Aeolian176note(BasePlayer):
             # upper control holes of tracker bar
             "swell":{
                 "Echo" : {"hole_no": 0, "is_on": False, "last_time": 0, "midi_val": 0},
-                "Chimes" : {"hole_no":  1, "is_on": False, "last_time": 0, "midi_val": 1},
+                "Chime" : {"hole_no":  1, "is_on": False, "last_time": 0, "midi_val": 1},
                 "Tremolo" : {"hole_no": 2, "is_on": False, "last_time": 0, "midi_val": 2},
                 "Harp" : {"hole_no": 3, "is_on": False, "last_time": 0, "midi_val": 3},
                 "Trumpet" : {"hole_no": 4, "is_on": False, "last_time": 0, "midi_val": 4},
@@ -68,11 +68,11 @@ class Aeolian176note(BasePlayer):
                 # "extension" : {"hole_no": 22, "is_on": False},
                 # "LCW1" : {"hole_no": 23, "is_on": False, "last_time": 0, "midi_val": },
                 # "LCW2" : {"hole_no": 24, "is_on": False, "last_time": 0, "midi_val": },
-                "Soft Chimes" : {"hole_no": 25, "is_on": False, "last_time": 0, "midi_val": 17},
+                "Soft Chime" : {"hole_no": 25, "is_on": False, "last_time": 0, "midi_val": 17},
                 # "reroll" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
                 # "ventil" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
                 # "normal" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
-                "Pedal to upper" : {"hole_no": 29, "is_on": False},
+                "Pedal to Swell" : {"hole_no": 29, "is_on": False},
             },
             "great":{
                 # lower control holes of tracker bar
@@ -88,8 +88,8 @@ class Aeolian176note(BasePlayer):
                 "Shade4" : {"hole_no": 9, "is_on": True},
                 "Shade5" : {"hole_no": 10, "is_on": True},
                 "Shade6" : {"hole_no": 11, "is_on": True},
-                "Pedal Bassoon16" : {"hole_no": 12, "is_on": False, "last_time": 0, "midi_val": 24},
-                "Pedal String16" : {"hole_no": 13, "is_on": False, "last_time": 0, "midi_val": 25},
+                "Pedal Bassoon 16" : {"hole_no": 12, "is_on": False, "last_time": 0, "midi_val": 24},
+                "Pedal String 16" : {"hole_no": 13, "is_on": False, "last_time": 0, "midi_val": 25},
                 "Pedal Flute f16" : {"hole_no": 14, "is_on": False, "last_time": 0, "midi_val": 26},
                 "Pedal Flute p16" : {"hole_no": 15, "is_on": False, "last_time": 0, "midi_val": 26},
                 "String pp" : {"hole_no": 16, "is_on": False, "last_time": 0, "midi_val": 28},
@@ -102,7 +102,7 @@ class Aeolian176note(BasePlayer):
                 "Piccolo" : {"hole_no": 23, "is_on": False, "last_time": 0, "midi_val": 35},
                 "Clarinet" : {"hole_no": 24, "is_on": False, "last_time": 0, "midi_val": 36},
                 "Trumpet" : {"hole_no": 25, "is_on": False, "last_time": 0, "midi_val": 37},
-                "Chimes damper off" : {"hole_no": 26, "is_on": False, "last_time": 0, "midi_val": 38},
+                "Chime Damper" : {"hole_no": 26, "is_on": False, "last_time": 0, "midi_val": 38},
                 # "LCW3" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
                 # "LCW4" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
                 # "ventil" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": }
@@ -146,14 +146,14 @@ class Aeolian176note(BasePlayer):
             [self.midi.note_off(note, channel=midi_ch) for note in notes_off]
 
         # pedal notes
-        if self.ctrls["great"]["Pedal Bassoon16"]["is_on"] or \
+        if self.ctrls["great"]["Pedal Bassoon 16"]["is_on"] or \
             self.ctrls["great"]["Pedal Flute f16"]["is_on"] or \
             self.ctrls["great"]["Pedal Flute p16"]["is_on"] or \
-            self.ctrls["great"]["Pedal String16"]["is_on"]:
+            self.ctrls["great"]["Pedal String 16"]["is_on"]:
 
             self.pedal_all_off = False
             note = self.holes["great_note"]
-            if self.ctrls["swell"]["Pedal to upper"]["is_on"]:
+            if self.ctrls["swell"]["Pedal to Swell"]["is_on"]:
                 note = self.holes["swell_note"]
 
             # pedal notes ON
@@ -215,12 +215,8 @@ class Aeolian176note(BasePlayer):
 
                 # update stop panel
                 if self.stop_indicator is not None and "Shade" not in key:
-                    panel_part = part
-                    if "Pedal" in key:
-                        panel_part = "pedal"
-                        key = key.lstrip("Pedal ")
-
-                    self.stop_indicator[panel_part].change_stop({key: val["is_on"]})
+                    panel_part = "pedal" if "Pedal" in key else part
+                    self.stop_indicator[panel_part].change_stop({key.lstrip("Pedal "): val["is_on"]})
 
                 note_no = val.get("midi_val")
                 if note_no is not None:
@@ -245,18 +241,18 @@ class Aeolian176note(BasePlayer):
                                 continue
 
                         if part == "great" and key in ("Flute p", "Flute f") and \
-                            (self.ctrls["Flute p"]["is_on"] or \
-                            self.ctrls["Flute f"]["is_on"]):
+                            (self.ctrls["great"]["Flute p"]["is_on"] or \
+                            self.ctrls["great"]["Flute f"]["is_on"]):
                                 continue
 
                         if part == "great" and "Pedal Flute" in key and \
-                            (self.ctrls["Pedal Flute f16"]["is_on"] or \
-                            self.ctrls["Pedal Flute p16"]["is_on"]):
+                            (self.ctrls["great"]["Pedal Flute f16"]["is_on"] or \
+                            self.ctrls["great"]["Pedal Flute p16"]["is_on"]):
                                 continue
 
                         self.midi.control_change(110, note_no, channel=3)
 
-                if key == "pedal_to_upper":
+                if key == "Pedal to Swell":
                     # reset all pedal note
                     [self.midi.note_off(k, channel=2) for k in range(128)]
 

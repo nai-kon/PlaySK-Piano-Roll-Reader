@@ -84,9 +84,9 @@ class MainFrame(wx.Frame):
         self.adjust_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((180, 40))), label="Adjust CIS Image")
         self.adjust_btn.Bind(wx.EVT_BUTTON, self.adjust_image)
 
-        self.organ_swell_indicator = OrganStopIndicator(self, "Swell")
-        self.organ_great_indicator = OrganStopIndicator(self, "Great")
-        self.organ_pedal_indicator = OrganStopIndicator(self, "Pedal")
+        self.organ_swell_indicator = OrganStopIndicator(self, "Swell Stops")
+        self.organ_great_indicator = OrganStopIndicator(self, "Great Stops")
+        self.organ_pedal_indicator = OrganStopIndicator(self, "Pedal Stops")
 
         self.callback = CallBack(None, self.tracking, self.bass_vacuum_lv, self.treble_vacuum_lv)
         self.midiobj = MidiWrap()
@@ -123,6 +123,7 @@ class MainFrame(wx.Frame):
         self.SetDropTarget(self.droptarget)
         self.adjust_btn.Hide()
 
+        self.Bind(wx.EVT_SIZE, self.on_resize)
         self.Bind(wx.EVT_CLOSE, self.on_close)
         self.Show()
 
@@ -203,6 +204,20 @@ class MainFrame(wx.Frame):
 
     def post_status_msg(self, msg: str):
         wx.CallAfter(self.sbar.SetStatusText, text=msg, i=6)
+
+    def on_resize(self, event):
+        # selection of status bar needs manually re-position
+        # midi port sel
+        rect = self.sbar.GetFieldRect(1)
+        self.port_sel.SetPosition((rect.x, 0))
+        # tracker bar sel
+        rect = self.sbar.GetFieldRect(4)
+        self.player_sel.SetPosition((rect.x, 0))
+        # windows scale sel
+        rect = self.sbar.GetFieldRect(8)
+        self.scale_sel.SetPosition((rect.x, 0))
+
+        event.Skip()
 
     def on_close(self, event):
         print("on_close called")
