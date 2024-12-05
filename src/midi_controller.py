@@ -82,6 +82,10 @@ class MidiWrap:
         if self.enable:
             self.output.send(Message("control_change", control=number, value=value, channel=channel))
 
+    def program_change(self, program_no: int, channel: int = 0) -> None:
+        if self.enable:
+            self.output.send(Message("program_change", program=program_no, channel=channel))
+
 
 if __name__ == "__main__":
     import time

@@ -14,12 +14,12 @@ from controls import (
     WelcomeMsg,
 )
 from midi_controller import MidiWrap
+from organ_stop_indicator import OrganStopIndicator
 from player_mng import PlayerMng
-from tracker_bars import BasePlayer
 from roll_scroll import InputScanImg, load_scan
+from tracker_bars import BasePlayer
 from vacuum_gauge import VacuumGauge
 from version import APP_TITLE
-from organ_stop_indicator import OrganStopIndicator
 
 
 class CallBack:

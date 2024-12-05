@@ -149,6 +149,9 @@ class BasePlayer:
             ord("L"): {"press": False, "vacuum": 15},
         }
 
+        # set piano sound for GM sound
+        self.midi.program_change(0, channel=0)
+
     def calc_velocity(self):
         idx = np.digitize([self.bass_vacuum, self.treble_vacuum], bins=self.velocity_bins)
         return self.velocity[0] + idx

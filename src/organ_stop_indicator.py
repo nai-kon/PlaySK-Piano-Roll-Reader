@@ -36,6 +36,7 @@ class OrganStopIndicator(BasePanel):
     def init_stop(self, data: dict[str, dict[str, bool]]) -> None:
         if self.grid.GetNumberRows() > 0:
             # already created
+            self.change_stop(data)
             return
 
         # calc each cell position
@@ -63,6 +64,7 @@ class OrganStopIndicator(BasePanel):
             # part cell
             self.grid.SetCellValue(cur_row, 0, part)
             self.grid.SetCellBackgroundColour(cur_row, 0, header_bg_color)
+            self.grid.SetCellAlignment(cur_row, 0, wx.ALIGN_LEFT, wx.ALIGN_BOTTOM)
             # self.grid.SetCellTextColour(cur_row, 0, header_text_color)
             self.grid.SetCellSize(cur_row, 0, 1, 3)
 
@@ -105,7 +107,7 @@ if __name__ == "__main__":
     windll.shcore.SetProcessDpiAwareness(True)
     app = wx.App()
     frame = wx.Frame(None, wx.ID_ANY, size=(1000, 1000))
-    panel1 = OrganStopIndicator(frame, "Swell")
+    panel1 = OrganStopIndicator(frame)
 
     data = {
         "Swell":{

@@ -13,6 +13,11 @@ class Aeolian176note(BasePlayer):
         self.pre_time = None
         self.prevent_chattering_wait = 0.2  # toggle switch reaction threshold seconds to prevent chattering
         self.stop_indicator = None
+
+        # set church organ sound for GM sound
+        for ch in range(3):
+            self.midi.program_change(19, ch)
+
         self.init_controls()
 
     def init_stop_indicator(self, stop_indicator) -> None:
