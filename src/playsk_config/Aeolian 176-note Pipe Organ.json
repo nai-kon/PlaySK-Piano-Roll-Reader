@@ -16,7 +16,7 @@
       "shade4": 91,
       "shade5": 108,
       "shade6": 127,
-      "min_to_max_second": 0.7
+      "min_to_max_second": 0.5
     }
   },
   "tracker_holes": {

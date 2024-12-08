@@ -175,7 +175,7 @@ class Aeolian176note(BasePlayer):
                 pedal_notes_on.extend([key + offset + 12 for key in note["to_open"].nonzero()[0] if key < 13])
                 pedal_notes_off.extend([key + offset + 12 for key in note["to_close"].nonzero()[0] if key < 13])
             elif self.holes["great_controls"]["to_close"][4] or self.holes["great_controls"]["to_close"][5]:
-                pedal_notes_off.extend([key + offset for key in range(13, 25)])
+                pedal_notes_off.extend([key + offset for key in range(12, 25)])
 
             # pedal 3rd octave notes
             if self.holes["great_controls"]["to_open"][5]:
@@ -185,7 +185,7 @@ class Aeolian176note(BasePlayer):
                 pedal_notes_on.extend([key + offset + 24 for key in note["to_open"].nonzero()[0] if key < 8])
                 pedal_notes_off.extend([key + offset + 24 for key in note["to_close"].nonzero()[0] if key < 8])
             elif self.holes["great_controls"]["to_close"][5]:
-                pedal_notes_off.extend([key + offset for key in range(25, 32)])
+                pedal_notes_off.extend([key + offset for key in range(24, 32)])
 
             # send MIDI signal
             [self.midi.note_on(note, velocity, channel=2) for note in pedal_notes_on]

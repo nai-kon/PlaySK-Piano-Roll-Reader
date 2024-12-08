@@ -73,6 +73,7 @@ class OrganStopIndicator(BasePanel):
             for stop, pos in self.data[part].items():
                 row, col = pos["row"], pos["col"]
                 self.grid.SetCellValue(row, col, stop)
+                self.grid.SetCellAlignment(row, col, wx.ALIGN_CENTER, wx.ALIGN_CENTER)
                 max_row = max(row, max_row)
             cur_row = max_row + 1
 
