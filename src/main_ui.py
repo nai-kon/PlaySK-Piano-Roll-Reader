@@ -20,6 +20,7 @@ from roll_scroll import InputScanImg, load_scan
 from tracker_bars import BasePlayer
 from vacuum_gauge import VacuumGauge
 from version import APP_TITLE
+from wx.lib.agw.hyperlink import HyperLinkCtrl
 
 
 class CallBack:
@@ -60,31 +61,38 @@ class MainFrame(wx.Frame):
         if platform.system() == "Windows":
             # wxpython on Windows does not support Darkmode
             self.SetBackgroundColour("#AAAAAA")
-
         self.conf = ConfigMng()
         self.img_path = None
+
+        # Initial Welcome Message
         self.spool = WelcomeMsg(self, size=(800, 600))
         self.spool.start_worker()
         self.supported_imgs = (".cis", ".jpg", ".png", ".tif", ".bmp")
 
+        # Midi on/off button
         self.midi_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="MIDI On")
         self.midi_btn.Bind(wx.EVT_BUTTON, self.midi_onoff)
         self.midi_btn.Disable()
-
+        # File Open button
         self.file_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="File")
         self.file_btn.Bind(wx.EVT_BUTTON, self.open_file)
-
+        # Tempo slider
         self.speed = SpeedSlider(self, callback=self.speed_change)
+        # Auto Tracking on/off button
         self.tracking = TrackerCtrl(self)
-
+        # Manual Expression on/off button
         self.manual_expression = BaseCheckbox(self, wx.ID_ANY, "Manual Expression")
+        # Vacuum Graph
         self.bass_vacuum_lv = VacuumGauge(self, caption="Bass Vacuum (inches of water)")
         self.treble_vacuum_lv = VacuumGauge(self, caption="Treble Vacuum (inches of water)")
-
-        self.adjust_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((180, 40))), label="Adjust CIS Image")
-        self.adjust_btn.Bind(wx.EVT_BUTTON, self.adjust_image)
-
+        # Organ Stop Indicator for Aeolian 176-note
         self.organ_stop_indicator = OrganStopIndicator(self)
+        # Link for Aeolian 165-note Midi assignment document
+        self.organ_midi_map = HyperLinkCtrl(self, wx.ID_ANY, "MIDI Output Assignment Map", URL="Aeolian 176-note MIDI setting.html")
+
+        # CIS Adjust button
+        self.adjust_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((180, 35))), label="Adjust CIS Image")
+        self.adjust_btn.Bind(wx.EVT_BUTTON, self.adjust_image)
 
         self.callback = CallBack(None, self.tracking, self.bass_vacuum_lv, self.treble_vacuum_lv)
         self.midiobj = MidiWrap()
@@ -101,9 +109,10 @@ class MainFrame(wx.Frame):
         self.sizer2.Add(self.speed, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.tracking, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.manual_expression, flag=wx.EXPAND | wx.ALL, border=border_size)
-        self.sizer2.Add(self.organ_stop_indicator, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.bass_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.treble_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=border_size)
+        self.sizer2.Add(self.organ_stop_indicator, flag=wx.EXPAND | wx.ALL, border=border_size)
+        self.sizer2.Add(self.organ_midi_map, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.adjust_btn, flag=wx.EXPAND | wx.ALL, border=border_size)
 
         self.sizer3 = wx.BoxSizer(wx.HORIZONTAL)
@@ -264,11 +273,13 @@ class MainFrame(wx.Frame):
             self.bass_vacuum_lv.Hide()
             self.treble_vacuum_lv.Hide()
             self.organ_stop_indicator.Show()
+            self.organ_midi_map.Show()
         else:
             self.manual_expression.Show()
             self.bass_vacuum_lv.Show()
             self.treble_vacuum_lv.Show()
             self.organ_stop_indicator.Hide()
+            self.organ_midi_map.Hide()
         self.Fit()
 
     def change_scale(self, event=None):
@@ -301,10 +312,9 @@ class MainFrame(wx.Frame):
         if img is None:
             return
         self.img_path = path
-        if self.img_path.lower().endswith(".cis"):
-            self.adjust_btn.Show()
-        else:
-            self.adjust_btn.Hide()
+        self.adjust_btn.Show() if self.img_path.lower().endswith(".cis") else self.adjust_btn.Hide()
+        self.Fit()
+
         self.callback.player.emulate_off()
         tmp = self.spool
         self.spool = InputScanImg(self, img, self.callback.player.spool_diameter, self.callback.player.roll_width, window_scale=self.conf.window_scale, callback=self.callback)
