@@ -19,3 +19,4 @@ pip-licenses --format=plain-vertical --with-license-file --no-license-path --out
 cp -p "3rd-party-license.txt" dist/
 cp -p "assets/How to use Mac.png" dist/
 cp -pr src/playsk_config/ dist/playsk_config/
+cp -p "src/Aeolian 176-note MIDI setting.html" dist/
