@@ -72,7 +72,7 @@ def _get_decode_params(cnp.ndarray[cnp.uint16_t, ndim=1] data,
 
         # adjust re-clock map
         for cur_line in range(len(reclock_map)):
-            reclock_map[cur_line][1] = height - reclock_map[cur_line][1]
+            reclock_map[cur_line][1] = height - reclock_map[cur_line][1] - 1
 
         if not reclock_map:
             raise ValueError("No encoder clock signal found")
@@ -88,7 +88,7 @@ def _get_decode_params(cnp.ndarray[cnp.uint16_t, ndim=1] data,
 def _decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data, 
                 cnp.ndarray[cnp.uint8_t, ndim=2] out_img, 
                 int vert_px, int hol_px, bint is_bicolor, bint is_twin_array, bint is_clocked, 
-                int twin_array_overlap, int twin_array_vsep, int end_padding_y, list reclock_map):
+                int twin_array_overlap, int twin_array_vsep, list reclock_map):
 
     # CIS file format
     # http://semitone440.co.uk/rolls/utils/cisheader/cis-format.htm#scantype
@@ -108,7 +108,7 @@ def _decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
         int ex
 
     # decode lines
-    for cur_line in range(vert_px + end_padding_y - 1, end_padding_y, -1):
+    for cur_line in range(vert_px - 1, 0, -1):
         last_pos = 0
         cur_pix = ROLL
         while last_pos != hol_px:
@@ -163,4 +163,4 @@ def _decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
     if is_clocked:
         # reposition lines
         for sx, ex in reclock_map:
-            out_img[ex + end_padding_y] = out_img[sx + end_padding_y]
+            out_img[ex] = out_img[sx]

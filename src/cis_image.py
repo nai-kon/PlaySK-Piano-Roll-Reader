@@ -118,7 +118,7 @@ class CisImage:
 
             # adjust re-clock map
             for v in reclock_map:
-                v[1] = height - v[1]
+                v[1] = height - v[1] - 1
 
             if not reclock_map:
                 raise ValueError("No encoder clock signal found")
@@ -130,7 +130,7 @@ class CisImage:
         return width, height, reclock_map
 
     # slow python version. only used for debugging
-    def _decode_cis_py(self, output_img, end_padding_y, twin_array_vert_sep, reclock_map) -> None:
+    def _decode_cis_py(self, output_img, twin_array_vert_sep, reclock_map) -> None:
         class CurColor(IntEnum):
             BG = auto()
             ROLL = auto()
@@ -141,7 +141,7 @@ class CisImage:
         lyrics_color = 0
         cur_idx = 0
         twin_offset_x = self.hol_px - self.twin_array_overlap // 2
-        for cur_line in range(self.vert_px + end_padding_y - 1, end_padding_y, -1):
+        for cur_line in range(self.vert_px - 1, 0, -1):
             # decode holes
             last_pos = 0
             cur_pix = CurColor.ROLL
@@ -194,7 +194,7 @@ class CisImage:
         if self.is_clocked:
             # reposition lines
             for src, dest in reclock_map:
-                output_img[dest + end_padding_y] = output_img[src + end_padding_y]
+                output_img[dest] = output_img[src]
 
     def _load_file(self, path: str) -> None:
         # CIS file format
@@ -252,17 +252,15 @@ class CisImage:
         twin_array_vert_sep = math.ceil(self.twin_array_vert_sep * self.vert_res / 1000)
 
         # reserve decoded image with padding on start/end
-        start_padding_y = out_w // 2
-        end_padding_y = out_w // 2
-        self.decoded_img = np.full((out_h + start_padding_y + end_padding_y, out_w), 120, np.uint8)
-        self.decoded_img[out_h + end_padding_y:] = 255
+        self.decoded_img = np.full((out_h + twin_array_vert_sep, out_w), 120, np.uint8)
+        print(out_h + twin_array_vert_sep)
 
         # decode
         if use_cython:
             _decode_cis(self.raw_img, self.decoded_img, self.vert_px, self.hol_px, self.is_bicolor, self.is_twin_array, self.is_clocked,
-                        self.twin_array_overlap, twin_array_vert_sep, end_padding_y, reclock_map)
+                        self.twin_array_overlap, twin_array_vert_sep, reclock_map)
         else:
-            self._decode_cis_py(self.decoded_img, end_padding_y, twin_array_vert_sep, reclock_map)
+            self._decode_cis_py(self.decoded_img, twin_array_vert_sep, reclock_map)
 
         if len(self.decoded_img) == 0:
             raise BufferError
@@ -277,6 +275,6 @@ if __name__ == "__main__":
     app = wx.App()
     s = time.time()
     obj = CisImage()
-    if obj.load("../sample_Scans/Ampico B 68991 Papillons.CIS"):
+    if obj.load("../test/test_images/unknown_scanner.CIS"):
         print(time.time() - s)
-        cv2.imwrite("decoded_cis.png", obj.decoded_img)
+        cv2.imwrite("unknown_scanner_gt.png", obj.decoded_img)

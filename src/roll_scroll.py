@@ -263,8 +263,7 @@ class InputVideo(BasePanel):
 
         # cache
         for txt in ("Accent", "Intensity", "Bass", "Treble", "Lv1", "Lv2", "Lv4", "A", "S", "J", "K", "L"):
-            key = f"{txt}_txt_size"
-            if key not in self.draw_cache:
+            if (key := f"{txt}_txt_size") not in self.draw_cache:
                 self.draw_cache[key] = dc.GetTextExtent(txt)
 
         txt = "Accent"
@@ -430,10 +429,18 @@ class InputScanImg(InputVideo):
         resize_ratio = self.disp_w / self.src.shape[1]
         resize_h = int(self.src.shape[0] * resize_ratio)
         self.src = cv2.resize(self.src, dsize=(self.disp_w, resize_h))
+        if True:
+             # add padding on start/end
+            pad_shape = [self.disp_h // 2 - 20, self.disp_w]
+            if self.src.ndim == 3:
+                pad_shape += [3]
+            padding = np.full(pad_shape, 255, self.src.dtype)
+            self.src = np.concatenate([padding, self.src, padding])
+
         if self.src.ndim == 2:
             self.src = cv2.cvtColor(self.src, cv2.COLOR_GRAY2RGB)
 
-        self.cur_y = self.src.shape[0] - 1100
+        self.cur_y = self.src.shape[0]
         self.crop_h = self.disp_h
         self.roll_dpi = resize_ratio * (self.right_side - self.left_side + 1) / self.roll_width
         self.set_tempo(self.tempo)
