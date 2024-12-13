@@ -1,10 +1,12 @@
 import json
 
+from midi_controller import MidiWrap
+
 from .base_player import BasePlayer
 
 
 class Aeolian176note(BasePlayer):
-    def __init__(self, confpath, midiobj):
+    def __init__(self, confpath: str, midiobj: MidiWrap) -> None:
         super().__init__(confpath, midiobj)
 
         with open(confpath, encoding="utf-8") as f:
@@ -30,7 +32,7 @@ class Aeolian176note(BasePlayer):
         }
         self.stop_indicator.init_stop(stops)
 
-    def init_controls(self):
+    def init_controls(self) -> None:
         # Aeolian Duo-Art Organ tracker bar
         # https://www.mmdigest.com/Gallery/Tech/Scales/Aeo176.html
 
@@ -124,11 +126,11 @@ class Aeolian176note(BasePlayer):
             }
             self.stop_indicator.change_stop(stops)
 
-    def emulate_off(self):
+    def emulate_off(self) -> None:
         super().emulate_off()
         self.init_controls()
 
-    def emulate_notes(self):
+    def emulate_notes(self) -> None:
         offset = 15 + 21
         velocity = 64
 
@@ -196,7 +198,7 @@ class Aeolian176note(BasePlayer):
             [self.midi.note_off(k + offset, channel=2) for k in range(0, 32)]
             self.pedal_all_off = True
 
-    def emulate_controls(self, curtime):
+    def emulate_controls(self, curtime) -> None:
         if self.pre_time is None:
             self.pre_time = curtime
         delta_time = curtime - self.pre_time
@@ -226,8 +228,7 @@ class Aeolian176note(BasePlayer):
                     part_name = "Pedal Stops" if "Pedal" in key else part_name
                     self.stop_indicator.change_stop({part_name: {key.lstrip("Pedal "): val["is_on"]}})
 
-                note_no = val.get("midi_val")
-                if note_no is not None:
+                if (note_no := val.get("midi_val")) is not None:
                     if val["is_on"]:
                         self.midi.control_change(20, note_no, channel=3)
                     else:
@@ -299,7 +300,7 @@ class Aeolian176note(BasePlayer):
 
         self.pre_time = curtime
 
-    def fix_shade_error(self):
+    def fix_shade_error(self) -> None:
         # Sometimes, shade errors occurs due to inconsistent on/off for each shade caused by perforation error etc...
         # So if the shade perforations are in order 3→2→1 to close, force reset all shade off
         for part in ("swell", "great"):
@@ -321,7 +322,7 @@ class Aeolian176note(BasePlayer):
                         # if list length is too much, reset
                         self.shade_error_detector[part] = []
 
-    def emulate(self, frame, curtime):
+    def emulate(self, frame, curtime) -> None:
         if self.emulate_enable:
             self.during_emulate_evt.clear()
 

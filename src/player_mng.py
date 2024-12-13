@@ -17,8 +17,7 @@ class PlayerMng:
             with open(path, encoding="utf-8") as f:
                 conf = json.load(f)
 
-            cls_name = conf.get("base_class", None)
-            if cls_name is not None:
+            if (cls_name := conf.get("base_class", None)) is not None:
                 fname = os.path.basename(path).replace(".json", "")
                 conf_map[fname] = cls_name
 
@@ -45,8 +44,7 @@ class PlayerMng:
             "Themodist_eValve": tracker_bars.Themodist_eValve,
             "Aeolian176note": tracker_bars.Aeolian176note,
         }
-        clsobj = cls_map.get(cls_name, None)
-        if clsobj is not None:
+        if (clsobj := cls_map.get(cls_name, None)) is not None:
             confpath = os.path.join(self.conf_dir, f"{player_name}.json")
             return clsobj(confpath, midiobj)
         else:

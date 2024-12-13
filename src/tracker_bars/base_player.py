@@ -77,13 +77,13 @@ class TrackerHoles:
             v["to_close"] = v["is_open"] & (open_ratios < v["off_apatures"])  # hole is closed just now
             v["is_open"] ^= (v["to_open"] | v["to_close"])  # hole is open or close
 
-    def all_off(self):
+    def all_off(self) -> None:
         for v in self.group_by_size.values():
             v["is_open"] &= False
             v["to_open"] &= False
             v["to_close"] &= False
 
-    def draw(self, wxdc: wx.PaintDC):
+    def draw(self, wxdc: wx.PaintDC) -> None:
         if self.open_pen is None:
             self.open_pen = wx.Pen((200, 0, 0))
         if self.close_pen is None:
@@ -107,7 +107,7 @@ class TrackerHoles:
 
 
 class BasePlayer:
-    def __init__(self, confpath, midiobj: MidiWrap):
+    def __init__(self, confpath: str, midiobj: MidiWrap) -> None:
         self.midi = midiobj
 
         # load tracker config
@@ -156,16 +156,16 @@ class BasePlayer:
         idx = np.digitize([self.bass_vacuum, self.treble_vacuum], bins=self.velocity_bins)
         return self.velocity[0] + idx
 
-    def emulate_off(self):
+    def emulate_off(self) -> None:
         self.emulate_enable = False
         self.during_emulate_evt.wait(timeout=1)
         self.holes.all_off()
         self.midi.all_off()
 
-    def emulate_on(self):
+    def emulate_on(self) -> None:
         self.emulate_enable = True
 
-    def auto_track(self, frame):
+    def auto_track(self, frame) -> None:
         if not self.auto_tracking:
             return
 
@@ -178,7 +178,7 @@ class BasePlayer:
 
         self.tracker_offset = int(right_end - left_end)
 
-    def emulate(self, frame, curtime):
+    def emulate(self, frame, curtime) -> None:
         if self.emulate_enable:
             self.during_emulate_evt.clear()
 
@@ -198,17 +198,16 @@ class BasePlayer:
         if key == self.treble_accent_key:
             self.treble_accent = pressed
 
-        accomp_map = self.manual_exp_map.get(key, None)
-        if accomp_map is not None:
+        if (accomp_map := self.manual_exp_map.get(key, None)) is not None:
             if accomp_map["press"] and not pressed:
                 accomp_map["press"] = False
             if not accomp_map["press"] and pressed:
                 accomp_map["press"] = True
 
-    def emulate_expression(self, curtime):
+    def emulate_expression(self, curtime) -> None:
         pass
 
-    def emulate_manual_expression(self, curtime):
+    def emulate_manual_expression(self, curtime) -> None:
         if not self.manual_expression:
             return
 
@@ -222,7 +221,7 @@ class BasePlayer:
         if self.treble_accent:
             self.treble_vacuum = min(self.treble_vacuum + 6, self.max_vacuum)
 
-    def emulate_pedals(self):
+    def emulate_pedals(self) -> None:
         # sustain pedal
         sustain = self.holes["sustain"]
         if sustain["to_open"]:
@@ -239,7 +238,7 @@ class BasePlayer:
         elif soft["to_close"]:
             self.midi.hammer_lift_off()
 
-    def emulate_notes(self):
+    def emulate_notes(self) -> None:
         note = self.holes["note"]
         offset = self.holes.lowest_note + 21
 
@@ -253,7 +252,7 @@ class BasePlayer:
         for key in note["to_close"].nonzero()[0]:
             self.midi.note_off(key + offset)
 
-    def draw_tracker(self, wxdc: wx.PaintDC):
+    def draw_tracker(self, wxdc: wx.PaintDC) -> None:
         # draw tracker frame
         wxdc.SetPen(wx.Pen((0, 100, 100)))
         wxdc.DrawLineList([(0, 275, 799, 275), (0, 325, 799, 325)])

@@ -258,8 +258,7 @@ class MainFrame(wx.Frame):
         idx = self.player_sel.GetSelection()
         name = self.player_sel.GetString(idx)
         self.conf.last_tracker = name
-        player_tmp = self.player_mng.get_player_obj(name, self.midiobj)
-        if player_tmp is not None:
+        if (player_tmp:= self.player_mng.get_player_obj(name, self.midiobj)) is not None:
             self.midiobj.all_off()
             self.midi_btn.SetLabel("MIDI On")
             player_tmp.tracker_offset = self.tracking.offset
@@ -303,8 +302,7 @@ class MainFrame(wx.Frame):
         self.midi_btn.SetLabel("MIDI On")
 
     def load_file(self, path: str, force_manual_adjust: bool=False):
-        ext = Path(path).suffix.lower()
-        if ext.lower() not in self.supported_imgs:
+        if Path(path).suffix.lower() not in self.supported_imgs:
             wx.MessageBox(f"Supported image formats are {' '.join(self.supported_imgs)}", "Unsupported file")
             return
 
