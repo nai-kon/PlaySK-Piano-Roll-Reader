@@ -268,6 +268,9 @@ class MainFrame(wx.Frame):
             self.callback.player.manual_expression = self.manual_expression.IsChecked()
 
         if name == "Aeolian 176-note Pipe Organ":
+            self.manual_expression.SetValue(False)
+            self.spool.set_manual_expression(False)
+            self.callback.player.manual_expression = False
             self.callback.player.init_stop_indicator(self.organ_stop_indicator)
             self.manual_expression.Hide()
             self.bass_vacuum_lv.Hide()
