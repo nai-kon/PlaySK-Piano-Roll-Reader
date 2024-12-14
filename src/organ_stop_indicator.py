@@ -1,4 +1,5 @@
 import math
+import platform
 
 import wx
 import wx.grid
@@ -8,12 +9,8 @@ from controls import BasePanel
 class OrganStopIndicator(BasePanel):
     def __init__(self, parent) -> None:
         BasePanel.__init__(self, parent, wx.ID_ANY)
-        self.parent = parent
-
         self.data = {}
         self.grid = wx.grid.Grid(self)
-        # font = wx.Font(9, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
-        # self.grid.SetDefaultCellFont(font)
         self.grid.EnableGridLines(False)
         # disable edit
         self.grid.EnableEditing(False)
@@ -56,19 +53,24 @@ class OrganStopIndicator(BasePanel):
         # create grid
         self.grid.CreateGrid(cur_row, cols)
 
-        header_bg_color = self.parent.GetBackgroundColour()
+        # set header color
+        if platform.system() == "Windows":
+            header_bg_color = "#AAAAAA"
+        elif wx.SystemSettings.GetAppearance().IsDark():
+            header_bg_color = "#362927"
+        else:
+            header_bg_color = "#F3ECEB"
 
         # set cells
         cur_row = 0
         for part in data:
-            # part cell
+            # header
             self.grid.SetCellValue(cur_row, 0, part)
             self.grid.SetCellBackgroundColour(cur_row, 0, header_bg_color)
             self.grid.SetCellAlignment(cur_row, 0, wx.ALIGN_LEFT, wx.ALIGN_BOTTOM)
-            # self.grid.SetCellTextColour(cur_row, 0, header_text_color)
             self.grid.SetCellSize(cur_row, 0, 1, 3)
 
-            # stop cells
+            # cells
             max_row = 0
             for stop, pos in self.data[part].items():
                 row, col = pos["row"], pos["col"]
