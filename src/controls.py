@@ -10,7 +10,7 @@ import wx
 import wx.adv
 from config import ConfigMng
 from version import APP_TITLE, APP_VERSION, COPY_RIGHT
-from wx.lib.agw.hyperlink import HyperLinkCtrl
+from wx.adv import HyperlinkCtrl
 
 
 class BasePanel(wx.Panel):
@@ -59,7 +59,7 @@ class WelcomeMsg(BasePanel):
         msg2 = wx.StaticText(self, wx.ID_ANY, "Please donate for continuous development of the software.")
         text_size = parent.get_scaled_textsize(15)
         msg2.SetFont(wx.Font(text_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
-        lnk1 = HyperLinkCtrl(self, wx.ID_ANY, "Donate via PayPal", URL="https://paypal.me/KatzSasaki")
+        lnk1 = HyperlinkCtrl(self, wx.ID_ANY, "Donate via PayPal", url="https://paypal.me/KatzSasaki")
         lnk1.SetFont(wx.Font(text_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
 
         text_size = parent.get_scaled_textsize(10)
@@ -67,7 +67,7 @@ class WelcomeMsg(BasePanel):
         msg3.SetFont(wx.Font(text_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
         msg4 = wx.StaticText(self, wx.ID_ANY, f"Version {APP_VERSION}")
         msg4.SetFont(wx.Font(text_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
-        lnk2 = HyperLinkCtrl(self, wx.ID_ANY, "Project page on GitHub", URL="https://github.com/nai-kon/PlaySK-Piano-Roll-Reader")
+        lnk2 = HyperlinkCtrl(self, wx.ID_ANY, "Project page on GitHub", url="https://github.com/nai-kon/PlaySK-Piano-Roll-Reader")
         lnk2.SetFont(wx.Font(text_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
         msg5 = wx.StaticText(self, wx.ID_ANY, COPY_RIGHT)
         msg5.SetFont(wx.Font(text_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
@@ -83,8 +83,6 @@ class WelcomeMsg(BasePanel):
         sizer.Add(msg5, 0, wx.ALIGN_CENTER)
         self.SetSizer(sizer)
         self.SetBackgroundColour("#555555")
-        lnk1.SetBackgroundColour("#555555")
-        lnk2.SetBackgroundColour("#555555")
         self.Layout()
 
     def start_worker(self) -> None:

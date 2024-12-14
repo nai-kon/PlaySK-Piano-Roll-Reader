@@ -20,7 +20,7 @@ from roll_scroll import InputScanImg, load_scan
 from tracker_bars import BasePlayer
 from vacuum_gauge import VacuumGauge
 from version import APP_TITLE
-from wx.lib.agw.hyperlink import HyperLinkCtrl
+from wx.adv import HyperlinkCtrl
 
 
 class CallBack:
@@ -88,7 +88,8 @@ class MainFrame(wx.Frame):
         # Organ Stop Indicator for Aeolian 176-note
         self.organ_stop_indicator = OrganStopIndicator(self)
         # Link for Aeolian 165-note Midi assignment document
-        self.organ_midi_map = HyperLinkCtrl(self, wx.ID_ANY, "MIDI Output Assignment Map", URL="Aeolian 176-note MIDI setting.html")
+        self.organ_midi_map = HyperlinkCtrl(self, wx.ID_ANY, "MIDI Output Assignment Map",
+                                            "https://playsk-aeolian176note-midi-assignment.pages.dev/", style=wx.adv.HL_ALIGN_LEFT)
 
         # CIS Adjust button
         self.adjust_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((180, 35))), label="Adjust CIS Image")
