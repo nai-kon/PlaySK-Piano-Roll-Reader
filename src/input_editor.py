@@ -16,7 +16,8 @@ class ImgEditDlg(wx.Dialog):
         sizer1.Add(wx.StaticText(self, label=self.get_show_text()), 1, wx.EXPAND | wx.ALL, border_size)
         convert_bw_btn = wx.Button(self, label="Convert Black pixel to White")
         sizer1.Add(convert_bw_btn, 1, wx.EXPAND | wx.ALL, border_size)
-        convert_bw_btn.Bind(wx.EVT_BUTTON, self.convert_bw)
+        # save_btn = wx.Button(self, label="Save as PNG image")
+        # sizer1.Add(save_btn, 1, wx.EXPAND | wx.ALL, border_size)
         sizer1.Add(wx.Button(self, wx.ID_CANCEL, label="Cancel"), 1, wx.EXPAND | wx.ALL, border_size)
         sizer1.Add(wx.Button(self, wx.ID_OK, label="OK"), 1, wx.EXPAND | wx.ALL, border_size)
 
@@ -26,8 +27,14 @@ class ImgEditDlg(wx.Dialog):
         self.SetSizer(sizer2)
         self.Fit()
 
-        x, y = self.GetPosition()
-        self.SetPosition((x, 0))
+        x, _ = self.GetPosition()
+        cur_w, _ = self.GetSize()
+        set_x = min(x, wx.Display().GetClientArea().width - cur_w - 1)
+        print(x, cur_w, wx.Display().GetClientArea().width)
+        self.SetPosition((set_x, 0))
+
+        convert_bw_btn.Bind(wx.EVT_BUTTON, self.convert_bw)
+        # save_btn.Bind(wx.EVT_BUTTON, self.save_img)
 
     def convert_bw(self, event):
         # some cis scan has black background so convert it to white
