@@ -231,6 +231,7 @@ class NotifyUpdate:
                 "X-Identifier": "PlaySK",
                 "X-Platform": platform.system(),
                 "X-Version": APP_VERSION,
+                "X-LastTracker": self.conf.last_tracker,
             })
             with urllib.request.urlopen(req, timeout=10, context=context) as res:
                 title = json.loads(res.read().decode("utf8")).get("name", None)

@@ -1,6 +1,5 @@
 import json
 import threading
-from typing import final
 
 import numpy as np
 import wx
@@ -95,7 +94,7 @@ class TrackerHoles:
         wxdc.DrawRectangleList(self.draw_rects, pens)
         wxdc.SetLogicalOrigin(0, 0)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> dict:
         hole_size, idx = self.group_by_name[key]
         ret = {
             "pos": self.group_by_size[hole_size]["pos"][idx],
@@ -170,7 +169,7 @@ class BasePlayer:
             return
 
         # find roll edge
-        roi = np.array([frame[250:350:5, 0:7], frame[250:350:5, 793:800]])
+        roi = np.array([frame[270:330:5, 0:7], frame[270:330:5, 793:800]])
         if self.is_dark_hole:
             left_end, right_end = (roi > self.on_bright).all(axis=3).sum(axis=2).mean(axis=1)
         else:

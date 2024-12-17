@@ -137,7 +137,7 @@ if __name__ == "__main__":
             "Tremolo": False,
             "FluteP": True,
             "Harp": False,
-        }
+        },
     }
     panel1.init_stop(data)
 
