@@ -253,7 +253,6 @@ class CisImage:
 
         # reserve decoded image with padding on start/end
         self.decoded_img = np.full((out_h + twin_array_vert_sep, out_w), 120, np.uint8)
-        print(out_h + twin_array_vert_sep)
 
         # decode
         if use_cython:
@@ -275,6 +274,6 @@ if __name__ == "__main__":
     app = wx.App()
     s = time.time()
     obj = CisImage()
-    if obj.load("../test/test_images/unknown_scanner.CIS"):
+    if obj.load("../test/test_images/clocked_single.CIS"):
         print(time.time() - s)
         cv2.imwrite("unknown_scanner_gt.png", obj.decoded_img)

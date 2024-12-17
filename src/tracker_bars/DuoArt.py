@@ -40,7 +40,6 @@ class DuoArt(BasePlayer):
         self.theme_delay_que = deque([self.theme_min] * 10, maxlen=10)
 
     def emulate_expression(self, curtime):
-
         # accomp 1->2->4->8
         accomp_pos = sum([v * b for v, b in zip((1, 2, 4, 8), self.holes["accomp"]["is_open"])])
         accomp_vacuum = self.accomp_min + (self.accomp_max - self.accomp_min) * (accomp_pos / 15)

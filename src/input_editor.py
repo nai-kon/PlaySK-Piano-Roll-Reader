@@ -30,7 +30,6 @@ class ImgEditDlg(wx.Dialog):
         x, _ = self.GetPosition()
         cur_w, _ = self.GetSize()
         set_x = min(x, wx.Display().GetClientArea().width - cur_w - 1)
-        print(x, cur_w, wx.Display().GetClientArea().width)
         self.SetPosition((set_x, 0))
 
         convert_bw_btn.Bind(wx.EVT_BUTTON, self.convert_bw)

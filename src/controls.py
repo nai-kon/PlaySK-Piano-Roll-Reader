@@ -197,7 +197,7 @@ class NotifyDialog(wx.Dialog):
         message = wx.StaticText(panel, label=f"New ver{version} has been released!")
         message.SetFont(wx.Font(12, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
         url = "https://github.com/nai-kon/PlaySK-Piano-Roll-Reader/releases/"
-        lnk = HyperLinkCtrl(panel, label=url, URL=url)
+        lnk = HyperlinkCtrl(panel, label=url, url=url)
         ok_button = wx.Button(panel, label="OK")
         ok_button.Bind(wx.EVT_BUTTON, self.on_ok)
 
