@@ -8,8 +8,7 @@ cdef enum CurColor:
     ROLL = 1
     MARK = 2
 
-
-@cython.boundscheck(False)
+# @cython.boundscheck(False)  comment out for some broken CIS which needs bound check
 @cython.wraparound(False)
 @cython.cdivision(True)
 def _get_decode_params(cnp.ndarray[cnp.uint16_t, ndim=1] data, 
@@ -30,12 +29,12 @@ def _get_decode_params(cnp.ndarray[cnp.uint16_t, ndim=1] data,
         int encoder_state
         int pre_encoder_state = -1
         float step
-        int chs = 1 + int(is_twin_array) + int(is_bicolor)
+        int chs = 1 + is_twin_array + is_bicolor
         list buf_lines = []
         list reclock_map = []
 
     cdef extern from "math.h":
-        double rint(double x)
+        long lrint(double x)
 
     # width
     if is_twin_array:
@@ -61,7 +60,7 @@ def _get_decode_params(cnp.ndarray[cnp.uint16_t, ndim=1] data,
                     # make re-clock map
                     step = (ei - si) / float(lpt - 1)
                     for val in range(lpt):
-                        val = int(rint(si + val * step))
+                        val = lrint(si + val * step)
                         reclock_map.append([val, height])  # [src line, dest line]
                         height += 1
                     buf_lines = []
@@ -83,7 +82,7 @@ def _get_decode_params(cnp.ndarray[cnp.uint16_t, ndim=1] data,
     return width, height, reclock_map
 
 
-@cython.boundscheck(False)
+# @cython.boundscheck(False) comment out for some broken CIS which needs bound check
 @cython.wraparound(False)
 def _decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data, 
                 cnp.ndarray[cnp.uint8_t, ndim=2] out_img, 
