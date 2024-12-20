@@ -10,7 +10,7 @@ class WelteT100(BasePlayer):
 
         self.mf_hook_pos = 0.47
         self.loud_pos = 0.7
-        self.min_vacuum = 5.5   # in W.G
+        self.min_vacuum = 5.7   # in W.G
         self.max_vacuum = 35    # in W.G
         self.cres_pos_to_vacuum = np.poly1d(np.polyfit((0, self.mf_hook_pos, 1), (self.min_vacuum, 20, self.max_vacuum), 2))
 
@@ -76,6 +76,15 @@ class WelteT100(BasePlayer):
             self.pre_time = curtime
         delta_time = curtime - self.pre_time
 
+        # # note on vacuum drop emulation
+        # on_notes = self.holes["note"]["to_open"].nonzero()[0]
+        # if on_notes.size > 0:
+        #     for key in on_notes:
+        #         if key < self.stack_split:
+        #             self.bass_cres_pos -=0.004
+        #         else:
+        #             self.treble_cres_pos -= 0.004
+
         # bass
         cres_pos_min = 0
         cres_pos_max = 1
@@ -87,7 +96,7 @@ class WelteT100(BasePlayer):
 
         if self.bass_cres_state == "slow_cres":
             self.bass_cres_pos += delta_time * self.bass_slow_cres_rate
-            if not self.bass_mf_hook:
+            if not (self.bass_mf_hook or self.holes["bass_forz_forte"]["is_open"]):
                 self.bass_cres_pos = min(self.bass_cres_pos, self.loud_pos)
         elif self.bass_cres_state == "slow_decres":
             self.bass_cres_pos -= delta_time * self.bass_slow_decres_rate
@@ -111,7 +120,7 @@ class WelteT100(BasePlayer):
 
         if self.treble_cres_state == "slow_cres":
             self.treble_cres_pos += delta_time * self.treble_slow_cres_rate
-            if not self.treble_mf_hook:
+            if not (self.treble_mf_hook or self.holes["treble_forz_forte"]["is_open"]):
                 self.treble_cres_pos = min(self.treble_cres_pos, self.loud_pos)
         elif self.treble_cres_state == "slow_decres":
             self.treble_cres_pos -= delta_time * self.treble_slow_decres_rate

@@ -1,7 +1,8 @@
 {
     "cSpell.ignoreWords": [
         "Colour",
-        "mido"
+        "mido",
+        "curtime"
     ],
     "python.testing.pytestArgs": [
         "test"
