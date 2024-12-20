@@ -1,16 +1,17 @@
 <html>
 	<style type="text/css">
 	td,th {border: 1px solid #cccccc;}
+	th {background-color: rgb(226,232,240);}
 	table {border-collapse: collapse;}
 	</style>
 
 	<p>PlaySK Piano Roll Reader</p>
 	<h1>Aeolian 176-note tracker bar<br>
-		MIDI OUT assignment</h1>
+		MIDI Output Assignment</h1>
 
 	<table>
 		<tr>
-			<th>control</th>
+			<th>Control</th>
 			<th>MIDI<br>channel</th>
 			<th>MIDI<br>note number</th>
 			<th>MIDI<br>control change</th>
@@ -58,9 +59,9 @@
 		<tr>
 			<td>Echo</td>
 			<td>-</td>
-			<td rowspan="35" colspan="1">20:ON<br>110:OFF<br><br>* For Hauptwerk organ, corresponds to<br>"Notation stop or hold-piston; CC20=on, CC110=off"</td>
+			<td rowspan="35" colspan="1">20:ON<br>110:OFF<br><br>* For Hauptwerk virtual organ, corresponds to<br>"Notation stop or hold-piston; CC20=on, CC110=off"</td>
 			<td>0</td>
-			<td></td>
+			<td>Echo couples the Ehco division to upper holes and releases Swell. This is not implemented yet.</td>
 		</tr>
 		<tr>
 			<td>Swell Chimes</td>
@@ -168,7 +169,7 @@
 			<td>Tonal</td>
 			<td>-</td>
 			<td>19</td>
-			<td></td>
+			<td>Tonal turns on most stops. This is not implemented yet.</td>
 		</tr>
 		<tr>
 			<td>Great Harp</td>

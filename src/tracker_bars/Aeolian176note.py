@@ -1,6 +1,8 @@
 import json
 
+import numpy as np
 from midi_controller import MidiWrap
+from organ_stop_indicator import OrganStopIndicator
 
 from .base_player import BasePlayer
 
@@ -11,18 +13,19 @@ class Aeolian176note(BasePlayer):
 
         with open(confpath, encoding="utf-8") as f:
             conf = json.load(f)
+
         self.shade = conf["expression"]["expression_shade"]
         self.pre_time = None
         self.prevent_chattering_wait = 0.2  # toggle switch reaction threshold seconds to prevent chattering
         self.stop_indicator = None
 
-        # set church organ sound for GM sound
+        # set church organ for GM sound
         for ch in range(3):
             self.midi.program_change(19, ch)
 
         self.init_controls()
 
-    def init_stop_indicator(self, stop_indicator) -> None:
+    def init_stop_indicator(self, stop_indicator: OrganStopIndicator) -> None:
         self.stop_indicator = stop_indicator
 
         stops = {
@@ -35,7 +38,6 @@ class Aeolian176note(BasePlayer):
     def init_controls(self) -> None:
         # Aeolian Duo-Art Organ tracker bar
         # https://www.mmdigest.com/Gallery/Tech/Scales/Aeo176.html
-
         # expression shade. MIDI assignment is swell shade: ch=3 cc=14. great shade: ch=3 cc=15
         self.shade_change_rate = (self.shade["shade6"] - self.shade["shade0"]) / self.shade["min_to_max_second"]
         self.swell_shade_val = self.shade["shade6"]
@@ -45,11 +47,13 @@ class Aeolian176note(BasePlayer):
         self.midi.control_change(14, self.swell_shade_val, 3)
         self.midi.control_change(15, self.great_shade_val, 3)
 
-        # toggle switch controls. MIDI assignment is switch ON: ch=3, CC=20, value:{midi_val}, switch OFF: ch=3, CC=110, value={midi_val}
+        # toggle switch controls.
+        # MIDI assignment is switch ON: ch=3, CC=20, value:{midi_val}
+        # switch OFF: ch=3, CC=110, value={midi_val}
         self.ctrls = {
             # upper control holes of tracker bar
             "swell":{
-                "Echo" : {"hole_no": 0, "is_on": False, "last_time": 0, "midi_val": 0},
+                "Echo" : {"hole_no": 0, "is_on": False, "last_time": 0, "midi_val": 0},  # Currently Echo do nothing
                 "Chime" : {"hole_no":  1, "is_on": False, "last_time": 0, "midi_val": 1},
                 "Tremolo" : {"hole_no": 2, "is_on": False, "last_time": 0, "midi_val": 2},
                 "Harp" : {"hole_no": 3, "is_on": False, "last_time": 0, "midi_val": 3},
@@ -71,23 +75,23 @@ class Aeolian176note(BasePlayer):
                 "Shade4" : {"hole_no": 19, "is_on": True},
                 "Shade5" : {"hole_no": 20, "is_on": True},
                 "Shade6" : {"hole_no": 21, "is_on": True},
-                # "extension" : {"hole_no": 22, "is_on": False},
+                # "Extension" : {"hole_no": 22, "is_on": False},
                 # "LCW1" : {"hole_no": 23, "is_on": False, "last_time": 0, "midi_val": },
                 # "LCW2" : {"hole_no": 24, "is_on": False, "last_time": 0, "midi_val": },
                 "Soft Chime" : {"hole_no": 25, "is_on": False, "last_time": 0, "midi_val": 17},
-                # "reroll" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
-                # "ventil" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
-                # "normal" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
+                # "Reroll" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
+                # "Ventil" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
+                # "Normal" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
                 "Pedal to Swell" : {"hole_no": 29, "is_on": False},
             },
             "great":{
                 # lower control holes of tracker bar
                 "Tremolo" : {"hole_no": 0, "is_on": False, "last_time": 0, "midi_val": 18},
-                "Tonal" : {"hole_no": 1, "is_on": False, "last_time": 0, "midi_val": 19},
+                "Tonal" : {"hole_no": 1, "is_on": False, "last_time": 0, "midi_val": 19},  # Currently Tonal do nothing
                 "Harp" : {"hole_no": 2, "is_on": False, "last_time": 0, "midi_val": 20},
-                # "extension" : {"hole_no": 3, "is_on": False},
-                # "pedal_2nd_oct" : {"hole_no": 4, "is_on": False},
-                # "pedal_3rd_oct" : {"hole_no": 5, "is_on": False},
+                # "Extension" : {"hole_no": 3, "is_on": False},
+                # "Pedal 2nd octave" : {"hole_no": 4, "is_on": False},
+                # "Pedal 3rd octave" : {"hole_no": 5, "is_on": False},
                 "Shade1" : {"hole_no": 6, "is_on": True},
                 "Shade2" : {"hole_no": 7, "is_on": True},
                 "Shade3" : {"hole_no": 8, "is_on": True},
@@ -111,11 +115,11 @@ class Aeolian176note(BasePlayer):
                 "Chime Damper" : {"hole_no": 26, "is_on": False, "last_time": 0, "midi_val": 38},
                 # "LCW3" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
                 # "LCW4" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
-                # "ventil" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": }
+                # "Ventil" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": }
             },
         }
 
-        [self.midi.control_change(110, v, 3) for v in range(128)]
+        [self.midi.control_change(110, v, 3) for v in range(128)]  # all off
         self.pedal_all_off = True
 
         if self.stop_indicator is not None:
@@ -131,7 +135,7 @@ class Aeolian176note(BasePlayer):
         self.init_controls()
 
     def emulate_notes(self) -> None:
-        offset = 15 + 21
+        offset = 36  # 15 + 21
         velocity = 64
 
         # notes
@@ -150,7 +154,7 @@ class Aeolian176note(BasePlayer):
             elif self.holes[f"{part}_controls"]["to_close"][extension_port]:
                 notes_off.extend([key + offset for key in range(58, 61)])
 
-            # send MIDI signal
+            # send note midi signal
             [self.midi.note_on(note, velocity, midi_ch) for note in notes_on]
             [self.midi.note_off(note, channel=midi_ch) for note in notes_off]
 
@@ -170,23 +174,24 @@ class Aeolian176note(BasePlayer):
             pedal_notes_off = [key + offset for key in note["to_close"].nonzero()[0] if key < 13]
 
             # pedal 2nd octave notes
-            if self.holes["great_controls"]["to_open"][4] or self.holes["great_controls"]["to_open"][5]:
+            great_controls = self.holes["great_controls"]
+            if great_controls["to_open"][4] or great_controls["to_open"][5]:
                 # already ON notes when extension begin
                 pedal_notes_on.extend([key + offset + 12 for key in note["is_open"].nonzero()[0] if key < 13])
-            elif self.holes["great_controls"]["is_open"][4] or self.holes["great_controls"]["is_open"][5]:
+            elif great_controls["is_open"][4] or great_controls["is_open"][5]:
                 pedal_notes_on.extend([key + offset + 12 for key in note["to_open"].nonzero()[0] if key < 13])
                 pedal_notes_off.extend([key + offset + 12 for key in note["to_close"].nonzero()[0] if key < 13])
-            elif self.holes["great_controls"]["to_close"][4] or self.holes["great_controls"]["to_close"][5]:
+            elif great_controls["to_close"][4] or great_controls["to_close"][5]:
                 pedal_notes_off.extend([key + offset for key in range(12, 25)])
 
             # pedal 3rd octave notes
-            if self.holes["great_controls"]["to_open"][5]:
+            if great_controls["to_open"][5]:
                 # already ON notes when extension begin
                 pedal_notes_on.extend([key + offset + 24 for key in note["is_open"].nonzero()[0] if key < 8])
-            elif self.holes["great_controls"]["is_open"][5]:
+            elif great_controls["is_open"][5]:
                 pedal_notes_on.extend([key + offset + 24 for key in note["to_open"].nonzero()[0] if key < 8])
                 pedal_notes_off.extend([key + offset + 24 for key in note["to_close"].nonzero()[0] if key < 8])
-            elif self.holes["great_controls"]["to_close"][5]:
+            elif great_controls["to_close"][5]:
                 pedal_notes_off.extend([key + offset for key in range(24, 32)])
 
             # send MIDI signal
@@ -198,7 +203,7 @@ class Aeolian176note(BasePlayer):
             [self.midi.note_off(k + offset, channel=2) for k in range(0, 32)]
             self.pedal_all_off = True
 
-    def emulate_controls(self, curtime) -> None:
+    def emulate_controls(self, curtime: float) -> None:
         if self.pre_time is None:
             self.pre_time = curtime
         delta_time = curtime - self.pre_time
@@ -214,7 +219,6 @@ class Aeolian176note(BasePlayer):
                 if "last_time" in val:
                     if curtime - val["last_time"] < self.prevent_chattering_wait:
                         # skip to prevent toggle switch chattering
-                        print("prevent chattering")
                         continue
                     else:
                         val["last_time"] = curtime
@@ -301,10 +305,12 @@ class Aeolian176note(BasePlayer):
         self.pre_time = curtime
 
     def fix_shade_error(self) -> None:
-        # Sometimes, shade errors occurs due to inconsistent on/off for each shade caused by perforation error etc...
-        # So if the shade perforations are in order 3→2→1 to close, force reset all shade off
+        """
+        Sometimes, shade errors occurs due to inconsistent on/off for each shade caused by perforation error etc...
+        So if the shade perforations are in order 3→2→1 to close, force reset all shade off
+        """
         for part in ("swell", "great"):
-            for no in range(1, 3 + 1):
+            for no in range(1, 4):
                 hole_no = self.ctrls[part][f"Shade{no}"]["hole_no"]
                 if self.holes[f"{part}_controls"]["to_close"][hole_no]:
                     if no == 3:
@@ -315,14 +321,14 @@ class Aeolian176note(BasePlayer):
                     if self.shade_error_detector[part] == [3, 2, 1]:
                         self.shade_error_detector[part] = []
                         # set all shade to off to fix error
-                        for no in range(1, 6 + 1):
+                        for no in range(1, 7):
                             self.ctrls[part][f"Shade{no}"]["is_on"] = False
 
                     if len(self.shade_error_detector[part]) > 3:
                         # if list length is too much, reset
                         self.shade_error_detector[part] = []
 
-    def emulate(self, frame, curtime) -> None:
+    def emulate(self, frame: np.ndarray, curtime: float) -> None:
         if self.emulate_enable:
             self.during_emulate_evt.clear()
 
@@ -333,14 +339,14 @@ class Aeolian176note(BasePlayer):
 
             self.during_emulate_evt.set()
 
-if __name__ == "__main__":#
+if __name__ == "__main__":
     import os
     import time
 
     import numpy as np
     from midi_controller import MidiWrap
     midiobj = MidiWrap()
-    player = Aeolian176note(os.path.join("playsk_config", "Aeolian Duo-Art Pipe Organ.json"), midiobj)
+    player = Aeolian176note(os.path.join("playsk_config", "Aeolian 176-note Pipe Organ.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)
     start = time.perf_counter()
     for _ in range(10000):

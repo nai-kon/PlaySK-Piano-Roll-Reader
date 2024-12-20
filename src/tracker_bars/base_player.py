@@ -177,7 +177,7 @@ class BasePlayer:
 
         self.tracker_offset = int(right_end - left_end)
 
-    def emulate(self, frame, curtime) -> None:
+    def emulate(self, frame, curtime: float) -> None:
         if self.emulate_enable:
             self.during_emulate_evt.clear()
 
@@ -203,10 +203,10 @@ class BasePlayer:
             if not accomp_map["press"] and pressed:
                 accomp_map["press"] = True
 
-    def emulate_expression(self, curtime) -> None:
+    def emulate_expression(self, curtime: float) -> None:
         pass
 
-    def emulate_manual_expression(self, curtime) -> None:
+    def emulate_manual_expression(self, curtime: float) -> None:
         if not self.manual_expression:
             return
 
