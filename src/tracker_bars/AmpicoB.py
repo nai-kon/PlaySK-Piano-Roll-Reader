@@ -102,9 +102,6 @@ class AmpicoB(BasePlayer):
         elif (amplifier["to_close"] and self.amp_cres_pos < 0.3) or amplifier["to_open"]:
             self.amp_lock_range = [0, 1.0]
 
-        if amplifier["to_close"]:
-            print(self.amp_cres_pos, self.amp_lock_range)
-
         if slow_cres["is_open"]:
             if fast_cres["is_open"] or amplifier["is_open"]:
                 # fast crescendo

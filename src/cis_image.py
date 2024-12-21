@@ -128,7 +128,6 @@ class CisImage:
             if height < self.vert_px:
                 raise ValueError("Not support this type")
 
-        print(width, height, self.vert_px)
         return width, height, reclock_map
 
     # slow python version. only used for debugging

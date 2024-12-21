@@ -36,9 +36,18 @@ class Aeolian176note(BasePlayer):
         self.stop_indicator.init_stop(stops)
 
     def init_controls(self) -> None:
-        # Aeolian Duo-Art Organ tracker bar
-        # https://www.mmdigest.com/Gallery/Tech/Scales/Aeo176.html
-        # expression shade. MIDI assignment is swell shade: ch=3 cc=14. great shade: ch=3 cc=15
+        """
+        Aeolian Duo-Art Pipe Organ tracker bar
+        https://www.mmdigest.com/Gallery/Tech/Scales/Aeo176.html
+
+        The expression shades are assigned to control change event.
+        Swell shade: ch=4(0x03) cc=14. Great shade: ch=4(0x03) cc=15. MIDI value 30(fully closed) to 127(fully open).
+
+        The control holes are assigned to control change event.
+        Channel is 4(0x03) and control ON is cc=20, OFF is cc=110.
+        Each control holes are assigned to each MIDI values.
+        This corresponds to Hauptwerk Virtual Organ settings of "Notation stop or hold-piston; CC20=on, CC110=off".
+        """
         self.shade_change_rate = (self.shade["shade6"] - self.shade["shade0"]) / self.shade["min_to_max_second"]
         self.swell_shade_val = self.shade["shade6"]
         self.great_shade_val = self.shade["shade6"]
@@ -47,13 +56,10 @@ class Aeolian176note(BasePlayer):
         self.midi.control_change(14, self.swell_shade_val, 3)
         self.midi.control_change(15, self.great_shade_val, 3)
 
-        # toggle switch controls.
-        # MIDI assignment is switch ON: ch=3, CC=20, value:{midi_val}
-        # switch OFF: ch=3, CC=110, value={midi_val}
         self.ctrls = {
             # upper control holes of tracker bar
             "swell":{
-                "Echo" : {"hole_no": 0, "is_on": False, "last_time": 0, "midi_val": 0},  # Currently Echo do nothing
+                "Echo" : {"hole_no": 0, "is_on": False, "last_time": 0, "midi_val": 0},  # Currently not implemented
                 "Chime" : {"hole_no":  1, "is_on": False, "last_time": 0, "midi_val": 1},
                 "Tremolo" : {"hole_no": 2, "is_on": False, "last_time": 0, "midi_val": 2},
                 "Harp" : {"hole_no": 3, "is_on": False, "last_time": 0, "midi_val": 3},
@@ -63,12 +69,12 @@ class Aeolian176note(BasePlayer):
                 "Diapason mf" : {"hole_no": 7, "is_on": False, "last_time": 0, "midi_val": 7},
                 "Flute 16" : {"hole_no": 8, "is_on": False, "last_time": 0, "midi_val": 8},
                 "Flute 4" : {"hole_no": 9, "is_on": False, "last_time": 0, "midi_val": 9},
-                "Flute p" : {"hole_no": 10, "is_on": False, "last_time": 0, "midi_val": 9},
+                "Flute p" : {"hole_no": 10, "is_on": False, "last_time": 0, "midi_val": 10},
                 "String Vibrato f" : {"hole_no": 11, "is_on": False, "last_time": 0, "midi_val": 11},
-                "String f" : {"hole_no": 12, "is_on": False, "last_time": 0, "midi_val": 11},
-                "String mf" : {"hole_no": 13, "is_on": False, "last_time": 0, "midi_val": 11},
-                "String p" : {"hole_no": 14, "is_on": False, "last_time": 0, "midi_val": 12},
-                "String pp" : {"hole_no": 15, "is_on": False, "last_time": 0, "midi_val": 12},
+                "String f" : {"hole_no": 12, "is_on": False, "last_time": 0, "midi_val": 12},
+                "String mf" : {"hole_no": 13, "is_on": False, "last_time": 0, "midi_val": 13},
+                "String p" : {"hole_no": 14, "is_on": False, "last_time": 0, "midi_val": 14},
+                "String pp" : {"hole_no": 15, "is_on": False, "last_time": 0, "midi_val": 15},
                 "Shade1" : {"hole_no": 16, "is_on": True},
                 "Shade2" : {"hole_no": 17, "is_on": True},
                 "Shade3" : {"hole_no": 18, "is_on": True},
@@ -87,7 +93,7 @@ class Aeolian176note(BasePlayer):
             "great":{
                 # lower control holes of tracker bar
                 "Tremolo" : {"hole_no": 0, "is_on": False, "last_time": 0, "midi_val": 18},
-                "Tonal" : {"hole_no": 1, "is_on": False, "last_time": 0, "midi_val": 19},  # Currently Tonal do nothing
+                "Tonal" : {"hole_no": 1, "is_on": False, "last_time": 0, "midi_val": 19},  # Currently not implemented
                 "Harp" : {"hole_no": 2, "is_on": False, "last_time": 0, "midi_val": 20},
                 # "Extension" : {"hole_no": 3, "is_on": False},
                 # "Pedal 2nd octave" : {"hole_no": 4, "is_on": False},
@@ -101,12 +107,12 @@ class Aeolian176note(BasePlayer):
                 "Pedal Bassoon 16" : {"hole_no": 12, "is_on": False, "last_time": 0, "midi_val": 24},
                 "Pedal String 16" : {"hole_no": 13, "is_on": False, "last_time": 0, "midi_val": 25},
                 "Pedal Flute f16" : {"hole_no": 14, "is_on": False, "last_time": 0, "midi_val": 26},
-                "Pedal Flute p16" : {"hole_no": 15, "is_on": False, "last_time": 0, "midi_val": 26},
+                "Pedal Flute p16" : {"hole_no": 15, "is_on": False, "last_time": 0, "midi_val": 27},
                 "String pp" : {"hole_no": 16, "is_on": False, "last_time": 0, "midi_val": 28},
                 "String p" : {"hole_no": 17, "is_on": False, "last_time": 0, "midi_val": 29},
                 "String f" : {"hole_no": 18, "is_on": False, "last_time": 0, "midi_val": 30},
                 "Flute p" : {"hole_no": 19, "is_on": False, "last_time": 0, "midi_val": 31},
-                "Flute f" : {"hole_no": 20, "is_on": False, "last_time": 0, "midi_val": 31},
+                "Flute f" : {"hole_no": 20, "is_on": False, "last_time": 0, "midi_val": 32},
                 "Flute 4" : {"hole_no": 21, "is_on": False, "last_time": 0, "midi_val": 33},
                 "Diapason f" : {"hole_no": 22, "is_on": False, "last_time": 0, "midi_val": 34},
                 "Piccolo" : {"hole_no": 23, "is_on": False, "last_time": 0, "midi_val": 35},
@@ -233,40 +239,11 @@ class Aeolian176note(BasePlayer):
                     self.stop_indicator.change_stop({part_name: {key.lstrip("Pedal "): val["is_on"]}})
 
                 if (note_no := val.get("midi_val")) is not None:
-                    if val["is_on"]:
-                        self.midi.control_change(20, note_no, channel=3)
-                    else:
-                        # When treating multiple stops with the same note number, note-off after all stops is off
-                        if part == "swell" and key in ("String Vibrato f", "String f", "String mf") and \
-                            (self.ctrls["swell"]["String Vibrato f"]["is_on"] or \
-                            self.ctrls["swell"]["String f"]["is_on"] or \
-                            self.ctrls["swell"]["String mf"]["is_on"]):
-                                continue
-
-                        if part == "swell" and key in ("String p", "String pp") and \
-                            (self.ctrls["swell"]["String p"]["is_on"] or \
-                            self.ctrls["swell"]["String pp"]["is_on"]):
-                                continue
-
-                        if part == "swell" and key in ("Flute 4" , "Flute p") and \
-                            (self.ctrls["swell"]["Flute 4"]["is_on"] or \
-                            self.ctrls["swell"]["Flute p"]["is_on"]):
-                                continue
-
-                        if part == "great" and key in ("Flute p", "Flute f") and \
-                            (self.ctrls["great"]["Flute p"]["is_on"] or \
-                            self.ctrls["great"]["Flute f"]["is_on"]):
-                                continue
-
-                        if part == "great" and "Pedal Flute" in key and \
-                            (self.ctrls["great"]["Pedal Flute f16"]["is_on"] or \
-                            self.ctrls["great"]["Pedal Flute p16"]["is_on"]):
-                                continue
-
-                        self.midi.control_change(110, note_no, channel=3)
+                    cc_no = 20 if val["is_on"] else 110
+                    self.midi.control_change(cc_no, note_no, channel=3)
 
                 if key == "Pedal to Swell":
-                    # reset all pedal note
+                    # reset all pedal notes
                     [self.midi.note_off(k, channel=2) for k in range(128)]
 
         # fix shade error
