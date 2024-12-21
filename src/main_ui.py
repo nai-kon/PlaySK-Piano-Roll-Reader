@@ -149,10 +149,10 @@ class MainFrame(wx.Frame):
         else:
             return self.FromDIP(size) * self.conf.window_scale_ratio
 
-    def get_dpiscale_factor(self):
+    def get_dpiscale_factor(self) -> float:
         return self.GetDPIScaleFactor() * self.conf.window_scale_ratio if platform.system() == "Windows" else self.conf.window_scale_ratio
 
-    def get_scaled_textsize(self, size: int):
+    def get_scaled_textsize(self, size: int) -> int:
         return int(size * self.conf.window_scale_ratio)
 
     def create_status_bar(self):

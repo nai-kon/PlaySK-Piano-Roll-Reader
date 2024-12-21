@@ -101,7 +101,7 @@ class OrganStopIndicator(BasePanel):
 
         self.Refresh()
 
-    def change_stop(self, data: dict[str, bool]) -> None:
+    def change_stop(self, data: dict[str, dict[str, bool]]) -> None:
         wx.CallAfter(self._change_stop_inner, data)
 
 
