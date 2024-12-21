@@ -37,6 +37,7 @@ class CisImage:
     """
     def __init__(self) -> None:
         self.desc = ""
+        self.file_path = ""
         self.scanner_type = ScannerType.UNKNOWN
         self.is_clocked = False
         self.is_twin_array = False
@@ -55,6 +56,7 @@ class CisImage:
 
     def load(self, path: str) -> bool:
         try:
+            self.file_path = path
             self._load_file(path)
             self._decode()
             return True
