@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import cv2
 import numpy as np
 import wx
@@ -16,7 +18,8 @@ class ImgEditDlg(wx.Dialog):
         sizer1.Add(wx.StaticText(self, label=self.get_show_text()), 1, wx.EXPAND | wx.ALL, border_size)
         convert_bw_btn = wx.Button(self, label="Convert Black pixel to White")
         sizer1.Add(convert_bw_btn, 1, wx.EXPAND | wx.ALL, border_size)
-        convert_bw_btn.Bind(wx.EVT_BUTTON, self.convert_bw)
+        save_btn = wx.Button(self, label="Save as PNG image")
+        sizer1.Add(save_btn, 1, wx.EXPAND | wx.ALL, border_size)
         sizer1.Add(wx.Button(self, wx.ID_CANCEL, label="Cancel"), 1, wx.EXPAND | wx.ALL, border_size)
         sizer1.Add(wx.Button(self, wx.ID_OK, label="OK"), 1, wx.EXPAND | wx.ALL, border_size)
 
@@ -26,8 +29,13 @@ class ImgEditDlg(wx.Dialog):
         self.SetSizer(sizer2)
         self.Fit()
 
-        x, y = self.GetPosition()
-        self.SetPosition((x, 0))
+        x, _ = self.GetPosition()
+        cur_w, _ = self.GetSize()
+        set_x = min(x, wx.Display().GetClientArea().width - cur_w - 1)
+        self.SetPosition((set_x, 0))
+
+        convert_bw_btn.Bind(wx.EVT_BUTTON, self.convert_bw)
+        save_btn.Bind(wx.EVT_BUTTON, self.save_img)
 
     def convert_bw(self, event):
         # some cis scan has black background so convert it to white
@@ -35,6 +43,18 @@ class ImgEditDlg(wx.Dialog):
             self.cis.convert_bw()
         self.panel.set_image(self.cis.decoded_img)
         self.panel.Refresh()
+
+    def save_img(self, event) -> None:
+        # save decoded CIS as PNG image
+        with wx.FileDialog(self, "Save as PNG File", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+                           wildcard="PNG files (*.png)|*.png",
+                           defaultFile=Path(self.cis.file_path).with_suffix(".png").name) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                path = dlg.GetPath()
+                with wx.BusyCursor():
+                    ret = cv2.imwrite(path, self.cis.decoded_img)
+                if not ret:
+                    wx.MessageBox("Failed to save the image.", "Error")
 
     def get_show_text(self):
         # get roll info text

@@ -3,7 +3,8 @@ import sys
 import pytest
 
 sys.path.append("src/")
-import players
+import tracker_bars
+from midi_controller import MidiWrap
 from player_mng import PlayerMng
 
 
@@ -36,18 +37,23 @@ class TestPlayerMng:
             "Welte T98 white back",
             "Themodist white back",
             "Themodist e-Valve",
+            "Aeolian 176-note Pipe Organ",
         ])
         assert player_names == gt_names
 
     def test_get_player_obj(self, player_mng):
-        assert player_mng.get_player_obj("not exists player", None) is None
-        assert type(player_mng.get_player_obj("Ampico B white back", None)) is players.AmpicoB
-        assert type(player_mng.get_player_obj("Duo-Art white back", None)) is players.DuoArt
-        assert type(player_mng.get_player_obj("Philipps Duca (no expression)", None)) is players.PhilippsDuca
-        assert type(player_mng.get_player_obj("88 Note white back", None)) is players.BasePlayer
-        assert type(player_mng.get_player_obj("Welte Licensee white back", None)) is players.WelteLicensee
-        assert type(player_mng.get_player_obj("Welte T100 white back", None)) is players.WelteT100
-        assert type(player_mng.get_player_obj("Recordo A (rare) white back", None)) is players.RecordoA
-        assert type(player_mng.get_player_obj("Recordo B white back", None)) is players.RecordoB
-        assert type(player_mng.get_player_obj("Artecho white back (experimental)", None)) is players.Artecho
-        assert type(player_mng.get_player_obj("Welte T98 white back", None)) is players.WelteT98
+        midiobj = MidiWrap()
+        assert player_mng.get_player_obj("not exists player", midiobj) is None
+        assert type(player_mng.get_player_obj("Ampico B white back", midiobj)) is tracker_bars.AmpicoB
+        assert type(player_mng.get_player_obj("Duo-Art white back", midiobj)) is tracker_bars.DuoArt
+        assert type(player_mng.get_player_obj("Philipps Duca (no expression)", midiobj)) is tracker_bars.PhilippsDuca
+        assert type(player_mng.get_player_obj("88 Note white back", midiobj)) is tracker_bars.BasePlayer
+        assert type(player_mng.get_player_obj("Welte Licensee white back", midiobj)) is tracker_bars.WelteLicensee
+        assert type(player_mng.get_player_obj("Welte T100 white back", midiobj)) is tracker_bars.WelteT100
+        assert type(player_mng.get_player_obj("Recordo A (rare) white back", midiobj)) is tracker_bars.RecordoA
+        assert type(player_mng.get_player_obj("Recordo B white back", midiobj)) is tracker_bars.RecordoB
+        assert type(player_mng.get_player_obj("Artecho white back (experimental)", midiobj)) is tracker_bars.Artecho
+        assert type(player_mng.get_player_obj("Welte T98 white back", midiobj)) is tracker_bars.WelteT98
+        assert type(player_mng.get_player_obj("Themodist white back", midiobj)) is tracker_bars.Themodist
+        assert type(player_mng.get_player_obj("Themodist e-Valve", midiobj)) is tracker_bars.Themodist_eValve
+        assert type(player_mng.get_player_obj("Aeolian 176-note Pipe Organ", midiobj)) is tracker_bars.Aeolian176note

@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 sys.path.append("src/")
-import players
+import tracker_bars
 from midi_controller import MidiWrap
 
 
@@ -12,7 +12,7 @@ class TestRecordoB:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = players.RecordoB("src/playsk_config/Recordo B white back.json", midiobj)
+        obj = tracker_bars.RecordoB("src/playsk_config/Recordo B white back.json", midiobj)
         return obj
 
     @pytest.mark.parametrize("open_ports, expect", [

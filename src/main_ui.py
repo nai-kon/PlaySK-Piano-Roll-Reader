@@ -14,11 +14,13 @@ from controls import (
     WelcomeMsg,
 )
 from midi_controller import MidiWrap
+from organ_stop_indicator import OrganStopIndicator
 from player_mng import PlayerMng
-from players import BasePlayer
 from roll_scroll import InputScanImg, load_scan
+from tracker_bars import BasePlayer
 from vacuum_gauge import VacuumGauge
 from version import APP_TITLE
+from wx.adv import HyperlinkCtrl
 
 
 class CallBack:
@@ -59,28 +61,37 @@ class MainFrame(wx.Frame):
         if platform.system() == "Windows":
             # wxpython on Windows does not support Darkmode
             self.SetBackgroundColour("#AAAAAA")
-
         self.conf = ConfigMng()
         self.img_path = None
+
+        # Initial Welcome Message
         self.spool = WelcomeMsg(self, size=(800, 600))
         self.spool.start_worker()
         self.supported_imgs = (".cis", ".jpg", ".png", ".tif", ".bmp")
 
+        # Midi on/off button
         self.midi_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="MIDI On")
         self.midi_btn.Bind(wx.EVT_BUTTON, self.midi_onoff)
         self.midi_btn.Disable()
-
+        # File Open button
         self.file_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="File")
         self.file_btn.Bind(wx.EVT_BUTTON, self.open_file)
-
+        # Tempo slider
         self.speed = SpeedSlider(self, callback=self.speed_change)
+        # Auto Tracking on/off button
         self.tracking = TrackerCtrl(self)
-
+        # Manual Expression on/off button
         self.manual_expression = BaseCheckbox(self, wx.ID_ANY, "Manual Expression")
+        # Vacuum Graph
         self.bass_vacuum_lv = VacuumGauge(self, caption="Bass Vacuum (inches of water)")
         self.treble_vacuum_lv = VacuumGauge(self, caption="Treble Vacuum (inches of water)")
+        # Organ Stop Indicator for Aeolian 176-note
+        self.organ_stop_indicator = OrganStopIndicator(self)
+        # Link for Aeolian 165-note Midi assignment document
+        self.organ_midi_map = HyperlinkCtrl(self, wx.ID_ANY, "MIDI Output Assignment Map", "https://playsk-aeolian176note-midi-assignment.pages.dev/", style=wx.adv.HL_ALIGN_LEFT)
 
-        self.adjust_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((180, 40))), label="Adjust CIS Image")
+        # CIS Adjust button
+        self.adjust_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((180, 35))), label="Adjust CIS Image")
         self.adjust_btn.Bind(wx.EVT_BUTTON, self.adjust_image)
 
         self.callback = CallBack(None, self.tracking, self.bass_vacuum_lv, self.treble_vacuum_lv)
@@ -100,6 +111,8 @@ class MainFrame(wx.Frame):
         self.sizer2.Add(self.manual_expression, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.bass_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.treble_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=border_size)
+        self.sizer2.Add(self.organ_stop_indicator, flag=wx.EXPAND | wx.ALL, border=border_size)
+        self.sizer2.Add(self.organ_midi_map, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.adjust_btn, flag=wx.EXPAND | wx.ALL, border=border_size)
 
         self.sizer3 = wx.BoxSizer(wx.HORIZONTAL)
@@ -115,6 +128,7 @@ class MainFrame(wx.Frame):
         self.SetDropTarget(self.droptarget)
         self.adjust_btn.Hide()
 
+        self.Bind(wx.EVT_SIZE, self.on_resize)
         self.Bind(wx.EVT_CLOSE, self.on_close)
         self.Show()
 
@@ -129,16 +143,16 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_KEY_UP, self.on_keyup)
         self.manual_expression.Bind(wx.EVT_CHECKBOX, self.on_check_manual_expression)
 
-    def get_dipscaled_size(self, size:wx.Size | int):
+    def get_dipscaled_size(self, size:wx.Size | int) -> int | wx.Size:
         if isinstance(size, int):
             return int(self.FromDIP(size) * self.conf.window_scale_ratio)
         else:
             return self.FromDIP(size) * self.conf.window_scale_ratio
 
-    def get_dpiscale_factor(self):
+    def get_dpiscale_factor(self) -> float:
         return self.GetDPIScaleFactor() * self.conf.window_scale_ratio if platform.system() == "Windows" else self.conf.window_scale_ratio
 
-    def get_scaled_textsize(self, size: int):
+    def get_scaled_textsize(self, size: int) -> int:
         return int(size * self.conf.window_scale_ratio)
 
     def create_status_bar(self):
@@ -196,6 +210,20 @@ class MainFrame(wx.Frame):
     def post_status_msg(self, msg: str):
         wx.CallAfter(self.sbar.SetStatusText, text=msg, i=6)
 
+    def on_resize(self, event):
+        # selection of status bar needs manually re-position
+        # midi port sel
+        rect = self.sbar.GetFieldRect(1)
+        self.port_sel.SetPosition((rect.x, 0))
+        # tracker bar sel
+        rect = self.sbar.GetFieldRect(4)
+        self.player_sel.SetPosition((rect.x, 0))
+        # windows scale sel
+        rect = self.sbar.GetFieldRect(8)
+        self.scale_sel.SetPosition((rect.x, 0))
+
+        event.Skip()
+
     def on_close(self, event):
         print("on_close called")
         self.conf.save_config()
@@ -206,11 +234,17 @@ class MainFrame(wx.Frame):
         self.Destroy()
 
     def on_keydown(self, event):
+        """
+        manual expression key pressing
+        """
         keycode = event.GetUnicodeKey()
         self.spool.set_pressed_key(keycode, True)
         self.callback.key_event(keycode, True)
 
     def on_keyup(self, event):
+        """
+        manual expression key pressing
+        """
         keycode = event.GetUnicodeKey()
         self.spool.set_pressed_key(keycode, False)
         self.callback.key_event(keycode, False)
@@ -230,14 +264,31 @@ class MainFrame(wx.Frame):
         idx = self.player_sel.GetSelection()
         name = self.player_sel.GetString(idx)
         self.conf.last_tracker = name
-        player_tmp = self.player_mng.get_player_obj(name, self.midiobj)
-        if player_tmp is not None:
+        if (player_tmp:= self.player_mng.get_player_obj(name, self.midiobj)) is not None:
             self.midiobj.all_off()
             self.midi_btn.SetLabel("MIDI On")
             player_tmp.tracker_offset = self.tracking.offset
             player_tmp.auto_tracking = self.tracking.auto_tracking
             self.callback.player = player_tmp
             self.callback.player.manual_expression = self.manual_expression.IsChecked()
+
+        if name == "Aeolian 176-note Pipe Organ":
+            self.manual_expression.SetValue(False)
+            self.spool.set_manual_expression(False)
+            self.callback.player.manual_expression = False
+            self.callback.player.init_stop_indicator(self.organ_stop_indicator)
+            self.manual_expression.Hide()
+            self.bass_vacuum_lv.Hide()
+            self.treble_vacuum_lv.Hide()
+            self.organ_stop_indicator.Show()
+            self.organ_midi_map.Show()
+        else:
+            self.manual_expression.Show()
+            self.bass_vacuum_lv.Show()
+            self.treble_vacuum_lv.Show()
+            self.organ_stop_indicator.Hide()
+            self.organ_midi_map.Hide()
+        self.Fit()
 
     def change_scale(self, event=None):
         idx = self.scale_sel.GetSelection()
@@ -260,8 +311,7 @@ class MainFrame(wx.Frame):
         self.midi_btn.SetLabel("MIDI On")
 
     def load_file(self, path: str, force_manual_adjust: bool=False):
-        ext = Path(path).suffix.lower()
-        if ext.lower() not in self.supported_imgs:
+        if Path(path).suffix.lower() not in self.supported_imgs:
             wx.MessageBox(f"Supported image formats are {' '.join(self.supported_imgs)}", "Unsupported file")
             return
 
@@ -269,10 +319,9 @@ class MainFrame(wx.Frame):
         if img is None:
             return
         self.img_path = path
-        if self.img_path.lower().endswith(".cis"):
-            self.adjust_btn.Show()
-        else:
-            self.adjust_btn.Hide()
+        self.adjust_btn.Show() if self.img_path.lower().endswith(".cis") else self.adjust_btn.Hide()
+        self.Fit()
+
         self.callback.player.emulate_off()
         tmp = self.spool
         self.spool = InputScanImg(self, img, self.callback.player.spool_diameter, self.callback.player.roll_width, window_scale=self.conf.window_scale, callback=self.callback)
@@ -287,7 +336,7 @@ class MainFrame(wx.Frame):
         self.midi_btn.Enable()
 
         # Set tempo
-        self.speed.set("Tempo", (50, 140), tempo)
+        self.speed.set("Tempo", (30, 140), tempo)
 
     def open_file(self, event):
         tmp = ";".join(f"*{v}" for v in self.supported_imgs)

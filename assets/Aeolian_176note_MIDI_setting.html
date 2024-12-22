@@ -1,0 +1,274 @@
+<html>
+	<style type="text/css">
+	td,th {border: 1px solid #cccccc;}
+	th {background-color: rgb(226,232,240);}
+	table {border-collapse: collapse;}
+	</style>
+
+	<p>PlaySK Piano Roll Reader</p>
+	<h1>Aeolian 176-note tracker bar<br>
+		MIDI Output Assignment</h1>
+
+	<table>
+		<tr>
+			<th>Control</th>
+			<th>MIDI<br>channel</th>
+			<th>MIDI<br>note number</th>
+			<th>MIDI<br>control change</th>
+			<th>MIDI<br>value</th>
+			<th>supplement</th>
+		</tr>
+		<tr>
+			<td>Swell Notes</td>
+			<td>1</td>
+			<td>36-96</td>
+			<td>-</td>
+			<td>-</td>
+			<td>61 notes</td>
+		</tr>
+		<tr>
+			<td>Great Notes</td>
+			<td>2</td>
+			<td>36-96</td>
+			<td>-</td>
+			<td>-</td>
+			<td>61 notes</td>
+		</tr>
+		<tr>
+			<td>Pedal Notes</td>
+			<td>3</td>
+			<td>36-67</td>
+			<td>-</td>
+			<td>-</td>
+			<td>32 notes</td>
+		</tr>
+		<tr>
+			<td>Swell Expression Shade</td>
+			<td rowspan="37" colspan="1">4</td>
+			<td>-</td>
+			<td>14</td>
+			<td>30-127</td>
+			<td rowspan="2" colspan="1">30 is fully closed.<br>127 is fully opened.</td>
+		</tr>
+		<tr>
+			<td>Great Expression Shade</td>
+			<td>-</td>
+			<td>15</td>
+			<td>30-127</td>
+		</tr>
+		<tr>
+			<td>Echo</td>
+			<td>-</td>
+			<td rowspan="35" colspan="1">20:ON<br>110:OFF<br><br>For Hauptwerk virtual organ, corresponds to<br>"Notation stop or hold-piston; CC20=on, CC110=off"</td>
+			<td>0</td>
+			<td>Echo couples the Ehco division to upper holes and releases Swell. This is not implemented yet.</td>
+		</tr>
+		<tr>
+			<td>Swell Chimes</td>
+			<td>-</td>
+			<td>1</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Swell Tremolo</td>
+			<td>-</td>
+			<td>2</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Swell Harp</td>
+			<td>-</td>
+			<td>3</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Swell Trumpet</td>
+			<td>-</td>
+			<td>4</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Swell Oboe</td>
+			<td>-</td>
+			<td>5</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Swell Vox Humana</td>
+			<td>-</td>
+			<td>6</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Swell Diapason mf</td>
+			<td>-</td>
+			<td>7</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Swell Flute 16</td>
+			<td>-</td>
+			<td>8</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Swell Flute 4</td>
+			<td>-</td>
+			<td>9</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Swell Flute p</td>
+			<td>-</td>
+			<td>10</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Swell String Vibrato f</td>
+			<td>-</td>
+			<td>11</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Swell String f</td>
+			<td>-</td>
+			<td>12</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Swell String mf</td>
+			<td>-</td>
+			<td>13</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Swell String p</td>
+			<td>-</td>
+			<td>14</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Swell String pp</td>
+			<td>-</td>
+			<td>15</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Swell Soft Chimes</td>
+			<td>-</td>
+			<td>17</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Great Tremolo</td>
+			<td>-</td>
+			<td>18</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Tonal</td>
+			<td>-</td>
+			<td>19</td>
+			<td>Tonal turns on most stops. This is not implemented yet.</td>
+		</tr>
+		<tr>
+			<td>Great Harp</td>
+			<td>-</td>
+			<td>20</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Pedal Bassoon 16</td>
+			<td>-</td>
+			<td>24</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Pedal String 16</td>
+			<td>-</td>
+			<td>25</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Pedal Flute f16</td>
+			<td>-</td>
+			<td>26</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Pedal Flute p16</td>
+			<td>-</td>
+			<td>27</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Great String pp</td>
+			<td>-</td>
+			<td>28</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Great String p</td>
+			<td>-</td>
+			<td>29</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Great String f</td>
+			<td>-</td>
+			<td>30</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Great Flute p</td>
+			<td>-</td>
+			<td>31</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Great Flute f</td>
+			<td>-</td>
+			<td>32</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Great Flute 4</td>
+			<td>-</td>
+			<td>33</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Great Diapason f</td>
+			<td>-</td>
+			<td>34</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Great Piccolo</td>
+			<td>-</td>
+			<td>35</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Great Clarinet</td>
+			<td>-</td>
+			<td>36</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Great Trumpet</td>
+			<td>-</td>
+			<td>37</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Great Chime Damper</td>
+			<td>-</td>
+			<td>38</td>
+			<td></td>
+		</tr>
+	</table>
+
+	<p>Katz Sasaki<br>14 Dec 2024</p>
+	<a href="https://github.com/nai-kon/PlaySK-Piano-Roll-Reader">PlaySK Piano Roll Reader</a>
+</html>

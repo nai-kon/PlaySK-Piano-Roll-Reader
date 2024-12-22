@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 sys.path.append("src/")
-import players
+import tracker_bars
 from midi_controller import MidiWrap
 
 
@@ -13,7 +13,7 @@ class TestAmpicoB:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = players.AmpicoB("src/playsk_config/Ampico B white back.json", midiobj)
+        obj = tracker_bars.AmpicoB("src/playsk_config/Ampico B white back.json", midiobj)
         return obj
 
     def test_emulate_off(self, player):

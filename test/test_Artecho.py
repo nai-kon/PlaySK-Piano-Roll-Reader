@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 sys.path.append("src/")
-import players
+import tracker_bars
 from midi_controller import MidiWrap
 
 
@@ -12,7 +12,7 @@ class TestArtecho:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = players.Artecho("src/playsk_config/Artecho white back (experimental).json", midiobj)
+        obj = tracker_bars.Artecho("src/playsk_config/Artecho white back (experimental).json", midiobj)
         return obj
 
     def test_emulate_off(self, player):

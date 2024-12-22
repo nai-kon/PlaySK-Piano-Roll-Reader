@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 sys.path.append("src/")
-import players
+import tracker_bars
 from midi_controller import MidiWrap
 
 
@@ -12,7 +12,7 @@ class TestWelteT100:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = players.WelteT100("src/playsk_config/Welte T100 white back.json", midiobj)
+        obj = tracker_bars.WelteT100("src/playsk_config/Welte T100 white back.json", midiobj)
         return obj
 
     def test_emulate_off(self, player):

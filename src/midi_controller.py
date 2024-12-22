@@ -40,19 +40,21 @@ class MidiWrap:
             self.sustain_off()
             self.soft_off()
             self.hammer_lift_off()
-            [self.note_off(k) for k in range(128)]
+            [self.note_off(k, channel=0) for k in range(128)]
+            [self.note_off(k, channel=1) for k in range(128)]
+            [self.note_off(k, channel=2) for k in range(128)]
 
             self.output.reset()
 
-    def note_on(self, note: int, velocity: int) -> None:
+    def note_on(self, note: int, velocity: int, channel: int = 0) -> None:
         if self.enable:
             if self.hammer_lift:
                 velocity -= 8
-            self.output.send(Message("note_on", note=note, velocity=velocity))
+            self.output.send(Message("note_on", note=note, velocity=velocity, channel=channel))
 
-    def note_off(self, note: int, velocity: int = 90) -> None:
+    def note_off(self, note: int, velocity: int = 90, channel: int = 0) -> None:
         if self.enable:
-            self.output.send(Message("note_off", note=note, velocity=velocity))
+            self.output.send(Message("note_off", note=note, velocity=velocity, channel=channel))
 
     def sustain_on(self) -> None:
         if self.enable:
@@ -75,6 +77,14 @@ class MidiWrap:
 
     def hammer_lift_off(self) -> None:
         self.hammer_lift = False
+
+    def control_change(self, number: int, value: int, channel: int = 0) -> None:
+        if self.enable:
+            self.output.send(Message("control_change", control=number, value=value, channel=channel))
+
+    def program_change(self, program_no: int, channel: int = 0) -> None:
+        if self.enable:
+            self.output.send(Message("program_change", program=program_no, channel=channel))
 
 
 if __name__ == "__main__":

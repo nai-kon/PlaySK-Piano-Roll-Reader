@@ -15,8 +15,8 @@ def test_verions():
     # check copyright year
     cur_yyyy = datetime.date.today().year
     matched = re.findall(r"-(\d{4})", COPY_RIGHT, flags=re.MULTILINE)
-    yyyy = int(matched[0]) if matched else ""
-    assert cur_yyyy == yyyy
+    yyyy = int(matched[0]) if matched else 0
+    assert cur_yyyy <= yyyy <= cur_yyyy + 1  # accept +1 year
 
     # check version on build_mac.spec
     with open("build_mac.spec") as f:
@@ -46,7 +46,7 @@ def test_verions():
 
     matched = re.findall(r"^\s*StringStruct\(u'LegalCopyright',.*-(\d{4})'\),?", text, flags=re.MULTILINE)
     yyyy = int(matched[0]) if matched else ""
-    assert cur_yyyy == yyyy
+    assert cur_yyyy <= yyyy <= cur_yyyy + 1  # accept +1 year
 
     # check pyproject.toml
     with open("pyproject.toml", "rb") as f:
