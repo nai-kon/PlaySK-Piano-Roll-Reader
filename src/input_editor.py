@@ -51,7 +51,8 @@ class ImgEditDlg(wx.Dialog):
                            defaultFile=Path(self.cis.file_path).with_suffix(".png").name) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
-                ret = cv2.imwrite(path, self.cis.decoded_img)
+                with wx.BusyCursor():
+                    ret = cv2.imwrite(path, self.cis.decoded_img)
                 if not ret:
                     wx.MessageBox("Failed to save the image.", "Error")
 
