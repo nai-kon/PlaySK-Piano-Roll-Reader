@@ -4,16 +4,14 @@ Optically reading a piano roll image, emulates expression and output midi signal
 
 ![Overall System](./assets/Overall_System.webp)
 
-The "virtual tracker bar" optically picks up roll holes then emulates note, pedal and expression code. The expression code is decoded to vacuum level (in inches of water) in real-time, then convert to MIDI velocity.
+The "Virtual Tracker Bar" optically picks up roll holes then emulates note, pedal and expression code. The expression code is decoded to vacuum level (in inches of water) in real-time, then convert to MIDI velocity.
 
 Currently, 9 virtual tracker bars are available.
 - Aeolian 176-note Duo-Art Pipe Organ ([MIDI output assignment](https://playsk-aeolian176note-midi-assignment.pages.dev/))
 - Standard 88-note
 - Ampico B
 - Duo-Art
-- Welte-Mignon Licensee
-- Welte-Mignon T-98 (Green)
-- Welte-Mignon T-100 (Red)
+- Welte-Mignon T-100 (Red) / T-98 (Green) / Licensee
 - Philipps Duca (no expression. experimental)
 - Recordo version A / B
 - Artecho
