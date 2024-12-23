@@ -31,7 +31,7 @@ class Aeolian176note(BasePlayer):
         stops = {
             "Swell Stops": {k: v["is_on"] for k, v in self.ctrls["swell"].items() if "Pedal" not in k and "Shade" not in k},
             "Great Stops": {k: v["is_on"] for k, v in self.ctrls["great"].items() if "Pedal" not in k and "Shade" not in k},
-            "Pedal Stops": {k.lstrip("Pedal "): v["is_on"] for part in self.ctrls for k, v in self.ctrls[part].items() if "Pedal" in k},
+            "Pedal Stops": {k.replace("Pedal ", ""): v["is_on"] for part in self.ctrls for k, v in self.ctrls[part].items() if "Pedal" in k},
         }
         self.stop_indicator.init_stop(stops)
 
@@ -132,7 +132,7 @@ class Aeolian176note(BasePlayer):
             stops = {
                 "Swell Stops": {k: v["is_on"] for k, v in self.ctrls["swell"].items() if "Pedal" not in k and "Shade" not in k},
                 "Great Stops": {k: v["is_on"] for k, v in self.ctrls["great"].items() if "Pedal" not in k and "Shade" not in k},
-                "Pedal Stops": {k.lstrip("Pedal "): v["is_on"] for part in self.ctrls for k, v in self.ctrls[part].items() if "Pedal" in k},
+                "Pedal Stops": {k.replace("Pedal ", ""): v["is_on"] for part in self.ctrls for k, v in self.ctrls[part].items() if "Pedal" in k},
             }
             self.stop_indicator.change_stop(stops)
 
@@ -236,7 +236,7 @@ class Aeolian176note(BasePlayer):
                 if self.stop_indicator is not None and "Shade" not in key:
                     part_name = "Swell Stops" if part == "swell" else "Great Stops"
                     part_name = "Pedal Stops" if "Pedal" in key else part_name
-                    self.stop_indicator.change_stop({part_name: {key.lstrip("Pedal "): val["is_on"]}})
+                    self.stop_indicator.change_stop({part_name: {key.replace("Pedal ", ""): val["is_on"]}})
 
                 if (note_no := val.get("midi_val")) is not None:
                     cc_no = 20 if val["is_on"] else 110
