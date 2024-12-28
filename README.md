@@ -30,8 +30,8 @@ Support image formats are `.CIS`, `.jpg`, `.tif`, `.png`, `.bmp`. The `.CIS` sup
 - Reading a Red Welte T-100 roll with Software Synthesizer  
     https://www.youtube.com/watch?v=WMEPW-UWhSU
 
-- Reading an Aeolian 176-note Pipe Organ roll with Hauptwerk virtual organ
-    https://www.youtube.com/watch?v=N0Gm2g1ADjk
+- Reading an Aeolian 176-note Pipe Organ roll with virtual organ  
+    https://www.youtube.com/watch?v=v1P6m5cLBtM
 
 ## Donation
 
