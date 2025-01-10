@@ -31,6 +31,7 @@ class PlayerMng:
         cls_name = self.player_conf_map.get(player_name, None)
         cls_map = {
             "Player": tracker_bars.BasePlayer,
+            "AmpicoA": tracker_bars.AmpicoA,
             "AmpicoB": tracker_bars.AmpicoB,
             "Duo-Art": tracker_bars.DuoArt,
             "WelteT100": tracker_bars.WelteT100,
