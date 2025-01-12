@@ -58,6 +58,8 @@ class AmpicoA(BasePlayer):
         self.bass_intensity_lock = [False, False, False]
         self.treble_intensity_lock = [False, False, False]
         self.amplifier_pos = 0
+        self.bass_crescendo_pos = self.min_vacuum
+        self.treble_crescendo_pos = self.min_vacuum
         self.bass_vacuum = self.treble_vacuum = self.intensity_range["none"][0]
         self.bass_vacuum_pre = self.treble_vacuum_pre = self.intensity_range["none"][0]
 
@@ -94,6 +96,7 @@ class AmpicoA(BasePlayer):
         self.pre_time = curtime
 
     def calc_amplifier(self, delta_time):
+
         # amplifier is triggered by intensity 6 hole of bass or treble
         if self.bass_intensity_lock[1] or self.treble_intensity_lock[1]:
             self.amplifier_pos += delta_time / self.amplifier_time
@@ -105,14 +108,14 @@ class AmpicoA(BasePlayer):
         if (self.bass_intensity_lock[1] and self.bass_intensity_lock[2]) or \
             (self.treble_intensity_lock[1] and self.treble_intensity_lock[2]):
             # 100% collapse with 4&6 hole open.
-            self.amplifier_pos = max(self.amplifier_pos, self.amplifier_locks["46"])
+            pass
         elif (self.bass_intensity_lock[0] and self.bass_intensity_lock[2]) or \
             (self.treble_intensity_lock[0] and self.treble_intensity_lock[2]):
             # 50% collapse with 2&6 hole open.
-            self.amplifier_pos = max(self.amplifier_pos, self.amplifier_locks["26"])
+            self.amplifier_pos = min(self.amplifier_pos, self.amplifier_locks["26"])
         elif self.bass_intensity_lock[1] or self.treble_intensity_lock[1]:
             # 20% collapse with 6 hole open.
-            self.amplifier_pos = max(self.amplifier_pos, self.amplifier_locks["6"])
+            self.amplifier_pos = min(self.amplifier_pos, self.amplifier_locks["6"])
 
     def calc_expression(self, delta_time):
 
