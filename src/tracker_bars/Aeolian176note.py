@@ -125,7 +125,7 @@ class Aeolian176note(BasePlayer):
             },
         }
 
-        [self.midi.control_change(110, v, 3) for v in range(128)]  # all off
+        [self.midi.note_off(v, 64, channel=3) for v in range(128)]  # stop all off
         self.pedal_all_off = True
 
         if self.stop_indicator is not None:
@@ -238,9 +238,11 @@ class Aeolian176note(BasePlayer):
                     part_name = "Pedal Stops" if "Pedal" in key else part_name
                     self.stop_indicator.change_stop({part_name: {key.replace("Pedal ", ""): val["is_on"]}})
 
-                if (note_no := val.get("midi_val")) is not None:
-                    cc_no = 20 if val["is_on"] else 110
-                    self.midi.control_change(cc_no, note_no, channel=3)
+                if (midi_no := val.get("midi_val")) is not None:
+                    if val["is_on"]:
+                        self.midi.note_on(midi_no, 64, channel=3)
+                    else:
+                        self.midi.note_off(midi_no, 64, channel=3)
 
                 if key == "Pedal to Swell":
                     # reset all pedal notes
