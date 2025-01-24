@@ -133,7 +133,7 @@ class MainFrame(wx.Frame):
         self.Show()
 
         # notify update
-        NotifyUpdate.check(self, self.conf)
+        # NotifyUpdate.check(self, self.conf)
 
         if len(sys.argv) > 1:
             # app was opened with file
