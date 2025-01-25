@@ -70,14 +70,13 @@ If you check `☑ Manual Expression`, you can express dynamics using the keyboar
 ## Requirements
 
 * Python 3.11.6
-* Poetry
+* Poetry 2.0.1
 
 Quick Start
 ```
 $ poetry install
-$ poetry shell
 $ cd src/
-$ python main.py
+$ poetry run python main.py
 ```
 
 ## Build binary locally

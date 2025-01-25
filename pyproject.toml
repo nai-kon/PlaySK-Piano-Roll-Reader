@@ -5,6 +5,7 @@ description = "Optically reading a piano roll image, emulates expression and out
 authors = ["nai-kon <fxtch686@yahoo.co.jp>"]
 readme = "README.md"
 repository =  "https://github.com/nai-kon/PlaySK-Piano-Roll-Reader"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "~3.11"
