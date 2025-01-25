@@ -8,7 +8,6 @@ from config import ConfigMng
 from controls import (
     BaseButton,
     BaseCheckbox,
-    NotifyUpdate,
     SpeedSlider,
     TrackerCtrl,
     WelcomeMsg,
