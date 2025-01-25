@@ -88,7 +88,7 @@ class MainFrame(wx.Frame):
         # Organ Stop Indicator for Aeolian 176-note
         self.organ_stop_indicator = OrganStopIndicator(self)
         # Link for Aeolian 165-note Midi assignment document
-        self.organ_midi_map = HyperlinkCtrl(self, wx.ID_ANY, "MIDI Output Assignment Map", "https://playsk-aeolian176note-midi-assignment.pages.dev/", style=wx.adv.HL_ALIGN_LEFT)
+        self.organ_midi_map = HyperlinkCtrl(self, wx.ID_ANY, "MIDI Output Assignment Map", "https://playsk-aeolian176note-midi-assignment-custom.pages.dev/", style=wx.adv.HL_ALIGN_LEFT)
 
         # CIS Adjust button
         self.adjust_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((180, 35))), label="Adjust CIS Image")
