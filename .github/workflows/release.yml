@@ -120,7 +120,6 @@ jobs:
     - name: Display structure of downloaded files
       run: ls -la assets/
 
-    # currently no solution for double zipped
     - name: create release
       uses: softprops/action-gh-release@v1
       with:
