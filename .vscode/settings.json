@@ -1,8 +1,16 @@
 {
     "cSpell.ignoreWords": [
+        "Ampico",
         "Colour",
+        "confpath",
+        "cres",
+        "cresc",
+        "curtime",
+        "midiobj",
         "mido",
-        "curtime"
+        "playsk",
+        "subintensity",
+        "wxdc"
     ],
     "python.testing.pytestArgs": [
         "test"
