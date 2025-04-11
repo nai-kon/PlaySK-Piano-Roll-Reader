@@ -13,7 +13,7 @@ uv run pyinstaller build_mac.spec -y
 rm -rf 'dist/PlaySK Piano Roll Reader/'
 
 # generate 3rd party license txt
-pip-licenses --format=plain-vertical --with-license-file --no-license-path --output-file="3rd-party-license.txt"
+uv run pip-licenses --format=plain-vertical --with-license-file --no-license-path --output-file="3rd-party-license.txt"
 
 # copy files
 cp -p "3rd-party-license.txt" dist/
