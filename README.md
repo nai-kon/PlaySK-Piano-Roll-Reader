@@ -70,22 +70,22 @@ If you check `☑ Manual Expression`, you can express dynamics using the keyboar
 ## Requirements
 
 * Python 3.11.6
-* Poetry 2.0.1
+* uv 0.6.14
 
 Quick Start
 ```
-$ poetry install
+$ uv sync
 $ cd src/
-$ poetry run python main.py
+$ uv run python main.py
 ```
 
 ## Build binary locally
 
 - Windows (x64)
-    - `poetry run ./build_win.bat`
+    - `./build_win.bat`
     - tested on Windows10
 - macOS (x64/ARM)
-    - `poetry run ./build_mac.sh`
+    - `./build_mac.sh`
     - tested on macOS Venture (both Intel and M1 cpu)
 
 

@@ -23,7 +23,7 @@ jobs:
         os: [windows-latest, macos-13, macos-14]
         include: 
           - os: windows-latest
-            build_cmd: build_win.bat
+            build_cmd: ./build_win.bat
             zip_name: PlaySK-PianoRoll-Reader-Win.x64.zip
           - os: macos-13
             build_cmd: bash build_mac.sh
@@ -42,14 +42,14 @@ jobs:
       with:
         python-version: ${{ matrix.python-ver }}
         
-    - name: Install poetry
-      uses: abatilo/actions-poetry@v2
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
       
-    - name: Install dependencies
-      run: poetry install
+    - name: Install python packages
+      run: uv sync
 
     - name: build binary
-      run: poetry run ${{ matrix.build_cmd }}
+      run: ${{ matrix.build_cmd }}
 
     - name: Windows x64, collect release files
       if: startsWith( matrix.os , 'windows' )

@@ -3,11 +3,11 @@ set -euo pipefail
 
 # build cython code
 pushd ./src/cis_decoder/
-python setup.py build_ext --inplace
+uv run python setup.py build_ext --inplace
 popd
 
 # build exe
-pyinstaller build_mac.spec -y
+uv run pyinstaller build_mac.spec -y
 
 # remove temp folder
 rm -rf 'dist/PlaySK Piano Roll Reader/'
