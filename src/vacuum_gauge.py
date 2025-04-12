@@ -4,6 +4,7 @@ import time
 
 import numpy as np
 import wx
+
 from controls import BasePanel
 from roll_scroll import FPScounter
 

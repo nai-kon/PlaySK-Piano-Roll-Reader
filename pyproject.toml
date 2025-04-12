@@ -23,15 +23,15 @@ pip-licenses = "^4.3.3"
 pytest = "^7.4.3"
 pytest-cov = "^4.1.0"
 pytest-mock = "^3.12.0"
-ruff = "^0.1.13"
+ruff = "^0.11.5"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
-select = ["E", "F", "B", "I", "COM", "A", "UP", "Q", "SIM", "W"]
-ignore = [
+lint.select = ["E", "F", "B", "I", "COM", "A", "UP", "Q", "SIM", "W"]
+lint.ignore = [
     "E402",
     "E501",
     "SIM300",

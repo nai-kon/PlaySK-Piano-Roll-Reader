@@ -3,6 +3,7 @@ import threading
 
 import numpy as np
 import wx
+
 from midi_controller import MidiWrap
 
 

@@ -3,6 +3,7 @@ import platform
 
 import wx
 import wx.grid
+
 from controls import BasePanel
 
 

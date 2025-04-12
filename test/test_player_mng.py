@@ -26,6 +26,7 @@ class TestPlayerMng:
         player_names = sorted(player_mng.player_list)
         gt_names = sorted([
             "88 Note white back",
+            "Ampico A white back",
             "Ampico B white back",
             "Duo-Art white back",
             "Philipps Duca (no expression)",

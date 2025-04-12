@@ -7,10 +7,10 @@ import urllib.request
 
 import certifi
 import wx
-import wx.adv
+from wx.adv import HyperlinkCtrl
+
 from config import ConfigMng
 from version import APP_TITLE, APP_VERSION, COPY_RIGHT
-from wx.adv import HyperlinkCtrl
 
 
 class BasePanel(wx.Panel):

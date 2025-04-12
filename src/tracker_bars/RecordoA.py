@@ -84,6 +84,7 @@ if __name__ == "__main__":
     import os
 
     import numpy as np
+
     from midi_controller import MidiWrap
 
     midiobj = MidiWrap()

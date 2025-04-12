@@ -176,7 +176,9 @@ if __name__ == "__main__":
     import time
 
     import numpy as np
+
     from midi_controller import MidiWrap
+
     midiobj = MidiWrap()
     player = AmpicoA(os.path.join("playsk_config", "Ampico A white back.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)

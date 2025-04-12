@@ -4,6 +4,8 @@ import sys
 from pathlib import Path
 
 import wx
+from wx.adv import HyperlinkCtrl
+
 from config import ConfigMng
 from controls import (
     BaseButton,
@@ -20,7 +22,6 @@ from roll_scroll import InputScanImg, load_scan
 from tracker_bars import BasePlayer
 from vacuum_gauge import VacuumGauge
 from version import APP_TITLE
-from wx.adv import HyperlinkCtrl
 
 
 class CallBack:
