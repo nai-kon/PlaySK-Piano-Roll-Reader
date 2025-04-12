@@ -51,5 +51,5 @@ def test_verions():
     # check pyproject.toml
     with open("pyproject.toml", "rb") as f:
         data = tomllib.load(f)
-    version = data["tool"]["poetry"]["version"]
+    version = data["project"]["version"]
     assert version == APP_VERSION

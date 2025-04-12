@@ -2,7 +2,7 @@
 
 rem build cython code
 pushd .\src\cis_decoder\
-python setup.py build_ext --inplace
+uv run python setup.py build_ext --inplace
 if %errorlevel% neq 0 (
     echo failed to build cython code
     exit /b
@@ -10,7 +10,7 @@ if %errorlevel% neq 0 (
 popd
 
 rem build exe
-pyinstaller build_win.spec -y
+uv run pyinstaller build_win.spec -y
 
 rem generate 3rd party license txt
 pip-licenses --format=plain-vertical --with-license-file --no-license-path --output-file="3rd-party-license.txt"
