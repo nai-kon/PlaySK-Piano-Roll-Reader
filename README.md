@@ -67,6 +67,8 @@ If you check `☑ Manual Expression`, you can express dynamics using the keyboar
 
 # For developers
 
+The app is written in Python and uses wxPython for the UI. For faster processing, NumPy is used for pixel calculations, and Cython is used for decoding CIS files.
+
 ## Requirements
 
 * Python 3.11.6
