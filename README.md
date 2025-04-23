@@ -30,8 +30,8 @@ Support image formats are `.CIS`, `.jpg`, `.tif`, `.png`, `.bmp`. The `.CIS` sup
 - Reading a Red Welte T-100 roll with Software Synthesizer  
     https://www.youtube.com/watch?v=WMEPW-UWhSU
 
-- Reading an Aeolian 176-note Pipe Organ roll with Hauptwerk virtual organ
-    https://www.youtube.com/watch?v=N0Gm2g1ADjk
+- Reading an Aeolian 176-note Pipe Organ roll with virtual organ  
+    https://www.youtube.com/watch?v=v1P6m5cLBtM
 
 ## Donation
 
@@ -67,26 +67,27 @@ If you check `☑ Manual Expression`, you can express dynamics using the keyboar
 
 # For developers
 
+The app is written in Python and uses wxPython for the UI. For faster processing, NumPy is used for pixel calculations, and Cython is used for decoding CIS files.
+
 ## Requirements
 
 * Python 3.11.6
-* Poetry
+* uv 0.6.14
 
 Quick Start
 ```
-$ poetry install
-$ poetry shell
+$ uv sync
 $ cd src/
-$ python main.py
+$ uv run python main.py
 ```
 
 ## Build binary locally
 
 - Windows (x64)
-    - `poetry run ./build_win.bat`
+    - `./build_win.bat`
     - tested on Windows10
 - macOS (x64/ARM)
-    - `poetry run ./build_mac.sh`
+    - `./build_mac.sh`
     - tested on macOS Venture (both Intel and M1 cpu)
 
 

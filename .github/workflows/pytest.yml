@@ -31,17 +31,17 @@ jobs:
       with:
         python-version: ${{ matrix.python-ver }}
         
-    - name: Install poetry
-      uses: abatilo/actions-poetry@v2
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
       
-    - name: Install dependencies
-      run: poetry install
+    - name: Install python packages
+      run: uv sync
 
     - name: Build cython code
-      run:  pushd src/cis_decoder/; poetry run python setup.py build_ext --inplace; popd;
+      run:  pushd src/cis_decoder/; uv run python setup.py build_ext --inplace; popd;
     
     - name: Ruff linting
-      run: poetry run ruff check src/
+      run: uv run ruff src/
 
     - name: Test with pytest
-      run: poetry run pytest
+      run: uv run pytest
