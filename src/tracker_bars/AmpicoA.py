@@ -8,15 +8,9 @@ class AmpicoA(BasePlayer):
         super().__init__(confpath, midiobj)
 
         self.amplifier_pos = 0
-        self.amplifier_time = 0.5  # 0.5 sec to full collapse
-        # Ampico A amplifier is activated by intensity 6 hole of bass or treble.
-        self.amplifier_locks = {
-            "6": 0.2,
-            "26": 0.5,  # 50% collapse with 2&6 hole open.
-            "46": 1.0,  # 100% collapse with 4&6 hole open.
-        }
+        self.full_amplifier_time = 0.5  # 0.5 sec to full collapse
 
-        # vacuum range (W.G) of amplifier 0% to 100%
+        # intensities (W.G) with amplifier 0% and 100%
         self.intensity_range = {
             "none": [6.0, 7.0],
             "2": [6.7, 8.0],
@@ -30,7 +24,7 @@ class AmpicoA(BasePlayer):
         self.min_vacuum = self.intensity_range["none"][0]
         self.max_vacuum = self.intensity_range["246"][1]
 
-        # increase vacuum rates (W.G) per sec
+        # crescendo increase rates (W.G) of each intensities.
         self.bass_crescendo_pos = self.min_vacuum
         self.treble_crescendo_pos = self.min_vacuum
         self.crescendo_rates = {
@@ -96,33 +90,29 @@ class AmpicoA(BasePlayer):
         self.pre_time = curtime
 
     def calc_amplifier(self, delta_time):
-
-        # amplifier is triggered by intensity 6 hole of bass or treble or crescendo
-        if self.bass_intensity_lock[1] or self.treble_intensity_lock[1]:
-            self.amplifier_pos += delta_time / self.amplifier_time
-            self.amplifier_pos = min(self.amplifier_pos, 1)
+        # treble/bass intensity 6 hole triggers amplifier
+        if self.bass_intensity_lock[2] or self.treble_intensity_lock[2]:
+            self.amplifier_pos += delta_time / self.full_amplifier_time
         else:
-            self.amplifier_pos -= delta_time / self.amplifier_time
-            self.amplifier_pos = max(self.amplifier_pos, 0)
+            self.amplifier_pos -= delta_time / self.full_amplifier_time
 
-        if (self.bass_intensity_lock[1] and self.bass_intensity_lock[2]) or \
-            (self.treble_intensity_lock[1] and self.treble_intensity_lock[2]):
-            # 100% collapse with 4&6 hole open.
-            pass
-        elif (self.bass_intensity_lock[0] and self.bass_intensity_lock[2]) or \
-            (self.treble_intensity_lock[0] and self.treble_intensity_lock[2]):
-            # 50% collapse with 2&6 hole open.
-            self.amplifier_pos = min(self.amplifier_pos, self.amplifier_locks["26"])
-        elif self.bass_intensity_lock[1] or self.treble_intensity_lock[1]:
-            # 20% collapse with 6 hole open.
-            self.amplifier_pos = min(self.amplifier_pos, self.amplifier_locks["6"])
+        if self.bass_intensity_lock == [True, True, True] or \
+            self.treble_intensity_lock == [True, True, True]:
+            # amplifier will 100% with 2&4&6 open.
+            self.amplifier_pos = min(self.amplifier_pos, 1.0)
+        elif self.bass_intensity_lock == [True, False, True] or \
+            self.treble_intensity_lock == [True, False, True]:
+            # 50% with 2&6 open.
+            self.amplifier_pos = min(self.amplifier_pos, 0.5)
+        elif self.bass_intensity_lock == [False, False, True] or \
+            self.treble_intensity_lock == [False, False, True]:
+            # 20% with 6 open.
+            self.amplifier_pos = min(self.amplifier_pos, 0.2)
 
-        # amplifier is correspond to crescendo position
-        cres_pos = (max(self.bass_crescendo_pos, self.treble_crescendo_pos) - self.min_vacuum) / (self.max_vacuum - self.min_vacuum)
-        self.amplifier_pos = max(self.amplifier_pos, cres_pos)
+        self.amplifier_pos = max(self.amplifier_pos, 0)
+        self.amplifier_pos = min(self.amplifier_pos, 1)
 
     def calc_expression(self, delta_time):
-
         def calc_vacuum(intensity_lock):
             opcode = ""
             if not any(intensity_lock):
@@ -137,11 +127,8 @@ class AmpicoA(BasePlayer):
             vac_min, vac_max = self.intensity_range.get(opcode, [10, 20])
             return vac_min + self.amplifier_pos * (vac_max - vac_min), opcode
 
-        # intensity
-        bass_target_vac, bass_opcode = calc_vacuum(self.bass_intensity_lock)
-        treble_target_vac, treble_opcode = calc_vacuum(self.treble_intensity_lock)
-
-        # crescendo
+        # bass vacuum
+        bass_vacuum, bass_opcode = calc_vacuum(self.bass_intensity_lock)
         if self.holes["bass_fast_cresc"]["is_open"]:
             bass_opcode = "fast"
         if self.holes["bass_slow_cresc"]["is_open"]:
@@ -151,7 +138,12 @@ class AmpicoA(BasePlayer):
         self.bass_crescendo_pos += cres_rate
         self.bass_crescendo_pos = min(self.bass_crescendo_pos, self.max_vacuum)
         self.bass_crescendo_pos = max(self.bass_crescendo_pos, self.min_vacuum)
+        # combine crescendo and intensity
+        bass_target_vac = self.bass_crescendo_pos + bass_vacuum - self.min_vacuum
+        bass_target_vac = min(bass_target_vac, self.max_vacuum)
 
+        # treble vacuum
+        treble_vacuum, treble_opcode = calc_vacuum(self.treble_intensity_lock)
         if self.holes["treble_fast_cresc"]["is_open"]:
             treble_opcode = "fast"
         if self.holes["treble_slow_cresc"]["is_open"]:
@@ -161,9 +153,15 @@ class AmpicoA(BasePlayer):
         self.treble_crescendo_pos += cres_rate
         self.treble_crescendo_pos = min(self.treble_crescendo_pos, self.max_vacuum)
         self.treble_crescendo_pos = max(self.treble_crescendo_pos, self.min_vacuum)
+        # combine crescendo and intensity
+        treble_target_vac = self.treble_crescendo_pos + treble_vacuum - self.min_vacuum
+        treble_target_vac = min(treble_target_vac, self.max_vacuum)
 
-        self.bass_vacuum = max(self.bass_crescendo_pos, bass_target_vac)
-        self.treble_vacuum = max(self.treble_crescendo_pos, treble_target_vac)
+        # delay function
+        self.bass_vacuum = self.bass_vacuum_pre + (bass_target_vac - self.bass_vacuum_pre) * self.delay_ratio
+        self.treble_vacuum = self.treble_vacuum_pre + (treble_target_vac - self.treble_vacuum_pre) * self.delay_ratio
+        self.bass_vacuum_pre = self.bass_vacuum
+        self.treble_vacuum_pre = self.treble_vacuum
 
     def draw_tracker(self, wxdc: wx.PaintDC):
         # need override for drawing intensity lock
@@ -171,12 +169,12 @@ class AmpicoA(BasePlayer):
         self.holes["treble_intensity"]["is_open"][:] = self.treble_intensity_lock[::-1]
         super().draw_tracker(wxdc)
 
+
 if __name__ == "__main__":
     import os
     import time
 
     import numpy as np
-
     from midi_controller import MidiWrap
 
     midiobj = MidiWrap()
