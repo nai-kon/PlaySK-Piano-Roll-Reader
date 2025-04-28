@@ -64,9 +64,9 @@ class TestAmpicoA:
             assert player.bass_intensity_lock[idx]
             assert player.treble_intensity_lock[idx]
 
-    # amplifier test. Check each intensity triggers amplifier.
+    # amplifier test. Each intensity triggers different level of amplifier position
     @pytest.mark.parametrize("bass_intensities, treble_intensities, amplifier_pos_0sec, amplifier_pos_500msec, amplifier_pos_1sec", [
-        # base
+        # bass
         ((), (), (0), (0), (0)),
         ((2,), (), (0), (0), (0)),
         ((4,), (), (0), (0), (0)),
@@ -117,7 +117,7 @@ class TestAmpicoA:
         assert math.isclose(player.amplifier_pos, amplifier_pos_0sec)
         player.emulate_expression(0.5)
         assert math.isclose(player.amplifier_pos, amplifier_pos_500msec)
-        player.emulate_expression(5)
+        player.emulate_expression(1)
         assert math.isclose(player.amplifier_pos, amplifier_pos_1sec)
 
     def test_calc_crescendo(self, player):

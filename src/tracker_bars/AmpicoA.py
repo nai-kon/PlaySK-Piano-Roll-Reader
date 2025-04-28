@@ -27,7 +27,7 @@ class AmpicoA(BasePlayer):
         self.bass_vacuum = self.treble_vacuum = self.min_vacuum
         self.bass_vacuum_pre = self.treble_vacuum_pre = self.min_vacuum
 
-        # crescendo increase rates (W.G) of each intensities.
+        # crescendo vacuum increase rates per sec of each intensities.
         self.bass_crescendo_vacuum = self.min_vacuum
         self.treble_crescendo_vacuum = self.min_vacuum
         self.crescendo_rates = {
@@ -91,24 +91,32 @@ class AmpicoA(BasePlayer):
         self.pre_time = curtime
 
     def calc_amplifier(self, delta_time):
-        # treble/bass intensity 6 hole triggers amplifier
-        if self.bass_intensity_lock[2] or self.treble_intensity_lock[2]:
-            self.amplifier_pos += delta_time / self.full_amplifier_time
-        else:
-            self.amplifier_pos -= delta_time / self.full_amplifier_time
 
+        target_amp_pos = 0
         if self.bass_intensity_lock[1] and self.bass_intensity_lock[2] or \
             self.treble_intensity_lock[1] and self.treble_intensity_lock[2]:
             # amplifier will 100% with 4&6 open.
-            self.amplifier_pos = min(self.amplifier_pos, 1.0)
+            target_amp_pos = 1.0
         elif self.bass_intensity_lock[0] and self.bass_intensity_lock[2] or \
             self.treble_intensity_lock[0] and self.treble_intensity_lock[2]:
             # 50% with 2&6 open.
-            self.amplifier_pos = min(self.amplifier_pos, 0.5)
+            target_amp_pos = 0.5
         elif self.bass_intensity_lock[2] or \
             self.treble_intensity_lock[2]:
             # 20% with 6 open.
-            self.amplifier_pos = min(self.amplifier_pos, 0.2)
+            target_amp_pos = 0.2
+
+        if self.bass_intensity_lock[2] or self.treble_intensity_lock[2]:
+            delta_amp_pos = delta_time / self.full_amplifier_time
+        else:
+            delta_amp_pos = delta_time / self.full_amplifier_time
+
+        if self.amplifier_pos < target_amp_pos:
+            self.amplifier_pos += delta_amp_pos
+            self.amplifier_pos = min(self.amplifier_pos, target_amp_pos)
+        else:
+            self.amplifier_pos -= delta_amp_pos
+            self.amplifier_pos = max(self.amplifier_pos, target_amp_pos)
 
         self.amplifier_pos = max(self.amplifier_pos, 0)
         self.amplifier_pos = min(self.amplifier_pos, 1)
