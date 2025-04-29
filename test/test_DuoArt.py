@@ -14,7 +14,7 @@ class TestDuoArt:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = tracker_bars.DuoArt("src/playsk_config/Duo-Art white back.json", midiobj)
+        obj = tracker_bars.DuoArt("src/playsk_config/Duo-Art.json", midiobj)
         return obj
 
     def test_emulate_off(self, player):

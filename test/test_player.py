@@ -65,7 +65,7 @@ class TestTrackerHoles:
                 assert (~v["is_open"]).all()
 
     def test_getitem(self):
-        with open("src/playsk_config/88 Note white back.json", encoding="utf-8") as f:
+        with open("src/playsk_config/88 Note.json", encoding="utf-8") as f:
             conf = json.load(f)
         holes = TrackerHoles(conf)
         frame = np.full((600, 800, 3), 0, np.uint8)
@@ -94,7 +94,7 @@ class TestPlayer:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = BasePlayer("src/playsk_config/88 Note white back.json", midiobj)
+        obj = BasePlayer("src/playsk_config/88 Note.json", midiobj)
         return obj
 
     def call_emulate_th(self, obj, frame):

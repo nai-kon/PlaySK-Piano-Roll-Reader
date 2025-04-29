@@ -12,7 +12,7 @@ class TestWelteLicensee:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = tracker_bars.WelteLicensee("src/playsk_config/Welte Licensee white back.json", midiobj)
+        obj = tracker_bars.WelteLicensee("src/playsk_config/Welte Licensee.json", midiobj)
         return obj
 
     def test_emulate_off(self, player):

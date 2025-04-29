@@ -12,7 +12,7 @@ class TestRecordoB:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = tracker_bars.RecordoB("src/playsk_config/Recordo B white back.json", midiobj)
+        obj = tracker_bars.RecordoB("src/playsk_config/Recordo B.json", midiobj)
         return obj
 
     @pytest.mark.parametrize("open_ports, expect", [
