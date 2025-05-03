@@ -91,7 +91,7 @@ class AmpicoA(BasePlayer):
         self.pre_time = curtime
 
     def calc_amplifier(self, delta_time):
-
+        # target amplifier position
         target_amp_pos = 0
         if self.bass_intensity_lock[1] and self.bass_intensity_lock[2] or \
             self.treble_intensity_lock[1] and self.treble_intensity_lock[2]:
@@ -106,6 +106,7 @@ class AmpicoA(BasePlayer):
             # 20% with 6 open.
             target_amp_pos = 0.2
 
+        # calc delta amplifier position
         if self.bass_intensity_lock[2] or self.treble_intensity_lock[2]:
             delta_amp_pos = delta_time / self.full_amplifier_time
         else:
@@ -184,6 +185,7 @@ if __name__ == "__main__":
     import time
 
     import numpy as np
+
     from midi_controller import MidiWrap
 
     midiobj = MidiWrap()
