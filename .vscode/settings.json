@@ -2,6 +2,9 @@
     "cSpell.ignoreWords": [
         "Ampico",
         "Colour",
+        "FREERUN",
+        "SHAFTENCODER",
+        "WHEELENCODER",
         "confpath",
         "cres",
         "cresc",
@@ -9,6 +12,7 @@
         "midiobj",
         "mido",
         "playsk",
+        "reclock",
         "subintensity",
         "wxdc"
     ],

@@ -34,7 +34,7 @@ class TestPlayerMng:
             "Welte T100",
             "Recordo A (rare)",
             "Recordo B",
-            "Artecho (experimental)",
+            "Artecho",
             "Welte T98",
             "Themodist",
             "Themodist e-Valve",
@@ -54,7 +54,7 @@ class TestPlayerMng:
         assert type(player_mng.get_player_obj("Welte T100", midiobj)) is tracker_bars.WelteT100
         assert type(player_mng.get_player_obj("Recordo A (rare)", midiobj)) is tracker_bars.RecordoA
         assert type(player_mng.get_player_obj("Recordo B", midiobj)) is tracker_bars.RecordoB
-        assert type(player_mng.get_player_obj("Artecho (experimental)", midiobj)) is tracker_bars.Artecho
+        assert type(player_mng.get_player_obj("Artecho", midiobj)) is tracker_bars.Artecho
         assert type(player_mng.get_player_obj("Welte T98", midiobj)) is tracker_bars.WelteT98
         assert type(player_mng.get_player_obj("Themodist", midiobj)) is tracker_bars.Themodist
         assert type(player_mng.get_player_obj("Themodist e-Valve", midiobj)) is tracker_bars.Themodist_eValve

@@ -37,11 +37,11 @@ jobs:
     - name: Install python packages
       run: uv sync
 
-    - name: Build cython code
+    - name: Build Cython code
       run:  pushd src/cis_decoder/; uv run python setup.py build_ext --inplace; popd;
     
     - name: Ruff linting
-      run: uv run ruff src/
+      run: uv run ruff check src/
 
     - name: Test with pytest
       run: uv run pytest
