@@ -6,16 +6,7 @@ import cv2
 import numpy as np
 import wx
 
-try:
-    from cis_decoder.cis_decoder import _decode_cis, _get_decode_params
-except ModuleNotFoundError as e:
-    raise ModuleNotFoundError(
-        """
-        Can't import cis_decoder. Did you build cis_decoder?
-        1. cd cis_decoder/
-        2. python setup.py build_ext --inplace
-        """,
-    ) from e
+from cis_decoder import _decode_cis, _get_decode_params
 
 
 class ScannerType(Enum):

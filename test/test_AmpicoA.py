@@ -124,7 +124,7 @@ class TestAmpicoA:
 
         for part in ("bass", "treble"):
             player.emulate_off()
-            # slow crescendeo. 8sec min to max with no intensity
+            # slow crescendo. 8sec min to max with no intensity
             frame = np.full((600, 800, 3), 0, np.uint8)
             x1, y1, x2, y2 = player.holes[f"{part}_slow_cresc"]["pos"][0]
             frame[y1:y2, x1:x2, :] = 255
@@ -150,7 +150,7 @@ class TestAmpicoA:
                 assert math.isclose(player.bass_crescendo_vacuum, player.min_vacuum)
                 assert math.isclose(player.treble_crescendo_vacuum, player.min_vacuum)
 
-            # fast crescendeo. 2 sec min to max
+            # fast crescendo. 2 sec min to max
             player.emulate_off()
             frame = np.full((600, 800, 3), 0, np.uint8)
             x1, y1, x2, y2 = player.holes[f"{part}_slow_cresc"]["pos"][0]

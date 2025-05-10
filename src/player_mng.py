@@ -54,8 +54,9 @@ class PlayerMng:
 
 if __name__ == "__main__":
     obj = PlayerMng()
+    midiobj = MidiWrap()
     print(obj.player_list)
-    print(type(obj.get_player_obj("88 Note white back")))
-    assert obj.get_player_obj("not exists") is None
-    assert type(obj.get_player_obj("88 Note white back")) is tracker_bars.Player
-    assert type(obj.get_player_obj("Ampico B white back")) is tracker_bars.AmpicoB
+    print(type(obj.get_player_obj("88 Note", midiobj)))
+    assert obj.get_player_obj("not exists", midiobj) is None
+    assert type(obj.get_player_obj("88 Note", midiobj)) is tracker_bars.BasePlayer
+    assert type(obj.get_player_obj("Ampico B", midiobj)) is tracker_bars.AmpicoB
