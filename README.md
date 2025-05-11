@@ -1,4 +1,4 @@
-# PlaySK Piano Roll Reader Ver3.6
+# PlaySK Piano Roll Reader Ver3.7
 
 Optically reading a piano roll image, emulates expression and output midi signal in real-time.
 
@@ -9,7 +9,7 @@ The "Virtual Tracker Bar" optically picks up roll holes then emulates note, peda
 Currently, 9 virtual tracker bars are available.
 - Aeolian 176-note Duo-Art Pipe Organ ([MIDI output assignment](https://playsk-aeolian176note-midi-assignment.pages.dev/))
 - Standard 88-note
-- Ampico B
+- Ampico A / B
 - Duo-Art
 - Welte-Mignon T-100 (Red) / T-98 (Green) / Licensee
 - Philipps Duca (no expression. experimental)
@@ -17,8 +17,6 @@ Currently, 9 virtual tracker bars are available.
 - Artecho
 - Themodist
     - `Themodist e-Valve` supports e-valve midi note output. (18 for sustain, 19 for bass snakebite, 109 for treble snakebite)
-
-In the future, Ampico A will be supported.
 
 Support image formats are `.CIS`, `.jpg`, `.tif`, `.png`, `.bmp`. The `.CIS` supports various scanners such as stepper, wheel/shaft encoder, bi-color, twin-array.
 
@@ -71,7 +69,7 @@ The app is written in Python and uses wxPython for the UI. For faster processing
 
 ## Requirements
 
-* Python 3.11.6
+* Python 3.11.9
 * uv 0.6.14
 
 Quick Start

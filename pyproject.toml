@@ -1,6 +1,6 @@
 [project]
 name = "PlaySK-Piano-Roll-Reader"
-version = "3.6.1"
+version = "3.7.0"
 description = "Optically reading a piano roll image, emulates expression and output midi signal in real-time."
 authors = [{ name = "nai-kon", email = "fxtch686@yahoo.co.jp" }]
 requires-python = ">=3.11,<3.12"
