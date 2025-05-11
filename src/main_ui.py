@@ -192,15 +192,14 @@ class MainFrame(wx.Frame):
 
         # window scale
         self.sbar.SetStatusText(wsize_caption, 7)
-        # calc scales which fit in display size
+        # window scale list
         client_area = wx.Display().GetClientArea()
         cur_w, cur_h = self.GetSize()
+        height_scale_lim = client_area.height * self.conf.window_scale_ratio * 100 / cur_h
+        width_scale_lim = client_area.width * self.conf.window_scale_ratio * 100 / cur_w
+        scale_lim = min(height_scale_lim, width_scale_lim, 300)  # Max300%
+        scales = [f"{v}%" for v in range(100, int(scale_lim + 1), 5)]
 
-        scales = []
-        for v in range(100, 300 + 1, 5):
-            if (v * cur_h / (self.conf.window_scale_ratio * 100)) < client_area.height and \
-                (v * cur_w / (self.conf.window_scale_ratio * 100)) < client_area.width:
-                    scales.append(f"{v}%")
         rect = self.sbar.GetFieldRect(8)
         self.scale_sel = wx.Choice(self.sbar, choices=scales, size=(rect.width, h))
         self.scale_sel.Bind(wx.EVT_CHOICE, self.change_scale)

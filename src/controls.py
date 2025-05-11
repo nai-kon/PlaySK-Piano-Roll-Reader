@@ -152,10 +152,10 @@ class TrackerCtrl(BasePanel):
         self.auto_track = True
         self.label = wx.StaticText(self, wx.ID_ANY, "+0")
         self.label.SetFont(wx.Font(20, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-        self.left = wx.Button(self, wx.ID_ANY, label="Left")
+        self.left = wx.Button(self, wx.ID_ANY, label="＜")
         self.left.Disable()
         self.left.Bind(wx.EVT_BUTTON, lambda event: self.changed(self.offset - 1))
-        self.right = wx.Button(self, wx.ID_ANY, label="Right")
+        self.right = wx.Button(self, wx.ID_ANY, label="＞")
         self.right.Bind(wx.EVT_BUTTON, lambda event: self.changed(self.offset + 1))
         self.right.Disable()
 
