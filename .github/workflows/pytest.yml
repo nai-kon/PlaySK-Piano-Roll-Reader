@@ -43,5 +43,8 @@ jobs:
     - name: Ruff linting
       run: uv run ruff check src/
 
+    - name: Check library license
+      run: uv run pip-licenses --partial-match --allow-only="MIT;BSD;MPL;Apache;HPND;GPLv2;Python Software;wxWindows"
+
     - name: Test with pytest
       run: uv run pytest

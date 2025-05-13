@@ -106,7 +106,7 @@ jobs:
         path: ${{ matrix.zip_name }}
 
   release:
-    needs: build
+    needs: Build
     runs-on: ubuntu-latest
     permissions: 
       contents: write
@@ -120,7 +120,7 @@ jobs:
     - name: Display structure of downloaded files
       run: ls -la assets/
 
-    - name: create release
+    - name: Create release
       uses: softprops/action-gh-release@v1
       with:
         draft: true

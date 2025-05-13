@@ -12,8 +12,11 @@ popd
 rem build exe
 uv run pyinstaller build_win.spec -y
 
+rem check 3rd party license
+uv run pip-licenses --partial-match --allow-only="MIT;BSD;MPL;Apache;HPND;GPLv2;Python Software;wxWindows" > nul || exit /b 1
+
 rem generate 3rd party license txt
-pip-licenses --format=plain-vertical --with-license-file --no-license-path --output-file="3rd-party-license.txt"
+uv run pip-licenses --format=plain-vertical --with-license-file --no-license-path --output-file="3rd-party-license.txt"
 
 rem copy files
 xcopy /i /y "3rd-party-license.txt" ".\dist\PlaySK Piano Roll Reader\"
