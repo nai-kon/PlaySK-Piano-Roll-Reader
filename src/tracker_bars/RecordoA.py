@@ -88,7 +88,7 @@ if __name__ == "__main__":
     from midi_controller import MidiWrap
 
     midiobj = MidiWrap()
-    obj = RecordoA(os.path.join("playsk_config", "Recordo A (rare).json"), midiobj)
+    obj = RecordoA(os.path.join("playsk_config", "Recordo A.json"), midiobj)
     obj.delay_ratio = 1
 
     # expression check

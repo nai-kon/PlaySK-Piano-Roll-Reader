@@ -32,7 +32,7 @@ class TestPlayerMng:
             "Philipps Duca (no expression)",
             "Welte Licensee",
             "Welte T100",
-            "Recordo A (rare)",
+            "Recordo A",
             "Recordo B",
             "Artecho",
             "Welte T98",
@@ -52,7 +52,7 @@ class TestPlayerMng:
         assert type(player_mng.get_player_obj("88 Note", midiobj)) is tracker_bars.BasePlayer
         assert type(player_mng.get_player_obj("Welte Licensee", midiobj)) is tracker_bars.WelteLicensee
         assert type(player_mng.get_player_obj("Welte T100", midiobj)) is tracker_bars.WelteT100
-        assert type(player_mng.get_player_obj("Recordo A (rare)", midiobj)) is tracker_bars.RecordoA
+        assert type(player_mng.get_player_obj("Recordo A", midiobj)) is tracker_bars.RecordoA
         assert type(player_mng.get_player_obj("Recordo B", midiobj)) is tracker_bars.RecordoB
         assert type(player_mng.get_player_obj("Artecho", midiobj)) is tracker_bars.Artecho
         assert type(player_mng.get_player_obj("Welte T98", midiobj)) is tracker_bars.WelteT98
