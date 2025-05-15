@@ -91,7 +91,7 @@ class AmpicoA(BasePlayer):
         self.pre_time = curtime
 
     def calc_amplifier(self, delta_time):
-        # target amplifier position
+        # intensity triggers amplifier
         target_amp_pos = 0
         if self.bass_intensity_lock[1] and self.bass_intensity_lock[2] or \
             self.treble_intensity_lock[1] and self.treble_intensity_lock[2]:
@@ -106,12 +106,18 @@ class AmpicoA(BasePlayer):
             # 20% with 6 open.
             target_amp_pos = 0.2
 
+        # also stack vacuum (crescendo) triggers amplifier
+        # begin to amplify at 15 inches
+        stack_vacuum = max(self.bass_vacuum, self.treble_vacuum)
+        target_amp_pos2 = max(((stack_vacuum - 15) / 15), 0)
+
         # calc delta amplifier position
         if self.bass_intensity_lock[2] or self.treble_intensity_lock[2]:
             delta_amp_pos = delta_time / self.full_amplifier_time
         else:
             delta_amp_pos = delta_time / self.full_amplifier_time
 
+        target_amp_pos = max(target_amp_pos, target_amp_pos2)
         if self.amplifier_pos < target_amp_pos:
             self.amplifier_pos += delta_amp_pos
             self.amplifier_pos = min(self.amplifier_pos, target_amp_pos)
