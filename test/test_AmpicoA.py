@@ -120,6 +120,29 @@ class TestAmpicoA:
         player.emulate_expression(1)
         assert math.isclose(player.amplifier_pos, amplifier_pos_1sec)
 
+    def test_emulate_amplifier2(self, player):
+        # crescendo also activates amplifier
+        for part in ("bass", "treble"):
+            player.emulate_off()
+            player.delay_ratio = 1  # disable delay for test
+            frame = np.full((600, 800, 3), 0, np.uint8)
+            x1, y1, x2, y2 = player.holes[f"{part}_slow_cresc"]["pos"][0]
+            frame[y1:y2, x1:x2, :] = 255
+            player.holes.set_frame(frame, 0)
+            player.pre_time = 0
+
+            # crescendo to max
+            player.calc_expression(8)
+            player.emulate_expression(8)
+            assert math.isclose(player.amplifier_pos, 1.0)
+
+            # decrescendo to min
+            frame[y1:y2, x1:x2, :] = 0
+            player.holes.set_frame(frame, 0)
+            player.calc_expression(16)
+            player.emulate_expression(16)
+            assert math.isclose(player.amplifier_pos, 0)
+
     def test_calc_crescendo(self, player):
 
         for part in ("bass", "treble"):
