@@ -71,11 +71,9 @@ class AmpicoA(BasePlayer):
         # cancel intensity
         if bass_cancel["is_open"]:
             self.bass_intensity_lock[:] = [False, False, False]
-            self.bass_sub_intensity_lock = False
 
         if treble_cancel["is_open"]:
             self.treble_intensity_lock[:] = [False, False, False]
-            self.treble_sub_intensity_lock = False
 
         # trigger intensity holes (LV2->4->6)
         for idx in range(3):
@@ -112,11 +110,7 @@ class AmpicoA(BasePlayer):
         target_amp_pos2 = max(((stack_vacuum - 15) / 15), 0)
 
         # calc delta amplifier position
-        if self.bass_intensity_lock[2] or self.treble_intensity_lock[2]:
-            delta_amp_pos = delta_time / self.full_amplifier_time
-        else:
-            delta_amp_pos = delta_time / self.full_amplifier_time
-
+        delta_amp_pos = delta_time / self.full_amplifier_time
         target_amp_pos = max(target_amp_pos, target_amp_pos2)
         if self.amplifier_pos < target_amp_pos:
             self.amplifier_pos += delta_amp_pos
