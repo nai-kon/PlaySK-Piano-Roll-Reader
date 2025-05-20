@@ -10,6 +10,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 import wx
+
 from cis_image import CisImage
 from controls import BasePanel
 from input_editor import ImgEditDlg
@@ -52,8 +53,9 @@ def _load_img(path: str, default_tempo: int) -> tuple[np.ndarray | None, int]:
     try:
         with wx.BusyCursor():
             n = np.fromfile(path, np.uint8)
-            img = cv2.imdecode(n, cv2.IMREAD_COLOR)
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            img = cv2.imdecode(n, flags=cv2.IMREAD_UNCHANGED)
+            if img.ndim == 3:
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     except Exception as e:
         print(e)
         return None, default_tempo

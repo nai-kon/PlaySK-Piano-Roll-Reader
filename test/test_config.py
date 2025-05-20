@@ -6,7 +6,7 @@ def test_load_config(mocker):
     mocker.patch("src.config.CONFIG_PATH", new=exists_path)
     mngr = ConfigMng()
     assert mngr.last_midi_port == "loopMIDI Port 1"
-    assert mngr.last_tracker == "Duo-Art white back"
+    assert mngr.last_tracker == "Duo-Art"
     assert mngr.update_notified_version == "3.1"
     assert mngr.window_scale == "125%"
 

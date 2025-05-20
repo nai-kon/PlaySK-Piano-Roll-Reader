@@ -12,7 +12,7 @@ class TestWelteT98:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = tracker_bars.WelteT98("src/playsk_config/Welte T98 white back.json", midiobj)
+        obj = tracker_bars.WelteT98("src/playsk_config/Welte T98.json", midiobj)
         return obj
 
     def test_emulate_off(self, player):

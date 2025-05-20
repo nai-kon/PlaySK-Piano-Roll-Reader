@@ -55,10 +55,11 @@ if __name__ == "__main__":
     import os
 
     import numpy as np
+
     from midi_controller import MidiWrap
 
     midiobj = MidiWrap()
-    obj = RecordoB(os.path.join("playsk_config", "Recordo B white back.json"), midiobj)
+    obj = RecordoB(os.path.join("playsk_config", "Recordo B.json"), midiobj)
     obj.delay_ratio = 1
 
     # expression check

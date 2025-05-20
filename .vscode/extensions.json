@@ -1,7 +1,11 @@
 {
     "recommendations": [
-        "ms-python.python",
+        "charliermarsh.ruff",
+        "ms-python.debugpy",
         "streetsidesoftware.code-spell-checker",
-        "charliermarsh.ruff"
+        "njpwerner.autodocstring",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "mhutchie.git-graph"
     ]
 }

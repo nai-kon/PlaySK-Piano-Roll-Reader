@@ -1,4 +1,5 @@
 from .Aeolian176note import Aeolian176note
+from .AmpicoA import AmpicoA
 from .AmpicoB import AmpicoB
 from .Artecho import Artecho
 from .base_player import BasePlayer
@@ -14,6 +15,7 @@ from .WelteT100 import WelteT100
 
 __all__ = [
     "Aeolian176note",
+    "AmpicoA",
     "AmpicoB",
     "Artecho",
     "BasePlayer",

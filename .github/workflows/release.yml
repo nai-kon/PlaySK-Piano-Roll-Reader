@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         python-ver: [3.11]
-        # Intel mac for macos-13, M1/2 mac for macos-14
+        # macos-13 for Intel Mac, macos-14 for apple silicon Mac
         os: [windows-latest, macos-13, macos-14]
         include: 
           - os: windows-latest
@@ -106,7 +106,7 @@ jobs:
         path: ${{ matrix.zip_name }}
 
   release:
-    needs: build
+    needs: Build
     runs-on: ubuntu-latest
     permissions: 
       contents: write
@@ -120,7 +120,7 @@ jobs:
     - name: Display structure of downloaded files
       run: ls -la assets/
 
-    - name: create release
+    - name: Create release
       uses: softprops/action-gh-release@v1
       with:
         draft: true

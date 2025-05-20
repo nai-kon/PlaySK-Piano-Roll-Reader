@@ -12,7 +12,7 @@ class TestThemodist:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = tracker_bars.Themodist("src/playsk_config/Themodist white back.json", midiobj)
+        obj = tracker_bars.Themodist("src/playsk_config/Themodist.json", midiobj)
         return obj
 
     def test_emulate_off(self, player):

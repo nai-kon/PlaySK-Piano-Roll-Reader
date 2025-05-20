@@ -1,6 +1,7 @@
 import json
 
 import numpy as np
+
 from midi_controller import MidiWrap
 from organ_stop_indicator import OrganStopIndicator
 
@@ -321,7 +322,9 @@ if __name__ == "__main__":
     import time
 
     import numpy as np
+
     from midi_controller import MidiWrap
+
     midiobj = MidiWrap()
     player = Aeolian176note(os.path.join("playsk_config", "Aeolian 176-note Pipe Organ.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)

@@ -13,7 +13,7 @@ class TestAmpicoB:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = tracker_bars.AmpicoB("src/playsk_config/Ampico B white back.json", midiobj)
+        obj = tracker_bars.AmpicoB("src/playsk_config/Ampico B.json", midiobj)
         return obj
 
     def test_emulate_off(self, player):

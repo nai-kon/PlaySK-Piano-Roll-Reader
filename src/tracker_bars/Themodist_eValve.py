@@ -38,7 +38,9 @@ if __name__ == "__main__":
     import time
 
     import numpy as np
+
     from midi_controller import MidiWrap
+
     midiobj = MidiWrap()
     player = Themodist(os.path.join("playsk_config", "Themodist e-Valve.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)

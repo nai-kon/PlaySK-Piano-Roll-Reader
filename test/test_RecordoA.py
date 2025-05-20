@@ -12,7 +12,7 @@ class TestRecordoA:
     @pytest.fixture
     def player(self):
         midiobj = MidiWrap()
-        obj = tracker_bars.RecordoA("src/playsk_config/Recordo A (rare) white back.json", midiobj)
+        obj = tracker_bars.RecordoA("src/playsk_config/Recordo A.json", midiobj)
         return obj
 
     def test_emulate_off(self, player):

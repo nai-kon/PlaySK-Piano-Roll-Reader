@@ -30,9 +30,11 @@ if __name__ == "__main__":
     import time
 
     import numpy as np
+
     from midi_controller import MidiWrap
+
     midiobj = MidiWrap()
-    player = Themodist(os.path.join("playsk_config", "Themodist white back.json"), midiobj)
+    player = Themodist(os.path.join("playsk_config", "Themodist.json"), midiobj)
     frame = np.full((600, 800, 3), 100, np.uint8)
     start = time.perf_counter()
     for _ in range(10000):
