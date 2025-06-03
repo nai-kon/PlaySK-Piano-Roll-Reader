@@ -4,9 +4,12 @@ import numpy as np
 import pytest
 
 sys.path.append("src/")
+import wx
+
 from midi_controller import MidiWrap
 from tracker_bars.Themodist_eValve import Themodist_eValve
 
+app = wx.App()
 
 class TestThemodist_eValve:
     @pytest.fixture

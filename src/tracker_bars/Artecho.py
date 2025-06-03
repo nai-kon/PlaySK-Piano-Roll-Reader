@@ -166,13 +166,16 @@ class Artecho(BasePlayer):
 
 
     def draw_tracker(self, wxdc: wx.PaintDC):
-        # need override for drawing intensity lock
-        self.holes["bass_intensity"]["is_open"][:] = self.bass_intensity_lock[:]
-        self.holes["treble_intensity"]["is_open"][:] = self.treble_intensity_lock[::-1]
-        self.holes["pianissimo"]["is_open"][0] = self.pianissimo_lock
-        self.holes["treble_hammer_rail"]["is_open"][0] = self.treble_hammer_rail_lock
-        self.holes["bass_hammer_rail"]["is_open"][0] = self.bass_hammer_rail_lock
         super().draw_tracker(wxdc)
+
+        # overdraw lock & cancel holes
+        for idx in range(3):
+            self.holes.draw(wxdc, self.bass_intensity_lock[idx], "bass_intensity", idx)
+            self.holes.draw(wxdc, self.treble_intensity_lock[idx], "treble_intensity", 2 - idx)
+
+        self.holes.draw(wxdc, self.pianissimo_lock, "pianissimo")
+        self.holes.draw(wxdc, self.treble_hammer_rail_lock, "treble_hammer_rail")
+        self.holes.draw(wxdc, self.bass_hammer_rail_lock, "bass_hammer_rail")
 
 
 if __name__ == "__main__":

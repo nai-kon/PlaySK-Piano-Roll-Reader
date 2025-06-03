@@ -6,9 +6,12 @@ import pytest
 sys.path.append("src/")
 from collections import deque
 
+import wx
+
 import tracker_bars
 from midi_controller import MidiWrap
 
+app = wx.App()
 
 class TestDuoArt:
     @pytest.fixture
