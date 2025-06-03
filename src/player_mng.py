@@ -32,6 +32,7 @@ class PlayerMng:
         cls_map = {
             "Player": tracker_bars.BasePlayer,
             "AmpicoA": tracker_bars.AmpicoA,
+            "AmpicoA_eValve": tracker_bars.AmpicoA_eValve,
             "AmpicoB": tracker_bars.AmpicoB,
             "Duo-Art": tracker_bars.DuoArt,
             "WelteT100": tracker_bars.WelteT100,

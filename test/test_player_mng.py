@@ -30,6 +30,7 @@ class TestPlayerMng:
         gt_names = sorted([
             "88 Note",
             "Ampico A Brilliant",
+            "Ampico A Brilliant e-Valve",
             "Ampico B",
             "Duo-Art",
             "Philipps Duca (no expression)",
@@ -49,6 +50,7 @@ class TestPlayerMng:
         midiobj = MidiWrap()
         assert player_mng.get_player_obj("not exists player", midiobj) is None
         assert type(player_mng.get_player_obj("Ampico A Brilliant", midiobj)) is tracker_bars.AmpicoA
+        assert type(player_mng.get_player_obj("Ampico A Brilliant e-Valve", midiobj)) is tracker_bars.AmpicoA_eValve
         assert type(player_mng.get_player_obj("Ampico B", midiobj)) is tracker_bars.AmpicoB
         assert type(player_mng.get_player_obj("Duo-Art", midiobj)) is tracker_bars.DuoArt
         assert type(player_mng.get_player_obj("Philipps Duca (no expression)", midiobj)) is tracker_bars.PhilippsDuca
