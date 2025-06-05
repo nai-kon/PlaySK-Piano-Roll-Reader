@@ -50,11 +50,11 @@ class MidiWrap:
         if self.enable:
             if self.hammer_lift:
                 velocity -= 8
-            self.output.send(Message("note_on", note=note, velocity=velocity, channel=channel))
+            self.output.send(Message("note_on", note=note, velocity=max(1, velocity), channel=channel))
 
     def note_off(self, note: int, velocity: int = 90, channel: int = 0) -> None:
         if self.enable:
-            self.output.send(Message("note_off", note=note, velocity=velocity, channel=channel))
+            self.output.send(Message("note_off", note=note, velocity=max(1, velocity), channel=channel))
 
     def sustain_on(self) -> None:
         if self.enable:
