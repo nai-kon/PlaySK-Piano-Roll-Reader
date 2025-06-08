@@ -92,7 +92,7 @@ $ uv run python main.py
 ## CI/CD
 
 There are test and release pipelines on Github Actions.
-* PR or merge into main repository triggers unit tests.
+* PR or merge into master branch triggers unit tests.
 * Push a tag triggers build binary and create a draft of the release. 
     * On Mac app, codesign, notarization, dmg installer creation are also triggered. (This uses my personal Apple Developer ID)
 
