@@ -128,6 +128,8 @@ class BasePlayer:
         self.during_emulate_evt = threading.Event()
         self.during_emulate_evt.set()
 
+        self.evalve_control_holes: dict[str, dict[str, int|list[int]]] = {}
+
         self.tracker_offset = 0
         self.auto_tracking = True
         self.emulate_enable = False
@@ -150,7 +152,7 @@ class BasePlayer:
             ord("L"): {"press": False, "vacuum": 15},
         }
 
-        # set piano sound for GM sound
+        # set midi piano sound for GM sound
         self.midi.program_change(0, channel=0)
 
     def calc_velocity(self):
@@ -189,6 +191,7 @@ class BasePlayer:
             self.emulate_manual_expression(curtime)
             self.emulate_pedals()
             self.emulate_notes()
+            self.emulate_evalve_control_holes()
 
             self.during_emulate_evt.set()
 
@@ -252,6 +255,21 @@ class BasePlayer:
 
         for key in note["to_close"].nonzero()[0]:
             self.midi.note_off(key + offset)
+
+    def emulate_evalve_control_holes(self) -> None:
+        # send expression holes as silent notes for e-valve system
+        for key, value in self.evalve_control_holes.items():
+            if isinstance(value["midi_no"], list):
+                for idx, note in enumerate(value["midi_no"]):
+                    if self.holes[key]["to_open"][idx]:
+                        self.midi.note_on(note, velocity=1)
+                    elif self.holes[key]["to_close"][idx]:
+                        self.midi.note_off(note, velocity=1)
+            else:
+                if self.holes[key]["to_open"]:
+                    self.midi.note_on(value["midi_no"], velocity=1)
+                elif self.holes[key]["to_close"]:
+                    self.midi.note_off(value["midi_no"], velocity=1)
 
     def draw_tracker(self, wxdc: wx.PaintDC) -> None:
         # draw tracker frame

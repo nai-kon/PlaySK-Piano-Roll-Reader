@@ -24,9 +24,6 @@ class AmpicoA(BasePlayer):
         self.min_vacuum = self.intensity_range["none"][0]
         self.max_vacuum = self.intensity_range["246"][1]
 
-        self.bass_vacuum = self.treble_vacuum = self.min_vacuum
-        self.bass_vacuum_pre = self.treble_vacuum_pre = self.min_vacuum
-
         # crescendo vacuum increase rates per sec of each intensities.
         self.bass_crescendo_vacuum = self.min_vacuum
         self.treble_crescendo_vacuum = self.min_vacuum
@@ -42,11 +39,26 @@ class AmpicoA(BasePlayer):
             "fast": 12,  # 2sec to max
         }
 
+        self.bass_vacuum = self.treble_vacuum = self.min_vacuum
+        self.bass_vacuum_pre = self.treble_vacuum_pre = self.min_vacuum
+        self.delay_ratio = 0.6
+
         self.pre_time = None
         self.bass_intensity_lock = [False, False, False]  # 2->4->6
         self.treble_intensity_lock = [False, False, False]  # 2->4->6
 
-        self.delay_ratio = 0.6
+        self.evalve_control_holes = {
+            "bass_slow_cresc": {"midi_no": 16},
+            "bass_intensity": {"midi_no": [17, 19, 21]},
+            "sustain": {"midi_no": 18},
+            "bass_fast_cresc": {"midi_no": 20},
+            "bass_cancel": {"midi_no": 22},
+            "treble_cancel": {"midi_no": 107},
+            "treble_intensity": {"midi_no": [108, 110, 112]},
+            "treble_fast_cresc": {"midi_no": 109},
+            "soft": {"midi_no": 111},
+            "treble_slow_cresc": {"midi_no": 113},
+        }
 
     def emulate_off(self):
         super().emulate_off()

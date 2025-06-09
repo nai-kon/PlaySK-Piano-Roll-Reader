@@ -28,6 +28,15 @@ class DuoArt(BasePlayer):
         self.accomp_delay_que = deque([self.accomp_min] * 10, maxlen=10)
         self.theme_delay_que = deque([self.theme_min] * 10, maxlen=10)
 
+        self.evalve_control_holes = {
+            "sustain": {"midi_no": 18},
+            "bass_snakebite": {"midi_no": 20},  # or 19??
+            "accomp": {"midi_no": [21, 22, 23, 24]},
+            "theme": {"midi_no": [105, 106, 107, 108]},
+            "treble_snakebite": {"midi_no": 109},
+            "soft": {"midi_no": 113},
+        }
+
     def emulate_off(self):
         super().emulate_off()
         self.accomp_poss = [0, 0, 0, 0]

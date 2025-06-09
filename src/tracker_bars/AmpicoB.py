@@ -42,6 +42,19 @@ class AmpicoB(BasePlayer):
         self.bass_vacuum = self.treble_vacuum = self.intensity_range["none"][0]
         self.bass_vacuum_pre = self.treble_vacuum_pre = self.intensity_range["none"][0]
 
+        self.evalve_control_holes = {
+            "amplifier": {"midi_no": 15},
+            "bass_intensity": {"midi_no": [17, 19, 21]},
+            "sustain": {"midi_no": 18},
+            "bass_cancel": {"midi_no": 22},
+            "treble_cancel": {"midi_no": 107},
+            "treble_intensity": {"midi_no": [108, 110, 112]},
+            "treble_fast_cresc": {"midi_no": 109},
+            "soft": {"midi_no": 111},
+            "treble_slow_cresc": {"midi_no": 113},
+            "subintensity": {"midi_no": 114},
+        }
+
     def emulate_off(self):
         super().emulate_off()
         self.bass_intensity_lock = [False, False, False]
