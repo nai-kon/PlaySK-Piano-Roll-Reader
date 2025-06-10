@@ -1,6 +1,7 @@
 {
     "last_midi_port": "hogehoge",
     "last_tracker": "fugafuga",
+    "enable_evalve": true,
     "update_notified_version": "4",
     "window_scale": "125%"
 }

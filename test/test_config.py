@@ -7,6 +7,7 @@ def test_load_config(mocker):
     mngr = ConfigMng()
     assert mngr.last_midi_port == "loopMIDI Port 1"
     assert mngr.last_tracker == "Duo-Art"
+    assert mngr.enable_evalve
     assert mngr.update_notified_version == "3.1"
     assert mngr.window_scale == "125%"
 
@@ -15,6 +16,7 @@ def test_load_config(mocker):
     mngr = ConfigMng()
     assert mngr.last_midi_port == ""
     assert mngr.last_tracker == ""
+    assert not mngr.enable_evalve
     assert mngr.update_notified_version == ""
     assert mngr.window_scale == "100%"
 
@@ -23,6 +25,7 @@ def test_load_config(mocker):
     mngr = ConfigMng()
     assert mngr.last_midi_port == ""
     assert mngr.last_tracker == ""
+    assert not mngr.enable_evalve
     assert mngr.update_notified_version == ""
     assert mngr.window_scale == "100%"
 
@@ -33,6 +36,7 @@ def test_save_config(mocker):
     mngr = ConfigMng()
     mngr.last_midi_port = "Japanese日本語"
     mngr.last_tracker = "2"
+    mngr.enable_evalve = False
     mngr.update_notified_version = "3"
     mngr.window_scale = "150%"
     mngr.save_config()
@@ -40,12 +44,14 @@ def test_save_config(mocker):
     mngr = ConfigMng()
     assert mngr.last_midi_port == "Japanese日本語"
     assert mngr.last_tracker == "2"
+    assert not mngr.enable_evalve
     assert mngr.update_notified_version == "3"
     assert mngr.window_scale == "150%"
 
     mngr = ConfigMng()
     mngr.last_midi_port = "hogehoge"
     mngr.last_tracker = "fugafuga"
+    mngr.enable_evalve = True
     mngr.update_notified_version = "4"
     mngr.window_scale = "125%"
     mngr.save_config()

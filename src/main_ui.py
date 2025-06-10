@@ -71,18 +71,18 @@ class MainFrame(wx.Frame):
         self.supported_imgs = (".cis", ".jpg", ".png", ".tif", ".bmp")
 
         # Midi on/off button
-        self.midi_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="MIDI On")
+        self.midi_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((90, 45))), label="MIDI On")
         self.midi_btn.Bind(wx.EVT_BUTTON, self.midi_onoff)
         self.midi_btn.Disable()
         # File Open button
-        self.file_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="File")
+        self.file_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((90, 45))), label="File")
         self.file_btn.Bind(wx.EVT_BUTTON, self.open_file)
         # Tempo slider
         self.speed = SpeedSlider(self, callback=self.speed_change)
         # Auto Tracking on/off button
         self.tracking = TrackerCtrl(self)
         # Manual Expression on/off button
-        self.manual_expression = BaseCheckbox(self, wx.ID_ANY, "Manual Expression")
+        self.enable_manual_expression = BaseCheckbox(self, wx.ID_ANY, "Manual Expression")
         # Vacuum Graph
         self.bass_vacuum_lv = VacuumGauge(self, caption="Bass Vacuum (inches of water)")
         self.treble_vacuum_lv = VacuumGauge(self, caption="Treble Vacuum (inches of water)")
@@ -90,9 +90,13 @@ class MainFrame(wx.Frame):
         self.organ_stop_indicator = OrganStopIndicator(self)
         # Link for Aeolian 165-note Midi assignment document
         self.organ_midi_map = HyperlinkCtrl(self, wx.ID_ANY, "MIDI Output Assignment Map", "https://playsk-aeolian176note-midi-assignment.pages.dev/", style=wx.adv.HL_ALIGN_LEFT)
-
+        # Enable send e-Valve expression holes as silent note
+        self.enable_evalve = BaseCheckbox(self, wx.ID_ANY, "Send e-Valve Expression Signal")
+        self.enable_evalve.SetToolTip("Send e-Valve Expression/Pedal holes as silent note")
+        self.enable_evalve.SetValue(self.conf.enable_evalve)
+        self.enable_evalve.Bind(wx.EVT_CHECKBOX, self.on_check_enable_evalve)
         # CIS Adjust button
-        self.adjust_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((180, 35))), label="Adjust CIS Image")
+        self.adjust_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((180, 30))), label="Adjust CIS Image")
         self.adjust_btn.Bind(wx.EVT_BUTTON, self.adjust_image)
 
         self.callback = CallBack(None, self.tracking, self.bass_vacuum_lv, self.treble_vacuum_lv)
@@ -100,7 +104,7 @@ class MainFrame(wx.Frame):
         self.player_mng = PlayerMng()
 
         # sizer of controls
-        border_size = self.get_dipscaled_size(5)
+        border_size = self.get_dipscaled_size(4)
         self.sizer1 = wx.BoxSizer(wx.HORIZONTAL)
         self.sizer1.Add(self.midi_btn, flag=wx.EXPAND | wx.ALL, border=border_size, proportion=1)
         self.sizer1.Add(self.file_btn, flag=wx.EXPAND | wx.ALL, border=border_size, proportion=1)
@@ -109,11 +113,12 @@ class MainFrame(wx.Frame):
         self.sizer2.Add(self.sizer1, flag=wx.EXPAND)
         self.sizer2.Add(self.speed, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.tracking, flag=wx.EXPAND | wx.ALL, border=border_size)
-        self.sizer2.Add(self.manual_expression, flag=wx.EXPAND | wx.ALL, border=border_size)
+        self.sizer2.Add(self.enable_manual_expression, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.bass_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.treble_vacuum_lv, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.organ_stop_indicator, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.organ_midi_map, flag=wx.EXPAND | wx.ALL, border=border_size)
+        self.sizer2.Add(self.enable_evalve, flag=wx.EXPAND | wx.ALL, border=border_size)
         self.sizer2.Add(self.adjust_btn, flag=wx.EXPAND | wx.ALL, border=border_size)
 
         self.sizer3 = wx.BoxSizer(wx.HORIZONTAL)
@@ -142,7 +147,7 @@ class MainFrame(wx.Frame):
 
         self.Bind(wx.EVT_KEY_DOWN, self.on_keydown)
         self.Bind(wx.EVT_KEY_UP, self.on_keyup)
-        self.manual_expression.Bind(wx.EVT_CHECKBOX, self.on_check_manual_expression)
+        self.enable_manual_expression.Bind(wx.EVT_CHECKBOX, self.on_check_manual_expression)
 
     def get_dipscaled_size(self, size:wx.Size | int) -> int | wx.Size:
         if isinstance(size, int):
@@ -254,6 +259,13 @@ class MainFrame(wx.Frame):
         self.spool.set_manual_expression(checked)
         self.callback.player.manual_expression = checked
 
+    def on_check_enable_evalve(self, event):
+        checked = event.GetEventObject().IsChecked()
+        self.callback.player.enable_evalve = checked
+        self.conf.enable_evalve = checked
+        if not checked:
+            self.callback.player.emulate_off_evalve()
+
     def change_midi_port(self, event=None):
         idx = self.port_sel.GetSelection()
         port = self.port_sel.GetString(idx)
@@ -270,20 +282,27 @@ class MainFrame(wx.Frame):
             player_tmp.tracker_offset = self.tracking.offset
             player_tmp.auto_tracking = self.tracking.auto_tracking
             self.callback.player = player_tmp
-            self.callback.player.manual_expression = self.manual_expression.IsChecked()
+            self.callback.player.manual_expression = self.enable_manual_expression.IsChecked()
+
+        if len(self.callback.player.evalve_control_holes):
+            self.enable_evalve.Enable()
+            self.callback.player.enable_evalve = self.enable_evalve.IsChecked()
+        else:
+            self.enable_evalve.Disable()
+            self.callback.player.enable_evalve = False
 
         if name == "Aeolian 176-note Pipe Organ":
-            self.manual_expression.SetValue(False)
+            self.enable_manual_expression.SetValue(False)
             self.spool.set_manual_expression(False)
             self.callback.player.manual_expression = False
             self.callback.player.init_stop_indicator(self.organ_stop_indicator)
-            self.manual_expression.Hide()
+            self.enable_manual_expression.Hide()
             self.bass_vacuum_lv.Hide()
             self.treble_vacuum_lv.Hide()
             self.organ_stop_indicator.Show()
             self.organ_midi_map.Show()
         else:
-            self.manual_expression.Show()
+            self.enable_manual_expression.Show()
             self.bass_vacuum_lv.Show()
             self.treble_vacuum_lv.Show()
             self.organ_stop_indicator.Hide()
@@ -325,7 +344,7 @@ class MainFrame(wx.Frame):
         self.callback.player.emulate_off()
         tmp = self.spool
         self.spool = InputScanImg(self, img, self.callback.player.spool_diameter, self.callback.player.roll_width, window_scale=self.conf.window_scale, callback=self.callback)
-        self.spool.manual_expression = self.manual_expression.IsChecked()
+        self.spool.manual_expression = self.enable_manual_expression.IsChecked()
         self.Title = APP_TITLE + " - " + os.path.basename(path)
         self.sizer3.Replace(tmp, self.spool)
         tmp.on_destroy()

@@ -8,6 +8,7 @@ CONFIG_PATH = os.path.join("playsk_config", "config.json")
 class ConfigMng(BaseModel):
     last_midi_port: str = ""
     last_tracker: str = ""
+    enable_evalve: bool = False
     update_notified_version: str = ""
     window_scale: str = "100%"
 

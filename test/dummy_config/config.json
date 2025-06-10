@@ -1,6 +1,7 @@
 {
     "last_midi_port": "loopMIDI Port 1",
     "last_tracker": "Duo-Art",
+    "enable_evalve": true,
     "update_notified_version": "3.1",
     "window_scale": "125%"
 }

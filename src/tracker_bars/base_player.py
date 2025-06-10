@@ -133,6 +133,7 @@ class BasePlayer:
         self.tracker_offset = 0
         self.auto_tracking = True
         self.emulate_enable = False
+        self.enable_evalve = False
 
         # vacuum to velocity map
         self.max_vacuum = 40
@@ -159,14 +160,23 @@ class BasePlayer:
         idx = np.digitize([self.bass_vacuum, self.treble_vacuum], bins=self.velocity_bins)
         return self.velocity[0] + idx
 
+    def emulate_on(self) -> None:
+        self.emulate_enable = True
+
     def emulate_off(self) -> None:
         self.emulate_enable = False
         self.during_emulate_evt.wait(timeout=1)
         self.holes.all_off()
+        self.emulate_off_evalve()
         self.midi.all_off()
 
-    def emulate_on(self) -> None:
-        self.emulate_enable = True
+    def emulate_off_evalve(self) -> None:
+        for value in self.evalve_control_holes.values():
+            if isinstance(value["midi_no"], list):
+                for note in value["midi_no"]:
+                    self.midi.note_off(note, velocity=1)
+            else:
+                self.midi.note_off(value["midi_no"], velocity=1)
 
     def auto_track(self, frame) -> None:
         if not self.auto_tracking:
@@ -182,18 +192,22 @@ class BasePlayer:
         self.tracker_offset = int(right_end - left_end)
 
     def emulate(self, frame, curtime: float) -> None:
-        if self.emulate_enable:
-            self.during_emulate_evt.clear()
+        if not self.emulate_enable:
+            return
 
-            self.auto_track(frame)
-            self.holes.set_frame(frame, self.tracker_offset)
-            self.emulate_expression(curtime)
-            self.emulate_manual_expression(curtime)
-            self.emulate_pedals()
-            self.emulate_notes()
+        self.during_emulate_evt.clear()
+
+        self.auto_track(frame)
+        self.holes.set_frame(frame, self.tracker_offset)
+        self.emulate_expression(curtime)
+        self.emulate_manual_expression(curtime)
+        self.emulate_pedals()
+        self.emulate_notes()
+
+        if self.enable_evalve:
             self.emulate_evalve_control_holes()
 
-            self.during_emulate_evt.set()
+        self.during_emulate_evt.set()
 
     def expression_key_event(self, key: int, pressed: bool) -> None:
         if key == self.bass_accent_key:
