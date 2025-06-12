@@ -30,7 +30,7 @@ class DuoArt(BasePlayer):
 
         self.evalve_control_holes = {
             "sustain": {"midi_no": 18},
-            "bass_snakebite": {"midi_no": 20},  # or 19??
+            "bass_snakebite": {"midi_no": 20},
             "accomp": {"midi_no": [21, 22, 23, 24]},
             "theme": {"midi_no": [105, 106, 107, 108]},
             "treble_snakebite": {"midi_no": 109},

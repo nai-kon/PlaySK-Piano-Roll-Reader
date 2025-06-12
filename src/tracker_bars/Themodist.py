@@ -12,6 +12,12 @@ class Themodist(BasePlayer):
         self.accent_vacuum = conf["expression"]["accent"]
         self.bass_vacuum = self.treble_vacuum = self.base_vacuum
 
+        self.evalve_control_holes = {
+            "sustain": {"midi_no": 18},
+            "bass_snakebite": {"midi_no": 20},
+            "treble_snakebite": {"midi_no": 109},
+        }
+
     def emulate_off(self):
         super().emulate_off()
         self.bass_vacuum = self.treble_vacuum = self.base_vacuum

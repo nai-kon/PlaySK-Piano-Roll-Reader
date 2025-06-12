@@ -32,7 +32,6 @@ class PlayerMng:
         cls_map = {
             "Player": tracker_bars.BasePlayer,
             "AmpicoA": tracker_bars.AmpicoA,
-            "AmpicoA_eValve": tracker_bars.AmpicoA_eValve,
             "AmpicoB": tracker_bars.AmpicoB,
             "Duo-Art": tracker_bars.DuoArt,
             "WelteT100": tracker_bars.WelteT100,
@@ -43,7 +42,6 @@ class PlayerMng:
             "RecordoB": tracker_bars.RecordoB,
             "Artecho": tracker_bars.Artecho,
             "Themodist": tracker_bars.Themodist,
-            "Themodist_eValve": tracker_bars.Themodist_eValve,
             "Aeolian176note": tracker_bars.Aeolian176note,
         }
         if (clsobj := cls_map.get(cls_name)) is not None:
