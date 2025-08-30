@@ -44,6 +44,7 @@ class PlayerMng:
             "Themodist": tracker_bars.Themodist,
             "Themodist_eValve": tracker_bars.Themodist_eValve,
             "Aeolian176note": tracker_bars.Aeolian176note,
+            "Artrio Angelus": tracker_bars.ArtrioAngelus,
         }
         if (clsobj := cls_map.get(cls_name)) is not None:
             confpath = os.path.join(self.conf_dir, f"{player_name}.json")
