@@ -5,7 +5,7 @@
   "spool_diameter": 1.9,
   "default_tempo": 80,
   "expression": {
-    "stack_split_point": 43
+    "stack_split_point": 41
   },
   "tracker_holes": {
     "is_dark_hole": false,

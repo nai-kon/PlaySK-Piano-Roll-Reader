@@ -1,3 +1,4 @@
+import math
 from collections import deque
 
 from .base_player import BasePlayer
@@ -6,20 +7,21 @@ from .base_player import BasePlayer
 class ArtrioAngelus(BasePlayer):
     def __init__(self, confpath, midiobj):
         super().__init__(confpath, midiobj)
-        self.accomp_reduces = [
-            2,
-            2,
-            2,
-        ]
-        self.solo_base = 6
+        self.solo_base = 6.5
         self.solo_adds = [
-            12, # port 104, solo forzando
-            3,  # port 105, solo 4
-            3,  # port 108, solo 3
-            3,  # port 109, solo 2
-            3,  # port 111, solo 1
+            10,     # port 104, solo forzando
+            2.5,    # port 105, solo 4
+            2.5,    # port 108, solo 3
+            2.5,    # port 109, solo 2
+            2.5,    # port 111, solo 1
         ]
-        self.leaker_multiply = 1.2
+        # if not open hole, reduce vacuum by multiply solo vacuum
+        self.accomp_multiply = [
+            0.9,
+            0.9,
+            0.9,
+        ]
+        self.leaker_multiply = 1.3
         self.bass_vacuum = self.treble_vacuum = self.solo_base
 
 
@@ -29,8 +31,8 @@ class ArtrioAngelus(BasePlayer):
 
     def emulate_expression(self, curtime):
         solo_vacuum = self.solo_base + sum([v * b for v, b in zip(self.solo_adds, self.holes["solo"]["is_open"])])
-        accomp_vaccum = solo_vacuum - sum([v * (not b) for v, b in zip(self.accomp_reduces, self.holes["accomp"]["is_open"])])
-        accomp_vaccum = max(accomp_vaccum, self.solo_base)
+        accomp_vaccum = solo_vacuum * math.prod([max(v, int(b)) for v, b in zip(self.accomp_multiply, self.holes["accomp"]["is_open"])])
+        accomp_vaccum = max(accomp_vaccum, self.solo_base - 1)
 
         self.bass_vacuum = solo_vacuum if self.holes["bass_melodant"]["is_open"] else accomp_vaccum
         self.treble_vacuum = solo_vacuum if self.holes["treble_melodant"]["is_open"] else accomp_vaccum
