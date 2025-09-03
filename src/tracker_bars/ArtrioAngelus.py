@@ -22,12 +22,11 @@ class ArtrioAngelus(BasePlayer):
             0.9,
         ]
         self.leaker_multiply = 1.3
-        self.bass_vacuum = self.treble_vacuum = self.solo_base
-
+        self.bass_vacuum = self.treble_vacuum = self.solo_base - 1
 
     def emulate_off(self):
         super().emulate_off()
-        self.bass_vacuum = self.treble_vacuum = self.solo_base
+        self.bass_vacuum = self.treble_vacuum = self.solo_base - 1
 
     def emulate_expression(self, curtime):
         solo_vacuum = self.solo_base + sum([v * b for v, b in zip(self.solo_adds, self.holes["solo"]["is_open"])])
