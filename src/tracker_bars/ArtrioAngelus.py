@@ -1,5 +1,4 @@
 import math
-from collections import deque
 
 from .base_player import BasePlayer
 
