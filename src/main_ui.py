@@ -91,8 +91,8 @@ class MainFrame(wx.Frame):
         # Link for Aeolian 165-note Midi assignment document
         self.organ_midi_map = HyperlinkCtrl(self, wx.ID_ANY, "MIDI Output Assignment Map", "https://playsk-aeolian176note-midi-assignment.pages.dev/", style=wx.adv.HL_ALIGN_LEFT)
         # Enable send e-Valve expression holes as silent note
-        self.enable_evalve = BaseCheckbox(self, wx.ID_ANY, "Send e-Valve Expression Signal")
-        self.enable_evalve.SetToolTip("Send e-Valve Expression/Pedal holes as silent note")
+        self.enable_evalve = BaseCheckbox(self, wx.ID_ANY, "Send e-Valve MIDI Signal")
+        self.enable_evalve.SetToolTip("Send e-Valve MIDI signal as silent note")
         self.enable_evalve.SetValue(self.conf.enable_evalve)
         self.enable_evalve.Bind(wx.EVT_CHECKBOX, self.on_check_enable_evalve)
         # CIS Adjust button
