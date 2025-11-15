@@ -470,7 +470,7 @@ class InputScanImg(InputVideo):
                 print("self.skip_px", self.skip_px, ", fps", px_per_sec / i)
                 break
 
-    def _find_roll_edge(self) -> list[int, int]:
+    def _find_roll_edge(self) -> list[int]:
         # find roll edge x coordinate
         roll_h, roll_w = self.src.shape[:2]
         edges = []
@@ -484,7 +484,7 @@ class InputScanImg(InputVideo):
         for v in binarized_img:
             t = v.nonzero()[0]
             if len(t) < 2:
-                edges.append((0, roll_w - 1))
+                edges.append([0, roll_w - 1])
             else:
                 edges.append(t[[0, -1]].tolist())
 

@@ -64,12 +64,12 @@ class CisImage:
         if self.decoded_img is not None:
             self.decoded_img[self.decoded_img == 0] = 255
 
-    def _get_decode_params_py(self) -> tuple[int, int, list[int, int]]:
+    def _get_decode_params_py(self) -> tuple[int, int, list[list[int]]]:
         """
         Experimentally decode file and get output image size and re-clock position map.
         Python version.
         """
-        reclock_map: list[int, int] = []  # src line idx, dest line idx
+        reclock_map: list[list[int]] = []  # src line idx, dest line idx
 
         # width
         width = self.hol_px
@@ -82,7 +82,7 @@ class CisImage:
             # calc height after reposition
             height = 0
             cur_idx = 0
-            buf_lines = []
+            buf_lines: list[int] = []
             pre_state = None
             chs = 1 + int(self.is_twin_array) + int(self.is_bicolor)
             for cur_line in range(self.vert_px - 1, 0, -1):

@@ -14,7 +14,7 @@ class ArtrioAngelus(BasePlayer):
             2.5,    # port 109, solo 2
             2.5,    # port 111, solo 1
         ]
-        # if not open hole, reduce vacuum by multiply solo vacuum
+        # if accomp hole is not open, reduce vacuum by multiply solo vacuum
         self.accomp_multiply = [
             0.9,
             0.9,
