@@ -3,10 +3,13 @@ import sys
 import pytest
 
 sys.path.append("src/")
+import wx
+
 import tracker_bars
 from midi_controller import MidiWrap
 from player_mng import PlayerMng
 
+app = wx.App()
 
 class TestPlayerMng:
     @pytest.fixture

@@ -2,11 +2,13 @@ import sys
 
 import numpy as np
 import pytest
+import wx
 
 sys.path.append("src/")
 import tracker_bars
 from midi_controller import MidiWrap
 
+app = wx.App()
 
 class TestArtecho:
     @pytest.fixture
