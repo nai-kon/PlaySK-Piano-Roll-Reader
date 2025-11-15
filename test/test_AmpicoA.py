@@ -5,9 +5,12 @@ import numpy as np
 import pytest
 
 sys.path.append("src/")
+import wx
+
 import tracker_bars
 from midi_controller import MidiWrap
 
+app = wx.App()
 
 class TestAmpicoA:
     @pytest.fixture
