@@ -25,6 +25,9 @@ Support image formats are `.CIS`, `.jpg`, `.tif`, `.png`, `.bmp`. The `.CIS` sup
 - Reading an Ampico B roll with Yamaha Disklavier  
     https://www.youtube.com/watch?v=9f9J4TRmr5Y
 
+- Reading a Duo-Art roll with Yamaha Disklavier  
+    https://www.youtube.com/watch?v=J9JHP0wx0P4
+
 - Reading a Red Welte T-100 roll with Software Synthesizer  
     https://www.youtube.com/watch?v=WMEPW-UWhSU
 
@@ -70,13 +73,13 @@ The app is written in Python and uses wxPython for the UI. For faster processing
 ## Requirements
 
 * Python 3.11.9
-* uv 0.6.14
+* uv 0.8.15 or above
 
 Quick Start
 ```
 $ uv sync
 $ cd src/
-$ uv run python main.py
+$ uv run main.py
 ```
 
 ## Build binary locally
@@ -151,5 +154,6 @@ sequenceDiagram
     user->>appmain: select close button
     appmain->>image scroll thread: end request
     image scroll thread->>-appmain: 
+    appmain->>appmain: save last config
     appmain->>-user: end app
 ```
