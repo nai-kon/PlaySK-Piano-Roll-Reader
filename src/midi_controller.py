@@ -7,7 +7,7 @@ class MidiWrap:
     """wrapper of mido library"""
 
     def __init__(self) -> None:
-        self.output = None
+        self.output: mido.backends.rtmidi.Output
         self.enable: bool = False
         self.hammer_lift: bool = False
 
@@ -15,7 +15,7 @@ class MidiWrap:
     def port_list(self) -> list[str]:
         return mido.get_output_names()
 
-    def open_port(self, name: str) -> bool:
+    def open_port(self, name: str | None) -> bool:
         self.close_port()
         try:
             self.output = mido.open_output(name, autoreset=True)
@@ -40,9 +40,9 @@ class MidiWrap:
             self.sustain_off()
             self.soft_off()
             self.hammer_lift_off()
-            [self.note_off(k, channel=0) for k in range(128)]
-            [self.note_off(k, channel=1) for k in range(128)]
-            [self.note_off(k, channel=2) for k in range(128)]
+            for ch in range(3):
+                for k in range(128):
+                    self.note_off(k, channel=ch)
 
             self.output.reset()
 
@@ -107,8 +107,8 @@ if __name__ == "__main__":
     obj.close_port()
 
     time.sleep(1)
-    obj.open_port(None)
+    obj.open_port("")
     obj.note_on(60, 120)
     time.sleep(1)
     print("before destruct")
-    obj = None
+    del obj

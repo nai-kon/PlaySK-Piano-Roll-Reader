@@ -13,7 +13,7 @@ class VacuumGauge(BasePanel):
     def __init__(self, parent, pos: tuple[int, int]=(0, 0), caption: str="") -> None:
         BasePanel.__init__(self, parent, wx.ID_ANY, pos=pos)
         caption = wx.StaticText(self, wx.ID_ANY, caption)
-        scale = parent.get_dpiscale_factor()
+        scale: float = parent.get_dpiscale_factor()
         self.meter = OscilloGraph(self, scale, parent.get_dipscaled_size(wx.Size(200, 150)))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -37,14 +37,14 @@ class VacuumGauge(BasePanel):
 class OscilloGraph(BasePanel):
     def __init__(self, parent, scale, size, max_vacuum=50) -> None:
         BasePanel.__init__(self, parent, wx.ID_ANY, size=size)
-        self.w = size[0]
-        self.h = size[1]
+        self.w: int = size[0]
+        self.h: int = size[1]
         self.scale = scale
         self.max_vacuum = max_vacuum
         self.plot_scale = self.h / self.max_vacuum
         self.SetDoubleBuffered(True)
 
-        self.val = 0
+        self.val = 0.0
         self.xs = np.arange(self.w, step=self.scale).astype(np.intc)
         self.ys = np.full(self.xs.size, self.h - 1, dtype=np.intc)
         self.plots = np.dstack((self.xs, self.ys))

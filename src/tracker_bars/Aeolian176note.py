@@ -1,4 +1,5 @@
 import json
+from typing import NotRequired, TypedDict
 
 import numpy as np
 
@@ -6,6 +7,13 @@ from midi_controller import MidiWrap
 from organ_stop_indicator import OrganStopIndicator
 
 from .base_player import BasePlayer
+
+
+class HoleStatus(TypedDict):
+    hole_no:  int
+    is_on: bool
+    last_time: NotRequired[float]
+    midi_val: NotRequired[int]
 
 
 class Aeolian176note(BasePlayer):
@@ -16,13 +24,15 @@ class Aeolian176note(BasePlayer):
             conf = json.load(f)
 
         self.shade = conf["expression"]["expression_shade"]
-        self.pre_time = None
+        self.pre_time: float | None = None
         self.prevent_chattering_wait = 0.2  # toggle switch reaction threshold seconds to prevent chattering
-        self.stop_indicator = None
+        self.stop_indicator: OrganStopIndicator | None = None
 
         # set church organ for GM sound
         for ch in range(3):
             self.midi.program_change(19, ch)
+
+        self.ctrls: dict[str, dict[str, HoleStatus]]
 
         self.init_controls()
 
@@ -52,7 +62,7 @@ class Aeolian176note(BasePlayer):
         self.shade_change_rate = (self.shade["shade6"] - self.shade["shade0"]) / self.shade["min_to_max_second"]
         self.swell_shade_val = self.shade["shade6"]
         self.great_shade_val = self.shade["shade6"]
-        self.shade_error_detector = {"swell": [], "great": []}
+        self.shade_error_detector: dict[str, list[int]] = {"swell": [], "great": []}
 
         self.midi.control_change(14, self.swell_shade_val, 3)
         self.midi.control_change(15, self.great_shade_val, 3)
@@ -60,22 +70,22 @@ class Aeolian176note(BasePlayer):
         self.ctrls = {
             # upper control holes of tracker bar
             "swell":{
-                "Echo" : {"hole_no": 0, "is_on": False, "last_time": 0, "midi_val": 0},  # Currently not implemented
-                "Chime" : {"hole_no":  1, "is_on": False, "last_time": 0, "midi_val": 1},
-                "Tremolo" : {"hole_no": 2, "is_on": False, "last_time": 0, "midi_val": 2},
-                "Harp" : {"hole_no": 3, "is_on": False, "last_time": 0, "midi_val": 3},
-                "Trumpet" : {"hole_no": 4, "is_on": False, "last_time": 0, "midi_val": 4},
-                "Oboe" : {"hole_no": 5, "is_on": False, "last_time": 0, "midi_val": 5},
-                "Vox Humana" : {"hole_no": 6, "is_on": False, "last_time": 0, "midi_val": 6},
-                "Diapason mf" : {"hole_no": 7, "is_on": False, "last_time": 0, "midi_val": 7},
-                "Flute 16" : {"hole_no": 8, "is_on": False, "last_time": 0, "midi_val": 8},
-                "Flute 4" : {"hole_no": 9, "is_on": False, "last_time": 0, "midi_val": 9},
-                "Flute p" : {"hole_no": 10, "is_on": False, "last_time": 0, "midi_val": 10},
-                "String Vibrato f" : {"hole_no": 11, "is_on": False, "last_time": 0, "midi_val": 11},
-                "String f" : {"hole_no": 12, "is_on": False, "last_time": 0, "midi_val": 12},
-                "String mf" : {"hole_no": 13, "is_on": False, "last_time": 0, "midi_val": 13},
-                "String p" : {"hole_no": 14, "is_on": False, "last_time": 0, "midi_val": 14},
-                "String pp" : {"hole_no": 15, "is_on": False, "last_time": 0, "midi_val": 15},
+                "Echo" : {"hole_no": 0, "is_on": False, "last_time": 0.0, "midi_val": 0},  # Currently not implemented
+                "Chime" : {"hole_no":  1, "is_on": False, "last_time": 0.0, "midi_val": 1},
+                "Tremolo" : {"hole_no": 2, "is_on": False, "last_time": 0.0, "midi_val": 2},
+                "Harp" : {"hole_no": 3, "is_on": False, "last_time": 0.0, "midi_val": 3},
+                "Trumpet" : {"hole_no": 4, "is_on": False, "last_time": 0.0, "midi_val": 4},
+                "Oboe" : {"hole_no": 5, "is_on": False, "last_time": 0.0, "midi_val": 5},
+                "Vox Humana" : {"hole_no": 6, "is_on": False, "last_time": 0.0, "midi_val": 6},
+                "Diapason mf" : {"hole_no": 7, "is_on": False, "last_time": 0.0, "midi_val": 7},
+                "Flute 16" : {"hole_no": 8, "is_on": False, "last_time": 0.0, "midi_val": 8},
+                "Flute 4" : {"hole_no": 9, "is_on": False, "last_time": 0.0, "midi_val": 9},
+                "Flute p" : {"hole_no": 10, "is_on": False, "last_time": 0.0, "midi_val": 10},
+                "String Vibrato f" : {"hole_no": 11, "is_on": False, "last_time": 0.0, "midi_val": 11},
+                "String f" : {"hole_no": 12, "is_on": False, "last_time": 0.0, "midi_val": 12},
+                "String mf" : {"hole_no": 13, "is_on": False, "last_time": 0.0, "midi_val": 13},
+                "String p" : {"hole_no": 14, "is_on": False, "last_time": 0.0, "midi_val": 14},
+                "String pp" : {"hole_no": 15, "is_on": False, "last_time": 0.0, "midi_val": 15},
                 "Shade1" : {"hole_no": 16, "is_on": True},
                 "Shade2" : {"hole_no": 17, "is_on": True},
                 "Shade3" : {"hole_no": 18, "is_on": True},
@@ -83,19 +93,19 @@ class Aeolian176note(BasePlayer):
                 "Shade5" : {"hole_no": 20, "is_on": True},
                 "Shade6" : {"hole_no": 21, "is_on": True},
                 # "Extension" : {"hole_no": 22, "is_on": False},
-                # "LCW1" : {"hole_no": 23, "is_on": False, "last_time": 0, "midi_val": },
-                # "LCW2" : {"hole_no": 24, "is_on": False, "last_time": 0, "midi_val": },
-                "Soft Chime" : {"hole_no": 25, "is_on": False, "last_time": 0, "midi_val": 17},
-                # "Reroll" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
-                # "Ventil" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
-                # "Normal" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
+                # "LCW1" : {"hole_no": 23, "is_on": False, "last_time": 0.0, "midi_val": },
+                # "LCW2" : {"hole_no": 24, "is_on": False, "last_time": 0.0, "midi_val": },
+                "Soft Chime" : {"hole_no": 25, "is_on": False, "last_time": 0.0, "midi_val": 17},
+                # "Reroll" : {"hole_no": , "is_on": False, "last_time": 0.0, "midi_val": },
+                # "Ventil" : {"hole_no": , "is_on": False, "last_time": 0.0, "midi_val": },
+                # "Normal" : {"hole_no": , "is_on": False, "last_time": 0.0, "midi_val": },
                 "Pedal to Swell" : {"hole_no": 29, "is_on": False},
             },
             "great":{
                 # lower control holes of tracker bar
-                "Tremolo" : {"hole_no": 0, "is_on": False, "last_time": 0, "midi_val": 18},
-                "Tonal" : {"hole_no": 1, "is_on": False, "last_time": 0, "midi_val": 19},  # Currently not implemented
-                "Harp" : {"hole_no": 2, "is_on": False, "last_time": 0, "midi_val": 20},
+                "Tremolo" : {"hole_no": 0, "is_on": False, "last_time": 0.0, "midi_val": 18},
+                "Tonal" : {"hole_no": 1, "is_on": False, "last_time": 0.0, "midi_val": 19},  # Currently not implemented
+                "Harp" : {"hole_no": 2, "is_on": False, "last_time": 0.0, "midi_val": 20},
                 # "Extension" : {"hole_no": 3, "is_on": False},
                 # "Pedal 2nd octave" : {"hole_no": 4, "is_on": False},
                 # "Pedal 3rd octave" : {"hole_no": 5, "is_on": False},
@@ -105,28 +115,29 @@ class Aeolian176note(BasePlayer):
                 "Shade4" : {"hole_no": 9, "is_on": True},
                 "Shade5" : {"hole_no": 10, "is_on": True},
                 "Shade6" : {"hole_no": 11, "is_on": True},
-                "Pedal Bassoon 16" : {"hole_no": 12, "is_on": False, "last_time": 0, "midi_val": 24},
-                "Pedal String 16" : {"hole_no": 13, "is_on": False, "last_time": 0, "midi_val": 25},
-                "Pedal Flute f16" : {"hole_no": 14, "is_on": False, "last_time": 0, "midi_val": 26},
-                "Pedal Flute p16" : {"hole_no": 15, "is_on": False, "last_time": 0, "midi_val": 27},
-                "String pp" : {"hole_no": 16, "is_on": False, "last_time": 0, "midi_val": 28},
-                "String p" : {"hole_no": 17, "is_on": False, "last_time": 0, "midi_val": 29},
-                "String f" : {"hole_no": 18, "is_on": False, "last_time": 0, "midi_val": 30},
-                "Flute p" : {"hole_no": 19, "is_on": False, "last_time": 0, "midi_val": 31},
-                "Flute f" : {"hole_no": 20, "is_on": False, "last_time": 0, "midi_val": 32},
-                "Flute 4" : {"hole_no": 21, "is_on": False, "last_time": 0, "midi_val": 33},
-                "Diapason f" : {"hole_no": 22, "is_on": False, "last_time": 0, "midi_val": 34},
-                "Piccolo" : {"hole_no": 23, "is_on": False, "last_time": 0, "midi_val": 35},
-                "Clarinet" : {"hole_no": 24, "is_on": False, "last_time": 0, "midi_val": 36},
-                "Trumpet" : {"hole_no": 25, "is_on": False, "last_time": 0, "midi_val": 37},
-                "Chime Damper" : {"hole_no": 26, "is_on": False, "last_time": 0, "midi_val": 38},
-                # "LCW3" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
-                # "LCW4" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": },
-                # "Ventil" : {"hole_no": , "is_on": False, "last_time": 0, "midi_val": }
+                "Pedal Bassoon 16" : {"hole_no": 12, "is_on": False, "last_time": 0.0, "midi_val": 24},
+                "Pedal String 16" : {"hole_no": 13, "is_on": False, "last_time": 0.0, "midi_val": 25},
+                "Pedal Flute f16" : {"hole_no": 14, "is_on": False, "last_time": 0.0, "midi_val": 26},
+                "Pedal Flute p16" : {"hole_no": 15, "is_on": False, "last_time": 0.0, "midi_val": 27},
+                "String pp" : {"hole_no": 16, "is_on": False, "last_time": 0.0, "midi_val": 28},
+                "String p" : {"hole_no": 17, "is_on": False, "last_time": 0.0, "midi_val": 29},
+                "String f" : {"hole_no": 18, "is_on": False, "last_time": 0.0, "midi_val": 30},
+                "Flute p" : {"hole_no": 19, "is_on": False, "last_time": 0.0, "midi_val": 31},
+                "Flute f" : {"hole_no": 20, "is_on": False, "last_time": 0.0, "midi_val": 32},
+                "Flute 4" : {"hole_no": 21, "is_on": False, "last_time": 0.0, "midi_val": 33},
+                "Diapason f" : {"hole_no": 22, "is_on": False, "last_time": 0.0, "midi_val": 34},
+                "Piccolo" : {"hole_no": 23, "is_on": False, "last_time": 0.0, "midi_val": 35},
+                "Clarinet" : {"hole_no": 24, "is_on": False, "last_time": 0.0, "midi_val": 36},
+                "Trumpet" : {"hole_no": 25, "is_on": False, "last_time": 0.0, "midi_val": 37},
+                "Chime Damper" : {"hole_no": 26, "is_on": False, "last_time": 0.0, "midi_val": 38},
+                # "LCW3" : {"hole_no": , "is_on": False, "last_time": 0.0, "midi_val": },
+                # "LCW4" : {"hole_no": , "is_on": False, "last_time": 0.0, "midi_val": },
+                # "Ventil" : {"hole_no": , "is_on": False, "last_time": 0.0, "midi_val": }
             },
         }
+        for v in range(128):
+            self.midi.control_change(110, v, 3)  # all off
 
-        [self.midi.control_change(110, v, 3) for v in range(128)]  # all off
         self.pedal_all_off = True
 
         if self.stop_indicator is not None:
@@ -162,8 +173,10 @@ class Aeolian176note(BasePlayer):
                 notes_off.extend([key + offset for key in range(58, 61)])
 
             # send note midi signal
-            [self.midi.note_on(note, velocity, midi_ch) for note in notes_on]
-            [self.midi.note_off(note, channel=midi_ch) for note in notes_off]
+            for note in notes_on:
+                self.midi.note_on(note, velocity, midi_ch)
+            for note in notes_off:
+                self.midi.note_off(note, channel=midi_ch)
 
         # pedal notes
         if self.ctrls["great"]["Pedal Bassoon 16"]["is_on"] or \
@@ -202,12 +215,16 @@ class Aeolian176note(BasePlayer):
                 pedal_notes_off.extend([key + offset for key in range(24, 32)])
 
             # send MIDI signal
-            [self.midi.note_on(note, velocity, channel=2) for note in pedal_notes_on]
-            [self.midi.note_off(note, channel=2) for note in pedal_notes_off]
+            for note in pedal_notes_on:
+                self.midi.note_on(note, velocity, channel=2)
+            for note in pedal_notes_off:
+                self.midi.note_off(note, channel=2)
 
         elif not self.pedal_all_off:
             # all off 32 notes
-            [self.midi.note_off(k + offset, channel=2) for k in range(0, 32)]
+            for k in range(0, 32):
+                self.midi.note_off(k + offset, channel=2)
+
             self.pedal_all_off = True
 
     def emulate_controls(self, curtime: float) -> None:
@@ -245,7 +262,8 @@ class Aeolian176note(BasePlayer):
 
                 if key == "Pedal to Swell":
                     # reset all pedal notes
-                    [self.midi.note_off(k, channel=2) for k in range(128)]
+                    for k in range(128):
+                        self.midi.note_off(k, channel=2)
 
         # fix shade error
         self.fix_shade_error()

@@ -76,10 +76,10 @@ class ImgEditDlg(wx.Dialog):
     def get_edge_pos(self):
         return self.panel.get_edge_pos()
 
-    def get_dipscaled_size(self, size):
+    def get_dipscaled_size(self, size) -> int | wx.Size:
         return self.parent.get_dipscaled_size(size)
 
-    def get_dpiscale_factor(self):
+    def get_dpiscale_factor(self) -> float:
         return self.parent.get_dpiscale_factor()
 
 

@@ -533,7 +533,7 @@ if __name__ == "__main__":
 
     midobj = MidiWrap()
     midobj.open_port(None)
-    img, tempo = load_scan("../sample_scans/Duo-Art 67249 Dance Of The Hours.CIS", 80)
+    img, tempo = load_scan(frame, "../sample_scans/Duo-Art 67249 Dance Of The Hours.CIS", 80)
     panel1 = InputScanImg(frame, img)
     panel1.start_worker()
     # print(InputWebcam.list_camera())

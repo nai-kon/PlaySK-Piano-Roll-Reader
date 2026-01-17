@@ -28,7 +28,7 @@ class PlayerMng:
         return sorted(self.player_conf_map.keys())
 
     def get_player_obj(self, player_name: str, midiobj: MidiWrap) -> None | tracker_bars.BasePlayer:
-        cls_name = self.player_conf_map.get(player_name)
+        cls_name = self.player_conf_map.get(player_name, "")
         cls_map = {
             "Player": tracker_bars.BasePlayer,
             "AmpicoA": tracker_bars.AmpicoA,

@@ -10,7 +10,7 @@ from controls import BasePanel
 class OrganStopIndicator(BasePanel):
     def __init__(self, parent) -> None:
         BasePanel.__init__(self, parent, wx.ID_ANY)
-        self.data = {}
+        self.data: dict[str, dict[str, dict[str, int]]] = {}
         self.grid = wx.grid.Grid(self)
         self.grid.EnableGridLines(False)
         # disable edit
