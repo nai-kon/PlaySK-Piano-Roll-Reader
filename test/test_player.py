@@ -8,9 +8,12 @@ import numpy as np
 import pytest
 
 sys.path.append("src/")
+import wx
+
 from midi_controller import MidiWrap
 from tracker_bars.base_player import BasePlayer, TrackerHoles
 
+app = wx.App()
 
 class TestTrackerHoles:
     def test_tracker_holes(self):

@@ -15,8 +15,8 @@ class TrackerHoles:
         self.th_bright = holes["on_brightness"]
         self.lowest_note = holes["lowest_note"]
 
-        self.open_pen = None
-        self.close_pen = None
+        self.open_pen = wx.Pen((200, 0, 0))
+        self.close_pen = wx.Pen((0, 0, 200))
 
         # use numpy for fast calculation
         self.group_by_size = {}
@@ -83,20 +83,21 @@ class TrackerHoles:
             v["to_open"] &= False
             v["to_close"] &= False
 
-    def draw(self, wxdc: wx.PaintDC) -> None:
-        if self.open_pen is None:
-            self.open_pen = wx.Pen((200, 0, 0))
-        if self.close_pen is None:
-            self.close_pen = wx.Pen((0, 0, 200))
-
+    def draw_all(self, wxdc: wx.PaintDC) -> None:
         wxdc.SetBrush(wx.TRANSPARENT_BRUSH)
         pens = [self.open_pen if is_open else self.close_pen for v in self.group_by_size.values() for is_open in v["is_open"]]
         wxdc.SetLogicalOrigin(self.xoffset * -1, 0)
         wxdc.DrawRectangleList(self.draw_rects, pens)
         wxdc.SetLogicalOrigin(0, 0)
 
-    def __getitem__(self, key: str) -> dict:
-        hole_size, idx = self.group_by_name[key]
+    def draw(self, wxdc: wx.PaintDC, is_open: bool, hole_name: str, idx: int=0) -> None:
+        hole_size, hole_idx = self.group_by_name[hole_name]
+        pos = self.group_by_size[hole_size]["pos"][hole_idx][idx]
+        wxdc.SetPen(self.open_pen if is_open else self.close_pen)
+        wxdc.DrawRectangle(pos[0] + self.xoffset, pos[1], hole_size[0] + 1, hole_size[1] + 1)
+
+    def __getitem__(self, hole_name: str) -> dict:
+        hole_size, idx = self.group_by_name[hole_name]
         ret = {
             "pos": self.group_by_size[hole_size]["pos"][idx],
             "is_open": self.group_by_size[hole_size]["is_open"][idx],
@@ -262,7 +263,7 @@ class BasePlayer:
         wxdc.DrawLineList([(6, 290, 6, 310), (793, 290, 793, 310)])
 
         # draw holes
-        self.holes.draw(wxdc)
+        self.holes.draw_all(wxdc)
 
 
 if __name__ == "__main__":
