@@ -33,7 +33,6 @@ class CisImage:
         self.is_clocked = False
         self.is_twin_array = False
         self.is_bicolor = False
-        self.encoder_division = 1
         self.twin_array_vert_sep = 0
         self.twin_array_overlap = 0
         self.hol_dpi = 0
@@ -41,8 +40,8 @@ class CisImage:
         self.tempo = 0
         self.vert_res = 0  # lpi in stepper scanner. tpi in encoder wheel scanner
         self.vert_px = 0
-        self.raw_img = None
-        self.decoded_img = None
+        self.raw_img: np.ndarray
+        self.decoded_img: np.ndarray
         self.lpt = 0  # lines per tick. only for re-clocking
 
     def load(self, path: str) -> bool:
@@ -60,14 +59,12 @@ class CisImage:
         """
         Some cis files are scanned with a black roll background, so convert it to white
         """
-
-        if self.decoded_img is not None:
-            self.decoded_img[self.decoded_img == 0] = 255
+        self.decoded_img[self.decoded_img == 0] = 255
 
     def _get_decode_params_py(self) -> tuple[int, int, list[list[int]]]:
         """
         Experimentally decode file and get output image size and re-clock position map.
-        Python version.
+        Python version. Faster Cython version is in cis_decoder/cis_decoder.pyx
         """
         reclock_map: list[list[int]] = []  # src line idx, dest line idx
 
@@ -121,8 +118,11 @@ class CisImage:
 
         return width, height, reclock_map
 
-    # slow python version. only used for debugging
     def _decode_cis_py(self, output_img, twin_array_vert_sep, reclock_map) -> None:
+        """
+        Decode CIS image to output_img. Slow python version. only used for debugging.
+        Faster Cython version is in cis_decoder/cis_decoder.pyx
+        """
         class CurColor(IntEnum):
             BG = auto()
             ROLL = auto()
@@ -210,11 +210,12 @@ class CisImage:
         self.scanner_type = scanner_types[scanner_idx]
         if self.scanner_type == ScannerType.UNKNOWN:
             self.hol_dpi = 200  # most of unknown type scanner is 200DPI
+            encoder_division = 1
         else:
             self.is_clocked = self.scanner_type in (ScannerType.WHEELENCODER, ScannerType.SHAFTENCODER)
             self.is_twin_array = bool(status_flags[0] & 32)
             self.is_bicolor = bool(status_flags[0] & 64)
-            self.encoder_division = 2 ** int(status_flags[1] & 15)
+            encoder_division = 2 ** int(status_flags[1] & 15)
             # self.clock_doubler = bool(status_flags[0] & 16)  # not used now
             # self.mirror = bool(status_flags[1] & 16)
             # self.reverse = bool(status_flags[1] & 32)
@@ -230,7 +231,7 @@ class CisImage:
 
         # reclock parameters
         if self.is_clocked:
-            division = self.vert_res / self.encoder_division
+            division = self.vert_res / encoder_division
             self.lpt = round(self.hol_dpi / division)
             self.vert_res = round(self.lpt * division)
 
