@@ -10,6 +10,7 @@ from config import ConfigMng
 from controls import (
     BaseButton,
     BaseCheckbox,
+    BaseToggleButton,
     NotifyUpdate,
     SpeedSlider,
     TrackerCtrl,
@@ -71,8 +72,8 @@ class MainFrame(wx.Frame):
         self.supported_imgs = (".cis", ".jpg", ".png", ".tif", ".bmp")
 
         # Midi on/off button
-        self.midi_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="MIDI On")
-        self.midi_btn.Bind(wx.EVT_BUTTON, self.midi_onoff)
+        self.midi_btn = BaseToggleButton(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="MIDI")
+        self.midi_btn.Bind(wx.EVT_TOGGLEBUTTON, self.midi_onoff)
         self.midi_btn.Disable()
         # File Open button
         self.file_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="File")
@@ -266,7 +267,8 @@ class MainFrame(wx.Frame):
         self.conf.last_tracker = name
         if (player_tmp:= self.player_mng.get_player_obj(name, self.midiobj)) is not None:
             self.midiobj.all_off()
-            self.midi_btn.SetLabel("MIDI On")
+            self.midi_btn.SetValue(False)
+            self.midi_btn.SetBackgroundColour(wx.NullColour)
             player_tmp.tracker_offset = self.tracking.offset
             player_tmp.auto_tracking = self.tracking.auto_tracking
             self.callback.player = player_tmp
@@ -300,15 +302,16 @@ class MainFrame(wx.Frame):
 
     def midi_onoff(self, event):
         obj = event.GetEventObject()
-        if obj.GetLabel() == "MIDI On":
+        if obj.GetValue():
             self.callback.player.emulate_on()
-            obj.SetLabel("MIDI Off")
+            obj.SetBackgroundColour("#f6b26b")
         else:
             self.midi_off()
 
     def midi_off(self):
         self.callback.player.emulate_off()
-        self.midi_btn.SetLabel("MIDI On")
+        self.midi_btn.SetValue(False)
+        self.midi_btn.SetBackgroundColour(wx.NullColour)
 
     def load_file(self, path: str, force_manual_adjust: bool=False):
         if Path(path).suffix.lower() not in self.supported_imgs:
@@ -332,7 +335,8 @@ class MainFrame(wx.Frame):
         tmp.Destroy()
         self.spool.start_worker()
 
-        self.midi_btn.SetLabel("MIDI On")
+        self.midi_btn.SetValue(False)
+        self.midi_btn.SetBackgroundColour(wx.NullColour)
         self.midi_btn.Enable()
 
         # Set tempo
