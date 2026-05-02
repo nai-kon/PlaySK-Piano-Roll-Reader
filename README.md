@@ -18,7 +18,9 @@ Currently, 9 virtual tracker bars are available.
 - Themodist
     - `Themodist e-Valve` supports e-valve midi note output. (18 for sustain, 19 for bass snakebite, 109 for treble snakebite)
 
-Support image formats are `.CIS`, `.jpg`, `.tif`, `.png`, `.bmp`. The `.CIS` supports various scanners such as stepper, wheel/shaft encoder, bi-color, twin-array.
+Support image formats are `.CIS`, `.jpg`, `.tif`, `.png`, `.bmp`. The `.CIS` supports various scanners such as stepper, wheel/shaft encoder, bi-color, twin-array.  
+[Also, There is software that converts MIDI files into piano roll images](https://github.com/nai-kon/PlaySK-Midi-PianoRoll-Image-Converter). This allows you to play e-roll MIDI files on PlaySK.
+
 
 ## Demo
 
