@@ -125,8 +125,8 @@
       "y": 297,
       "w": 5,
       "h": 10,
-      "on_apature": 0.25,
-      "off_apature": 0.1
+      "on_apature": 0.1,
+      "off_apature": 0.05
     },
     "accomp": {
       "x": [
@@ -137,8 +137,8 @@
       "y": 297,
       "w": 5,
       "h": 10,
-      "on_apature": 0.25,
-      "off_apature": 0.1
+      "on_apature": 0.1,
+      "off_apature": 0.05
     },
     "solo": {
       "x": [
@@ -151,8 +151,8 @@
       "y": 297,
       "w": 5,
       "h": 10,
-      "on_apature": 0.25,
-      "off_apature": 0.1
+      "on_apature": 0.1,
+      "off_apature": 0.05
     },
     "bass_melodant": {
       "x": 44,
