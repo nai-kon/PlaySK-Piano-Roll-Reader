@@ -7,6 +7,7 @@ import urllib.request
 
 import certifi
 import wx
+from packaging.version import Version
 from wx.adv import HyperlinkCtrl
 
 from config import ConfigMng
@@ -252,10 +253,11 @@ class NotifyUpdate:
         return ver
 
     def need_notify(self, ver: str | None) -> bool:
+        # ver: XX.YY.ZZ
         print(ver, self.conf.update_notified_version, APP_VERSION)
         return (ver is not None and
-            ver > self.conf.update_notified_version and
-            ver > APP_VERSION)
+            Version(ver) > Version(self.conf.update_notified_version) and
+            Version(ver) > Version(APP_VERSION))
 
     def notify(self, ver: str) -> None:
         # once notify, no notify until next release
