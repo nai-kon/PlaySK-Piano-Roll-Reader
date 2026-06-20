@@ -21,6 +21,7 @@ class ArtrioAngelus(BasePlayer):
             0.9,
         ]
         self.leaker_multiply = 1.3
+        self.delay_ratio = 3  # 1 is no delay. larger value 
         self.bass_vacuum = self.treble_vacuum = self.solo_base - 1
 
     def emulate_off(self):
@@ -32,11 +33,14 @@ class ArtrioAngelus(BasePlayer):
         accomp_vaccum = solo_vacuum * math.prod([max(v, int(b)) for v, b in zip(self.accomp_multiply, self.holes["accomp"]["is_open"])])
         accomp_vaccum = max(accomp_vaccum, self.solo_base - 1)
 
-        self.bass_vacuum = solo_vacuum if self.holes["bass_melodant"]["is_open"] else accomp_vaccum
-        self.treble_vacuum = solo_vacuum if self.holes["treble_melodant"]["is_open"] else accomp_vaccum
+        bass_vacuum = solo_vacuum if self.holes["bass_melodant"]["is_open"] else accomp_vaccum
+        treble_vacuum = solo_vacuum if self.holes["treble_melodant"]["is_open"] else accomp_vaccum
         if self.holes["leaker"]["is_open"]:
-            self.bass_vacuum *= self.leaker_multiply
-            self.treble_vacuum *= self.leaker_multiply
+            bass_vacuum *= self.leaker_multiply
+            treble_vacuum *= self.leaker_multiply
+
+        self.bass_vacuum = self.bass_vacuum + (bass_vacuum - self.bass_vacuum) / self.delay_ratio
+        self.treble_vacuum = self.treble_vacuum + (treble_vacuum - self.treble_vacuum) / self.delay_ratio
 
 
 if __name__ == "__main__":

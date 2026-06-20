@@ -153,9 +153,8 @@ class BasePlayer:
         # set piano sound for GM sound
         self.midi.program_change(0, channel=0)
 
-    def calc_velocity(self):
-        idx = np.digitize([self.bass_vacuum, self.treble_vacuum], bins=self.velocity_bins)
-        return self.velocity[0] + idx
+    def calc_velocity(self) -> tuple[int, int]:
+        return (self.velocity[0] + np.digitize([self.bass_vacuum, self.treble_vacuum], bins=self.velocity_bins)).tolist()
 
     def emulate_off(self) -> None:
         self.emulate_enable = False

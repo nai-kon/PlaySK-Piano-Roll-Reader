@@ -1,4 +1,4 @@
-# PlaySK Piano Roll Reader Ver3.7
+# PlaySK Piano Roll Reader Ver3.8
 
 Optically reading a piano roll image, emulates expression and output midi signal in real-time.
 
@@ -15,6 +15,7 @@ Currently, 9 virtual tracker bars are available.
 - Philipps Duca (no expression. experimental)
 - Recordo version A / B
 - Artecho
+- Artrio Angelus
 - Themodist
     - `Themodist e-Valve` supports e-valve midi note output. (18 for sustain, 19 for bass snakebite, 109 for treble snakebite)
 
@@ -72,8 +73,8 @@ The app is written in Python and uses wxPython for the UI. For faster processing
 
 ## Requirements
 
-* Python 3.11.9
-* uv 0.8.15 or above
+* Python 3.13
+* uv 0.11
 
 Quick Start
 ```

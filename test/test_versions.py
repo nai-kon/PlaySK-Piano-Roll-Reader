@@ -6,7 +6,7 @@ import tomllib
 from src.version import APP_VERSION, COPY_RIGHT
 
 
-def test_verions():
+def test_versions():
     # check APP_VERSION is same to branch_name
     # branch_name = subprocess.run(["git", "branch", "--show-current"], encoding="utf-8", stdout=subprocess.PIPE)
     # branch_name = branch_name.stdout.strip().strip("Ver")
