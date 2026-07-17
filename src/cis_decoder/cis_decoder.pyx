@@ -105,6 +105,7 @@ def _decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
         int twin_offset_x = hol_px - int(twin_array_overlap / 2)
         int sx
         int ex
+        cnp.uint8_t[:, ::1] out_view = out_img
 
     # decode lines
     for cur_line in range(vert_px - 1, 0, -1):
@@ -113,8 +114,7 @@ def _decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
         while last_pos != hol_px:
             change_len = data[cur_idx]
             if cur_pix == BG:
-                for i in range(last_pos, last_pos + change_len):
-                    out_img[cur_line, i] = bg_color
+                out_view[cur_line, last_pos:last_pos + change_len] = bg_color
                 cur_pix = ROLL
             elif cur_pix == ROLL:
                 cur_pix = BG
@@ -132,8 +132,7 @@ def _decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
                 if cur_pix == BG:
                     sx = 2 * twin_offset_x - min(last_pos + change_len, twin_offset_x)
                     ex = 2 * twin_offset_x - min(last_pos, twin_offset_x)
-                    for i in range(sx, ex):
-                        out_img[cur_line_twin, i] = bg_color
+                    out_view[cur_line_twin, sx:ex] = bg_color
                     cur_pix = ROLL
                 elif cur_pix == ROLL:
                     cur_pix = BG
@@ -148,8 +147,7 @@ def _decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
             while last_pos != hol_px:
                 change_len = data[cur_idx]
                 if cur_pix == MARK:
-                    for i in range(last_pos, last_pos + change_len):
-                        out_img[cur_line, i] = lyrics_color
+                    out_view[cur_line, last_pos:last_pos + change_len] = lyrics_color
                     cur_pix = BG
                 elif cur_pix == BG:
                     cur_pix = MARK
@@ -162,4 +160,4 @@ def _decode_cis(cnp.ndarray[cnp.uint16_t, ndim=1] data,
     if is_clocked:
         # reposition lines
         for sx, ex in reclock_map:
-            out_img[ex] = out_img[sx]
+            out_view[ex] = out_view[sx]

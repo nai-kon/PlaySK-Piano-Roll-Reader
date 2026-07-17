@@ -55,7 +55,7 @@ class CisImage:
 
         return False
 
-    def convert_bw(self):
+    def convert_bw(self) -> None:
         """
         Some cis files are scanned with a black roll background, so convert it to white
         """
