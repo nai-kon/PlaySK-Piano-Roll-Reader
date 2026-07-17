@@ -9,6 +9,7 @@ import certifi
 import wx
 from wx.adv import HyperlinkCtrl
 
+from color import Color
 from config import ConfigMng
 from version import APP_TITLE, APP_VERSION, COPY_RIGHT
 
@@ -25,6 +26,14 @@ class BaseButton(wx.Button):
     # Base class that propagates key events to parent
     def __init__(self, *args, **kwargs) -> None:
         wx.Button.__init__(self, *args, **kwargs)
+        self.Bind(wx.EVT_KEY_DOWN, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
+        self.Bind(wx.EVT_KEY_UP, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
+
+
+class BaseToggleButton(wx.ToggleButton):
+    # Base class that propagates key events to parent
+    def __init__(self, *args, **kwargs) -> None:
+        wx.ToggleButton.__init__(self, *args, **kwargs)
         self.Bind(wx.EVT_KEY_DOWN, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
         self.Bind(wx.EVT_KEY_UP, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
 
@@ -48,8 +57,8 @@ class BaseCheckbox(wx.CheckBox):
 class WelcomeMsg(BasePanel):
     def __init__(self, parent, pos=(0, 0), size=(800, 600)):
         BasePanel.__init__(self, parent, wx.ID_ANY, pos, parent.get_dipscaled_size(wx.Size(size)))
-
-        self.SetForegroundColour("white")
+        self.SetForegroundColour(Color.welcome_text())
+        self.SetBackgroundColour(Color.welcome_bg())
 
         dummy = wx.StaticText(self, wx.ID_ANY, "")
         msg1 = wx.StaticText(self, wx.ID_ANY, "SELECT or DROP FILE here!")
@@ -82,7 +91,6 @@ class WelcomeMsg(BasePanel):
         sizer.Add(lnk2, 0, wx.ALIGN_CENTER)
         sizer.Add(msg5, 0, wx.ALIGN_CENTER)
         self.SetSizer(sizer)
-        self.SetBackgroundColour("#555555")
         self.Layout()
 
     def start_worker(self) -> None:

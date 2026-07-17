@@ -68,6 +68,15 @@ class AppMain(wx.App):
             wx.CallAfter(self.GetTopWindow().load_file, path=path)
 
 
+def SetAppearance(app: wx.App) -> None:
+    from config import ConfigMng
+    conf = ConfigMng()
+    if conf.theme == "Dark":
+        app.SetAppearance(app.Appearance.Dark)
+    else:
+        app.SetAppearance(app.Appearance.Light)
+
+
 if __name__ == "__main__":
     pf = platform.system()
     if pf == "Windows":
@@ -89,6 +98,8 @@ if __name__ == "__main__":
     if not os.path.exists("playsk_config/"):
         wx.MessageBox("config directory is not found. Exit software.", "Config error")
         exit(-1)
+
+    SetAppearance(app)
 
     from main_ui import MainFrame
     frame = MainFrame()

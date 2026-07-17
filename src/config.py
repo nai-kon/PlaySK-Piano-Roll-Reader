@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -10,6 +11,7 @@ class ConfigMng(BaseModel):
     last_tracker: str = ""
     update_notified_version: str = ""
     window_scale: str = "100%"
+    theme: Literal["Light", "Dark"] = "Dark"
 
     def __init__(self):
         try:

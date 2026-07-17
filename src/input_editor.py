@@ -126,14 +126,14 @@ class SetEdgePane(wx.Panel):
         # guide text
         dc.SetFont(self.guide_font)
         dc.SetBackgroundMode(wx.BRUSHSTYLE_SOLID)
-        dc.SetTextBackground((255, 255, 255))
-        dc.SetTextForeground((180, 0, 0))
+        dc.SetTextBackground("#ffffff")
+        dc.SetTextForeground("#b40000")
         dc.DrawText("← " + self.guide_base_text, self.left_margin_x, self.frame_h // 3)
         text_len = dc.GetFullMultiLineTextExtent(self.guide_base_text + " →", self.guide_font)
         dc.DrawText(self.guide_base_text + " →", self.right_margin_x - text_len[0], self.frame_h // 2)
 
         # guide line
-        dc.SetPen(wx.Pen((180, 0, 0), self.guild_line_w, wx.SOLID))
+        dc.SetPen(wx.Pen("#b40000", self.guild_line_w, wx.SOLID))
         dc.DrawLine(self.left_margin_x, 0, self.left_margin_x, self.frame_h)
         dc.DrawLine(self.right_margin_x, 0, self.right_margin_x, self.frame_h)
 
