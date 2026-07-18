@@ -6,19 +6,19 @@ class RecordoA(BasePlayer):
         super().__init__(confpath, midiobj)
 
         # hammer rail halfway between next level.
-        self.pp_with_hammer_rail = 7
+        self.pp_with_hammer_rail = 7.0
         self.intensities = [
-            8,      # no port
-            9,      # port1
-            10,     # port2
+            8.0,      # no port
+            9.0,      # port1
+            10.0,     # port2
             11.5,   # port1-2
-            13,     # port3
+            13.0,     # port3
             14.5,   # port3-1
-            16,     # port3-2
-            18,     # port3-2-1
+            16.0,     # port3-2
+            18.0,     # port3-2-1
             20.5,   # port4
-            27,     # port4-1
-            35,     # port4-2 above
+            27.0,     # port4-1
+            35.0,     # port4-2 above
         ]
 
         self.delay_ratio = 0.15

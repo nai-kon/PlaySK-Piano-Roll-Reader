@@ -8,10 +8,10 @@ class AmpicoB(BasePlayer):
         super().__init__(confpath, midiobj)
 
         self.amp_lock_range = [0, 1.0]
-        self.amp_cres_pos = 0
+        self.amp_cres_pos = 0.0
         self.slow_cres_rate = 1 / 4  # 4sec
         self.fast_cres_rate = 1 / 0.8  # 0.8sec
-        self.pre_time = None
+        self.pre_time = -1.0
 
         self.bass_intensity_lock = [False, False, False]  # 2->4->6
         self.treble_intensity_lock = [False, False, False]  # 2->4->6
@@ -49,7 +49,7 @@ class AmpicoB(BasePlayer):
         self.bass_sub_intensity_lock = False
         self.treble_sub_intensity_lock = False
         self.amp_lock_range = [0, 1.0]
-        self.amp_cres_pos = 0
+        self.amp_cres_pos = 0.0
         self.bass_vacuum = self.treble_vacuum = self.intensity_range["none"][0]
         self.bass_vacuum_pre = self.treble_vacuum_pre = self.intensity_range["none"][0]
 
@@ -87,7 +87,7 @@ class AmpicoB(BasePlayer):
         self.calc_expression()
 
     def calc_crescendo(self, curtime: float) -> None:
-        if self.pre_time is None:
+        if self.pre_time == -1.0:
             self.pre_time = curtime
         delta_time = curtime - self.pre_time
 

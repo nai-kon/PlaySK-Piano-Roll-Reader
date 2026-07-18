@@ -14,7 +14,7 @@ class WelteT100(BasePlayer):
         self.max_vacuum = 35    # in W.G
         self.cres_pos_to_vacuum = np.poly1d(np.polyfit((0, self.mf_hook_pos, 1), (self.min_vacuum, 20, self.max_vacuum), 2))
 
-        self.bass_cres_pos = 0
+        self.bass_cres_pos = 0.0
         self.bass_cres_state = "slow_decres"
         self.bass_mf_hook = False
         self.bass_slow_cres_rate = self.mf_hook_pos / 2.38   # min to mf takes 2.38sec
@@ -22,7 +22,7 @@ class WelteT100(BasePlayer):
         self.bass_fast_cres_rate = 1 / 0.7
         self.bass_fast_decres_rate = 1 / 0.15
 
-        self.treble_cres_pos = 0
+        self.treble_cres_pos = 0.0
         self.treble_cres_state = "slow_decres"
         self.treble_mf_hook = False
         self.treble_slow_cres_rate = self.mf_hook_pos / 2.38   # min to mf takes 2.38sec
@@ -30,16 +30,16 @@ class WelteT100(BasePlayer):
         self.treble_fast_cres_rate = 1 / 0.7
         self.treble_fast_decres_rate = 1 / 0.15
 
-        self.pre_time = None
+        self.pre_time = -1.0
         self.bass_vacuum = self.min_vacuum
         self.treble_vacuum = self.min_vacuum
 
     def emulate_off(self) -> None:
         super().emulate_off()
-        self.bass_cres_pos = 0
+        self.bass_cres_pos = 0.0
         self.bass_cres_state = "slow_decres"
         self.bass_mf_hook = False
-        self.treble_cres_pos = 0
+        self.treble_cres_pos = 0.0
         self.treble_cres_state = "slow_decres"
         self.treble_mf_hook = False
         self.bass_vacuum = self.min_vacuum
@@ -72,7 +72,7 @@ class WelteT100(BasePlayer):
         self.calc_expression()
 
     def calc_crescendo(self, curtime: float) -> None:
-        if self.pre_time is None:
+        if self.pre_time == -1.0:
             self.pre_time = curtime
         delta_time = curtime - self.pre_time
 
@@ -86,8 +86,8 @@ class WelteT100(BasePlayer):
         #             self.treble_cres_pos -= 0.004
 
         # bass
-        cres_pos_min = 0
-        cres_pos_max = 1
+        cres_pos_min = 0.0
+        cres_pos_max = 1.0
         if self.bass_mf_hook:
             if self.bass_cres_pos < self.mf_hook_pos:
                 cres_pos_max = self.mf_hook_pos - 0.01
@@ -110,8 +110,8 @@ class WelteT100(BasePlayer):
         self.bass_cres_pos = min(self.bass_cres_pos, cres_pos_max)
 
         # treble
-        cres_pos_min = 0
-        cres_pos_max = 1
+        cres_pos_min = 0.0
+        cres_pos_max = 1.0
         if self.treble_mf_hook:
             if self.treble_cres_pos < self.mf_hook_pos:
                 cres_pos_max = self.mf_hook_pos - 0.01
