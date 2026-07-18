@@ -4,7 +4,7 @@ from .base_player import BasePlayer
 
 
 class AmpicoA(BasePlayer):
-    def __init__(self, confpath, midiobj):
+    def __init__(self, confpath, midiobj) -> None:
         super().__init__(confpath, midiobj)
 
         self.amplifier_pos = 0
@@ -48,7 +48,7 @@ class AmpicoA(BasePlayer):
 
         self.delay_ratio = 0.6
 
-    def emulate_off(self):
+    def emulate_off(self) -> None:
         super().emulate_off()
         self.bass_intensity_lock = [False, False, False]
         self.treble_intensity_lock = [False, False, False]
@@ -58,7 +58,7 @@ class AmpicoA(BasePlayer):
         self.bass_vacuum = self.treble_vacuum = self.min_vacuum
         self.bass_vacuum_pre = self.treble_vacuum_pre = self.min_vacuum
 
-    def emulate_expression(self, curtime):
+    def emulate_expression(self, curtime: float) -> None:
         if self.pre_time is None:
             self.pre_time = curtime
         delta_time = curtime - self.pre_time
@@ -88,7 +88,7 @@ class AmpicoA(BasePlayer):
         self.calc_expression(delta_time)
         self.pre_time = curtime
 
-    def calc_amplifier(self, delta_time):
+    def calc_amplifier(self, delta_time: float) -> None:
         # intensity triggers amplifier
         target_amp_pos = 0
         if self.bass_intensity_lock[1] and self.bass_intensity_lock[2] or \
@@ -122,8 +122,8 @@ class AmpicoA(BasePlayer):
         self.amplifier_pos = max(self.amplifier_pos, 0)
         self.amplifier_pos = min(self.amplifier_pos, 1)
 
-    def calc_expression(self, delta_time):
-        def calc_vacuum(intensity_lock):
+    def calc_expression(self, delta_time: float) -> None:
+        def calc_vacuum(intensity_lock: list[bool]) -> tuple[float, str]:
             opcode = ""
             if not any(intensity_lock):
                 opcode = "none"
@@ -173,7 +173,7 @@ class AmpicoA(BasePlayer):
         self.bass_vacuum_pre = self.bass_vacuum
         self.treble_vacuum_pre = self.treble_vacuum
 
-    def draw_tracker(self, wxdc: wx.PaintDC):
+    def draw_tracker(self, wxdc: wx.PaintDC) -> None:
         super().draw_tracker(wxdc)
         # overdraw lock & cancel holes
         for idx in range(3):

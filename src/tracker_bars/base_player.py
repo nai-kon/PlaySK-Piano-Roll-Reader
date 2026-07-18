@@ -8,7 +8,7 @@ from midi_controller import MidiWrap
 
 
 class TrackerHoles:
-    def __init__(self, conf):
+    def __init__(self, conf) -> None:
         self.xoffset = 0
         holes = conf["tracker_holes"]
         self.is_dark_hole = holes["is_dark_hole"]
@@ -58,7 +58,7 @@ class TrackerHoles:
             for pos in v["pos"]:
                 self.draw_rects.append((pos[0], pos[1], k[0] + 1, k[1] + 1))
 
-    def set_frame(self, frame, xoffset):
+    def set_frame(self, frame, xoffset: int) -> None:
         self.xoffset = xoffset
 
         # calc hole open ratio

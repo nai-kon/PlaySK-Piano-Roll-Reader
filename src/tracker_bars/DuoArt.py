@@ -4,7 +4,7 @@ from .base_player import BasePlayer
 
 
 class DuoArt(BasePlayer):
-    def __init__(self, confpath, midiobj):
+    def __init__(self, confpath, midiobj) -> None:
         super().__init__(confpath, midiobj)
 
         self.pre_time = None
@@ -28,7 +28,7 @@ class DuoArt(BasePlayer):
         self.accomp_delay_que = deque([self.accomp_min] * 10, maxlen=10)
         self.theme_delay_que = deque([self.theme_min] * 10, maxlen=10)
 
-    def emulate_off(self):
+    def emulate_off(self) -> None:
         super().emulate_off()
         self.accomp_poss = [0, 0, 0, 0]
         self.theme_poss = [0, 0, 0, 0]
@@ -39,7 +39,7 @@ class DuoArt(BasePlayer):
         self.accomp_delay_que = deque([self.accomp_min] * 10, maxlen=10)
         self.theme_delay_que = deque([self.theme_min] * 10, maxlen=10)
 
-    def emulate_expression(self, curtime):
+    def emulate_expression(self, curtime: float) -> None:
         # accomp 1->2->4->8
         accomp_pos = sum([v * b for v, b in zip((1, 2, 4, 8), self.holes["accomp"]["is_open"])])
         accomp_vacuum = self.accomp_min + (self.accomp_max - self.accomp_min) * (accomp_pos / 15)

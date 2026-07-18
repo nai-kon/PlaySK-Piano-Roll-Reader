@@ -5,7 +5,7 @@ from .base_player import BasePlayer
 
 
 class WelteT100(BasePlayer):
-    def __init__(self, confpath, midiobj):
+    def __init__(self, confpath, midiobj) -> None:
         super().__init__(confpath, midiobj)
 
         self.mf_hook_pos = 0.47
@@ -34,7 +34,7 @@ class WelteT100(BasePlayer):
         self.bass_vacuum = self.min_vacuum
         self.treble_vacuum = self.min_vacuum
 
-    def emulate_off(self):
+    def emulate_off(self) -> None:
         super().emulate_off()
         self.bass_cres_pos = 0
         self.bass_cres_state = "slow_decres"
@@ -45,7 +45,7 @@ class WelteT100(BasePlayer):
         self.bass_vacuum = self.min_vacuum
         self.treble_vacuum = self.min_vacuum
 
-    def emulate_expression(self, curtime):
+    def emulate_expression(self, curtime: float) -> None:
         # Check bass expression holes
         if self.holes["bass_mf_on"]["to_open"]:
             self.bass_mf_hook = True
@@ -71,7 +71,7 @@ class WelteT100(BasePlayer):
         self.calc_crescendo(curtime)
         self.calc_expression()
 
-    def calc_crescendo(self, curtime):
+    def calc_crescendo(self, curtime: float) -> None:
         if self.pre_time is None:
             self.pre_time = curtime
         delta_time = curtime - self.pre_time
@@ -135,10 +135,10 @@ class WelteT100(BasePlayer):
 
         self.pre_time = curtime
 
-    def calc_expression(self):
+    def calc_expression(self) -> None:
         self.bass_vacuum, self.treble_vacuum = self.cres_pos_to_vacuum((self.bass_cres_pos, self.treble_cres_pos))
 
-    def emulate_pedals(self):
+    def emulate_pedals(self) -> None:
         # sustain pedal
         if self.holes["sustain_on"]["is_open"]:
             self.midi.sustain_on()
@@ -153,7 +153,7 @@ class WelteT100(BasePlayer):
         elif self.holes["soft_off"]["is_open"]:
             self.midi.soft_off()
 
-    def draw_tracker(self, wxdc: wx.PaintDC):
+    def draw_tracker(self, wxdc: wx.PaintDC) -> None:
         # need override for drawing lock hole
         # self.holes["bass_mf_on"]["is_open"] = self.bass_mf_hook
         # self.holes["bass_intensity"]["is_open"][:] = self.bass_intensity_lock[:]

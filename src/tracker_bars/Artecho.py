@@ -5,7 +5,7 @@ from .base_player import BasePlayer
 
 
 class Artecho(BasePlayer):
-    def __init__(self, confpath, midiobj):
+    def __init__(self, confpath, midiobj) -> None:
         """
         The intensity vacuum is based on crescendo position like Ampico B.
         So each intensity has min/max vacuum range which is linked with crescendo position.
@@ -45,7 +45,7 @@ class Artecho(BasePlayer):
         self.bass_vacuum = self.treble_vacuum = self.intensity_range["none"][0]
         self.bass_vacuum_pre = self.treble_vacuum_pre = self.intensity_range["none"][0]
 
-    def calc_velocity(self):
+    def calc_velocity(self) -> tuple[int, int]:
         idx = np.digitize([self.bass_vacuum, self.treble_vacuum], bins=self.velocity_bins)
         bass_velocity, treble_velocity = self.velocity[0] + idx
         if self.bass_hammer_rail_lock:
@@ -55,7 +55,7 @@ class Artecho(BasePlayer):
 
         return bass_velocity, treble_velocity
 
-    def emulate_off(self):
+    def emulate_off(self) -> None:
         super().emulate_off()
         self.pianissimo_lock = False
         self.bass_intensity_lock = [False, False, False]
@@ -67,7 +67,7 @@ class Artecho(BasePlayer):
         self.bass_vacuum = self.treble_vacuum = self.intensity_range["none"][0]
         self.bass_vacuum_pre = self.treble_vacuum_pre = self.intensity_range["none"][0]
 
-    def emulate_pedals(self):
+    def emulate_pedals(self) -> None:
         # sustain pedal
         sustain = self.holes["sustain"]
         if sustain["to_open"]:
@@ -83,7 +83,7 @@ class Artecho(BasePlayer):
             self.treble_hammer_rail_lock = True
 
 
-    def emulate_expression(self, curtime):
+    def emulate_expression(self, curtime: float) -> None:
         # cancel operations
         if self.holes["bass_cancel"]["is_open"]:
             self.bass_intensity_lock = [False, False, False]
@@ -110,7 +110,7 @@ class Artecho(BasePlayer):
         self.calc_crescendo(curtime)
         self.calc_expression()
 
-    def calc_crescendo(self, curtime):
+    def calc_crescendo(self, curtime: float) -> None:
         if self.pre_time is None:
             self.pre_time = curtime
         delta_time = curtime - self.pre_time
@@ -133,8 +133,8 @@ class Artecho(BasePlayer):
         self.treble_cres_pos = min(1, self.treble_cres_pos)
 
 
-    def calc_expression(self):
-        def get_intensity_range(intensity_lock):
+    def calc_expression(self) -> None:
+        def get_intensity_range(intensity_lock: list[bool]) -> tuple[float, float]:
             opcode = ""
             if not any(intensity_lock):
                 opcode = "none"
@@ -165,7 +165,7 @@ class Artecho(BasePlayer):
         self.treble_vacuum_pre = self.treble_vacuum
 
 
-    def draw_tracker(self, wxdc: wx.PaintDC):
+    def draw_tracker(self, wxdc: wx.PaintDC) -> None:
         super().draw_tracker(wxdc)
 
         # overdraw lock & cancel holes

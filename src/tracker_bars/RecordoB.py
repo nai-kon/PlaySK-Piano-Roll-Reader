@@ -2,7 +2,7 @@ from .RecordoA import RecordoA
 
 
 class RecordoB(RecordoA):
-    def __init__(self, confpath, midiobj):
+    def __init__(self, confpath, midiobj) -> None:
         super().__init__(confpath, midiobj)
 
         # from Robert Billings's notebook  (US Music Co.)
@@ -16,7 +16,7 @@ class RecordoB(RecordoA):
         ]
 
 
-    def emulate_expression(self, curtime):
+    def emulate_expression(self, curtime: float) -> None:
         vac_lv = 0
         if self.holes["ff"]["is_open"]:
             vac_lv = 4

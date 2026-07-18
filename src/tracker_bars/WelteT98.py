@@ -2,7 +2,7 @@ from .WelteT100 import WelteT100
 
 
 class WelteT98(WelteT100):
-    def __init__(self, confpath, midiobj):
+    def __init__(self, confpath, midiobj) -> None:
         super().__init__(confpath, midiobj)
 
         self.bass_slow_cres_rate = self.mf_hook_pos / 2.45   # min to mf takes 2.5sec
@@ -18,7 +18,7 @@ class WelteT98(WelteT100):
         self.bass_vacuum = self.min_vacuum
         self.treble_vacuum = self.min_vacuum
 
-    def emulate_pedals(self):
+    def emulate_pedals(self) -> None:
         # sustain pedal
         sustain = self.holes["sustain"]
         if sustain["to_open"]:
@@ -35,7 +35,7 @@ class WelteT98(WelteT100):
         elif soft["to_close"]:
             self.midi.soft_off()
 
-    def emulate_expression(self, curtime):
+    def emulate_expression(self, curtime: float) -> None:
         # Check bass expression holes
         if self.holes["bass_mf"]["is_open"]:
             self.bass_mf_hook = True

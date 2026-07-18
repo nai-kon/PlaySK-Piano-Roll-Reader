@@ -4,7 +4,7 @@ from .base_player import BasePlayer
 
 
 class Themodist(BasePlayer):
-    def __init__(self, confpath, midiobj):
+    def __init__(self, confpath, midiobj) -> None:
         super().__init__(confpath, midiobj)
         with open(confpath, encoding="utf-8") as f:
             conf = json.load(f)
@@ -12,11 +12,11 @@ class Themodist(BasePlayer):
         self.accent_vacuum = conf["expression"]["accent"]
         self.bass_vacuum = self.treble_vacuum = self.base_vacuum
 
-    def emulate_off(self):
+    def emulate_off(self) -> None:
         super().emulate_off()
         self.bass_vacuum = self.treble_vacuum = self.base_vacuum
 
-    def emulate_expression(self, curtime):
+    def emulate_expression(self, curtime: float) -> None:
         self.bass_vacuum = self.treble_vacuum = self.base_vacuum
         if self.holes["bass_snakebite"]["is_open"]:
             self.bass_vacuum = self.accent_vacuum

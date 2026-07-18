@@ -21,14 +21,14 @@ class ArtrioAngelus(BasePlayer):
             0.9,
         ]
         self.leaker_multiply = 1.3
-        self.delay_ratio = 3  # 1 is no delay. larger value 
+        self.delay_ratio = 3  # 1 is no delay. larger value
         self.bass_vacuum = self.treble_vacuum = self.solo_base - 1
 
     def emulate_off(self):
         super().emulate_off()
         self.bass_vacuum = self.treble_vacuum = self.solo_base - 1
 
-    def emulate_expression(self, curtime):
+    def emulate_expression(self, curtime: float):
         solo_vacuum = self.solo_base + sum([v * b for v, b in zip(self.solo_adds, self.holes["solo"]["is_open"])])
         accomp_vaccum = solo_vacuum * math.prod([max(v, int(b)) for v, b in zip(self.accomp_multiply, self.holes["accomp"]["is_open"])])
         accomp_vaccum = max(accomp_vaccum, self.solo_base - 1)

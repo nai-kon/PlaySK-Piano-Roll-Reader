@@ -2,7 +2,7 @@ from .WelteT100 import WelteT100
 
 
 class WelteLicensee(WelteT100):
-    def __init__(self, confpath, midiobj):
+    def __init__(self, confpath, midiobj) -> None:
         super().__init__(confpath, midiobj)
 
         self.bass_slow_cres_rate = self.mf_hook_pos / 2.45   # min to mf takes 2.45sec
@@ -18,7 +18,7 @@ class WelteLicensee(WelteT100):
         self.bass_vacuum = self.min_vacuum
         self.treble_vacuum = self.min_vacuum
 
-    def emulate_pedals(self):
+    def emulate_pedals(self) -> None:
         # sustain pedal
         if self.holes["sustain_on"]["is_open"]:
             self.midi.sustain_on()
