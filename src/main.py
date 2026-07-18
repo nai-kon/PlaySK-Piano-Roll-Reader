@@ -41,15 +41,16 @@ class SingleInstWin:
         try:
             with socket.create_connection(("localhost", self.port), timeout=0.01) as sock:
                 if len(sys.argv) > 1:
+                    # send file path to exist app
                     sock.sendall(f"{self.message_path}{sys.argv[1]}".encode())
                 else:
+                    # notify that app is already opened
                     sock.sendall(self.message_notify.encode())
             print("The software is already exists.")
             return True
         except OSError:
             # app is not exists. run socket server as a daemon
-            th = threading.Thread(target=self.file_path_receiver, daemon=True)
-            th.start()
+            threading.Thread(target=self.file_path_receiver, daemon=True).start()
             return False
 
 

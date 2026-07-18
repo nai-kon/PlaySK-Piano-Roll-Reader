@@ -243,7 +243,7 @@ class NotifyUpdate:
                 "X-LastTracker": self.conf.last_tracker,
             })
             with urllib.request.urlopen(req, timeout=10, context=context) as res:
-                title = json.loads(res.read().decode("utf8")).get("name", None)
+                title = json.loads(res.read().decode("utf8")).get("name", "")
                 matched = re.findall(r"^Ver(\d.\d.\d)$", title)
                 ver = matched[0] if matched else None
 

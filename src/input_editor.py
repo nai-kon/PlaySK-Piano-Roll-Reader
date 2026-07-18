@@ -8,7 +8,7 @@ from cis_image import CisImage, ScannerType
 
 
 class ImgEditDlg(wx.Dialog):
-    def __init__(self, parent, cis: CisImage):
+    def __init__(self, parent, cis: CisImage) -> None:
         wx.Dialog.__init__(self, None, title="Adjust roll image")
         self.parent = parent
         self.cis = cis
@@ -38,7 +38,7 @@ class ImgEditDlg(wx.Dialog):
         convert_bw_btn.Bind(wx.EVT_BUTTON, self.convert_bw)
         save_btn.Bind(wx.EVT_BUTTON, self.save_img)
 
-    def convert_bw(self, event):
+    def convert_bw(self, event) -> None:
         # some cis scan has black background so convert it to white
         with wx.BusyCursor():
             self.cis.convert_bw()
@@ -57,7 +57,7 @@ class ImgEditDlg(wx.Dialog):
                 if not ret:
                     wx.MessageBox("Failed to save the image.", "Error")
 
-    def get_show_text(self):
+    def get_show_text(self) -> str:
         # get roll info text
         out = [f"Type: {self.cis.scanner_type.value}"]
         if self.cis.is_twin_array:
@@ -73,7 +73,7 @@ class ImgEditDlg(wx.Dialog):
 
         return "\n".join(out)
 
-    def get_edge_pos(self):
+    def get_edge_pos(self) -> tuple[int, int]:
         return self.panel.get_edge_pos()
 
     def get_dipscaled_size(self, size) -> int | wx.Size:
@@ -84,7 +84,7 @@ class ImgEditDlg(wx.Dialog):
 
 
 class SetEdgePane(wx.Panel):
-    def __init__(self, parent, img: np.ndarray):
+    def __init__(self, parent, img: np.ndarray) -> None:
         self.frame_w = parent.get_dipscaled_size(950)
         self.frame_h = wx.Display().GetClientArea().height  # display height
         wx.Panel.__init__(self, parent, size=(self.frame_w, self.frame_h))
@@ -108,7 +108,7 @@ class SetEdgePane(wx.Panel):
         self.Bind(wx.EVT_MOUSEWHEEL, self.on_scroll)
         self.Bind(wx.EVT_MOTION, self.on_mouse)
 
-    def set_image(self, img: np.ndarray):
+    def set_image(self, img: np.ndarray) -> None:
         org_img_h, self.org_img_w = img.shape[:2]
         resized_h = org_img_h * self.frame_w // self.org_img_w
         img = cv2.resize(img, dsize=(self.frame_w, resized_h))
@@ -119,7 +119,7 @@ class SetEdgePane(wx.Panel):
         self.img_h = self.img.GetHeight()
         self.scroll_y1 = self.img_h // 2
 
-    def on_paint(self, event):
+    def on_paint(self, event) -> None:
         dc = wx.PaintDC(self)
         dc.DrawBitmap(self.img, 0, self.scroll_y1 * -1)
 
@@ -137,12 +137,12 @@ class SetEdgePane(wx.Panel):
         dc.DrawLine(self.left_margin_x, 0, self.left_margin_x, self.frame_h)
         dc.DrawLine(self.right_margin_x, 0, self.right_margin_x, self.frame_h)
 
-    def on_scroll(self, event):
+    def on_scroll(self, event) -> None:
         direction = -1 if event.GetWheelRotation() > 0 else 1
         self.scroll_y1 = max(min(self.scroll_y1 + self.scroll_size * direction, self.img_h - self.frame_h), 0)
         self.Refresh()
 
-    def on_mouse(self, event):
+    def on_mouse(self, event) -> None:
         pos = event.GetPosition()
         left_active = False
         right_active = False
@@ -163,7 +163,7 @@ class SetEdgePane(wx.Panel):
             self.right_margin_x = pos.x
             self.Refresh()
 
-    def get_edge_pos(self):
+    def get_edge_pos(self) -> tuple[int, int]:
         left = int(self.left_margin_x * self.org_img_w / self.frame_w)
         right = int(self.right_margin_x * self.org_img_w / self.frame_w)
         return left, right
