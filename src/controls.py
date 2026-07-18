@@ -85,6 +85,7 @@ class WelcomeMsg(BasePanel):
         lnk2.SetFont(wx.Font(text_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
         msg5 = wx.StaticText(self, wx.ID_ANY, COPY_RIGHT)
         msg5.SetFont(wx.Font(text_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
+        dummy2 = wx.StaticText(self, wx.ID_ANY, "")
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(dummy, 4, wx.ALIGN_CENTER)
@@ -95,6 +96,7 @@ class WelcomeMsg(BasePanel):
         sizer.Add(msg4, 0, wx.ALIGN_CENTER)
         sizer.Add(lnk2, 0, wx.ALIGN_CENTER)
         sizer.Add(msg5, 0, wx.ALIGN_CENTER)
+        sizer.Add(dummy2, 0, wx.ALIGN_CENTER)
         self.SetSizer(sizer)
         self.Layout()
 

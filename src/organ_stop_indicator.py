@@ -1,5 +1,4 @@
 import math
-import platform
 
 import wx
 import wx.grid
@@ -11,8 +10,9 @@ from controls import BasePanel
 class OrganStopIndicator(BasePanel):
     def __init__(self, parent) -> None:
         BasePanel.__init__(self, parent, wx.ID_ANY)
-        self.data = {}
+        self.data: dict[str, dict[str, dict[str, int]]] = {}
         self.grid = wx.grid.Grid(self)
+        self.grid.SetDefaultCellBackgroundColour(Color.organ_stop_off_bg())
         self.grid.EnableGridLines(False)
         # disable edit
         self.grid.EnableEditing(False)
@@ -25,8 +25,6 @@ class OrganStopIndicator(BasePanel):
         self.grid.EnableDragColSize(False)
         self.grid.EnableDragRowSize(False)
         self.grid.EnableDragGridSize(False)
-
-        self.grid.SetDefaultCellBackgroundColour(Color.organ_stop_off_bg())
 
     def init_stop(self, data: dict[str, dict[str, bool]]) -> None:
         if self.grid.GetNumberRows() > 0:
