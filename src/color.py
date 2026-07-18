@@ -77,7 +77,7 @@ class Color:
 
     @staticmethod
     def manual_ctrl_bg() -> str:
-        return "#333333" if Color.cur_theme() == "Dark" else "#eeeeee"
+        return Color.main_bg()
 
     @staticmethod
     def manual_ctrl_key() -> str:

@@ -239,10 +239,10 @@ class InputVideo(BasePanel):
 
         # draw background
         dc.SetBrush(wx.Brush(self.manual_ctrl_bg_color))
-        # dc.SetPen(wx.Pen(self.manual_ctrl_bg_color))
+        dc.SetPen(wx.Pen(self.manual_ctrl_bg_color))
         base_x, base_y = 0, 4 * self.disp_h // 5
         base_h = self.disp_h // 5
-        dc.DrawRectangle((base_x, base_y), (self.disp_w, self.disp_h))
+        dc.DrawRectangle((base_x, base_y), (self.disp_w + 1, self.disp_h + 1))
 
         # guidance
         dc.SetTextForeground(self.manual_ctrl_text_color)

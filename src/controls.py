@@ -42,14 +42,6 @@ class BaseToggleButton(wx.ToggleButton):
         self.Bind(wx.EVT_KEY_UP, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
 
 
-class BaseToggleButton(wx.ToggleButton):
-    # Base class that propagates key events to parent
-    def __init__(self, *args, **kwargs) -> None:
-        wx.ToggleButton.__init__(self, *args, **kwargs)
-        self.Bind(wx.EVT_KEY_DOWN, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
-        self.Bind(wx.EVT_KEY_UP, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
-
-
 class BaseSlider(wx.Slider):
     # Base class that propagates key events to parent
     def __init__(self, *args, **kwargs) -> None:
