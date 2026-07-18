@@ -158,18 +158,23 @@ class MainFrame(wx.Frame):
         return int(size * self.conf.window_scale_ratio)
 
     def create_status_bar(self):
-        self.sbar = self.CreateStatusBar(12)
+        self.sbar = self.CreateStatusBar(9)
         _, h = self.sbar.Size[:2]
         midiout_caption = "MIDI Out "
-        tracker_caption = "Tracker Bar "
+        tracker_caption = "    Tracker Bar "
         theme_caption = "Theme "
-        wsize_caption = "Size "
+        wsize_caption = "    Size "
+        margin_str = "____"
         midiout_caption_w = wx.Window.GetTextExtent(self, midiout_caption).Width
+        midiout_max_w = wx.Window.GetTextExtent(self, "a" * 32 + margin_str).Width
         tracker_caption_w = wx.Window.GetTextExtent(self, tracker_caption).Width
+        tracker_max_w = wx.Window.GetTextExtent(self, max(self.player_mng.player_list, key=len) + margin_str).Width
         theme_caption_w = wx.Window.GetTextExtent(self, theme_caption).Width
+        theme_max_w = wx.Window.GetTextExtent(self, "Light" + margin_str).Width
         wsize_caption_w = wx.Window.GetTextExtent(self, wsize_caption).Width
+        wsize_max_w = wx.Window.GetTextExtent(self, "000%" + margin_str).Width
 
-        self.sbar.SetStatusWidths([midiout_caption_w, -5, -1, tracker_caption_w, -4, -1, -3, theme_caption_w, -1, -1, wsize_caption_w, -1])
+        self.sbar.SetStatusWidths([midiout_caption_w, midiout_max_w, tracker_caption_w, tracker_max_w, -1, theme_caption_w, theme_max_w, wsize_caption_w, wsize_max_w])
 
         # midi port
         self.sbar.SetStatusText(midiout_caption, 0)
@@ -183,9 +188,9 @@ class MainFrame(wx.Frame):
         self.change_midi_port()  # call manually for init
 
         # tracker bar
-        self.sbar.SetStatusText(tracker_caption, 3)
+        self.sbar.SetStatusText(tracker_caption, 2)
         players = self.player_mng.player_list
-        rect = self.sbar.GetFieldRect(4)
+        rect = self.sbar.GetFieldRect(3)
         self.player_sel = wx.Choice(self.sbar, choices=players, size=(rect.width, h))
         self.player_sel.Bind(wx.EVT_CHOICE, self.change_player)
         self.player_sel.SetPosition((rect.x, 0))
@@ -194,8 +199,8 @@ class MainFrame(wx.Frame):
         self.change_player()  # call manually for init
 
         # Theme dark/light
-        self.sbar.SetStatusText(theme_caption, 7)
-        rect = self.sbar.GetFieldRect(8)
+        self.sbar.SetStatusText(theme_caption, 5)
+        rect = self.sbar.GetFieldRect(6)
         themes = ["Dark", "Light"]
         self.theme_sel = wx.Choice(self.sbar, choices=themes, size=(rect.width, h))
         self.theme_sel.Bind(wx.EVT_CHOICE, self.change_theme)
@@ -204,7 +209,7 @@ class MainFrame(wx.Frame):
         self.theme_sel.SetSelection(last_sel)
 
         # window scale
-        self.sbar.SetStatusText(wsize_caption, 10)
+        self.sbar.SetStatusText(wsize_caption, 7)
         # window scale list
         client_area = wx.Display().GetClientArea()
         cur_w, cur_h = self.GetSize()
@@ -213,7 +218,7 @@ class MainFrame(wx.Frame):
         scale_lim = min(height_scale_lim, width_scale_lim, 300)  # Max300%
         scales = [f"{v}%" for v in range(100, int(scale_lim + 1), 5)]
 
-        rect = self.sbar.GetFieldRect(11)
+        rect = self.sbar.GetFieldRect(8)
         self.scale_sel = wx.Choice(self.sbar, choices=scales, size=(rect.width, h))
         self.scale_sel.Bind(wx.EVT_CHOICE, self.change_scale)
         self.scale_sel.SetPosition((rect.x, 0))
@@ -221,7 +226,7 @@ class MainFrame(wx.Frame):
         self.scale_sel.SetSelection(last_sel)
 
     def post_status_msg(self, msg: str):
-        wx.CallAfter(self.sbar.SetStatusText, text=msg, i=6)
+        wx.CallAfter(self.sbar.SetStatusText, text="   " + msg, i=4)
 
     def on_resize(self, event):
         # selection of status bar needs manually re-position
@@ -229,13 +234,13 @@ class MainFrame(wx.Frame):
         rect = self.sbar.GetFieldRect(1)
         self.port_sel.SetPosition((rect.x, 0))
         # tracker bar sel
-        rect = self.sbar.GetFieldRect(4)
+        rect = self.sbar.GetFieldRect(3)
         self.player_sel.SetPosition((rect.x, 0))
         # theme scale sel
-        rect = self.sbar.GetFieldRect(8)
+        rect = self.sbar.GetFieldRect(6)
         self.theme_sel.SetPosition((rect.x, 0))
         # windows scale sel
-        rect = self.sbar.GetFieldRect(11)
+        rect = self.sbar.GetFieldRect(8)
         self.scale_sel.SetPosition((rect.x, 0))
 
         event.Skip()
