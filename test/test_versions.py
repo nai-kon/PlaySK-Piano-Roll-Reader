@@ -1,17 +1,12 @@
 import datetime
+import json
 import re
-
 import tomllib
 
 from src.version import APP_VERSION, COPY_RIGHT
 
 
 def test_versions():
-    # check APP_VERSION is same to branch_name
-    # branch_name = subprocess.run(["git", "branch", "--show-current"], encoding="utf-8", stdout=subprocess.PIPE)
-    # branch_name = branch_name.stdout.strip().strip("Ver")
-    # assert branch_name == APP_VERSION
-
     # check copyright year
     cur_yyyy = datetime.date.today().year
     matched = re.findall(r"-(\d{4})", COPY_RIGHT, flags=re.MULTILINE)
@@ -53,3 +48,8 @@ def test_versions():
         data = tomllib.load(f)
     version = data["project"]["version"]
     assert version == APP_VERSION
+
+    # check config.json
+    with open("src/playsk_config/config.json", encoding="utf-8") as f:
+        config = json.load(f)
+    assert config["update_notified_version"] == APP_VERSION

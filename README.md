@@ -15,7 +15,7 @@ Currently, 9 virtual tracker bars are available.
 - Philipps Duca (no expression. experimental)
 - Recordo version A / B
 - Artecho
-- Artrio Angelus
+- Artrio Angelus (beta)
 - Themodist
     - `Themodist e-Valve` supports e-valve midi note output. (18 for sustain, 19 for bass snakebite, 109 for treble snakebite)
 
