@@ -18,6 +18,7 @@ class BasePanel(wx.Panel):
     # Base class that propagates key events to parent
     def __init__(self, *args, **kwargs) -> None:
         wx.Panel.__init__(self, *args, **kwargs)
+        self.SetBackgroundColour(Color.main_bg())
         self.Bind(wx.EVT_KEY_DOWN, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
         self.Bind(wx.EVT_KEY_UP, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
 
@@ -26,6 +27,7 @@ class BaseButton(wx.Button):
     # Base class that propagates key events to parent
     def __init__(self, *args, **kwargs) -> None:
         wx.Button.__init__(self, *args, **kwargs)
+        self.SetBackgroundColour(Color.main_bg())
         self.Bind(wx.EVT_KEY_DOWN, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
         self.Bind(wx.EVT_KEY_UP, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
 
@@ -34,6 +36,7 @@ class BaseToggleButton(wx.ToggleButton):
     # Base class that propagates key events to parent
     def __init__(self, *args, **kwargs) -> None:
         wx.ToggleButton.__init__(self, *args, **kwargs)
+        self.SetBackgroundColour(Color.main_bg())
         self.Bind(wx.EVT_KEY_DOWN, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
         self.Bind(wx.EVT_KEY_UP, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
 
@@ -42,6 +45,7 @@ class BaseSlider(wx.Slider):
     # Base class that propagates key events to parent
     def __init__(self, *args, **kwargs) -> None:
         wx.Slider.__init__(self, *args, **kwargs)
+        self.SetBackgroundColour(Color.main_bg())
         self.Bind(wx.EVT_KEY_DOWN, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
         self.Bind(wx.EVT_KEY_UP, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
 
@@ -50,6 +54,7 @@ class BaseCheckbox(wx.CheckBox):
     # Base class that propagates key events to parent
     def __init__(self, *args, **kwargs) -> None:
         wx.CheckBox.__init__(self, *args, **kwargs)
+        self.SetBackgroundColour(Color.main_bg())
         self.Bind(wx.EVT_KEY_DOWN, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
         self.Bind(wx.EVT_KEY_UP, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
 
