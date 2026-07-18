@@ -2,7 +2,7 @@
 
 Optically reading a piano roll image, emulates expression and output midi signal in real-time.
 
-![Overall System](./assets/Overall_System.webp)
+![Overall System](./assets/Overall_System.jpg)
 
 The "Virtual Tracker Bar" optically picks up roll holes then emulates note, pedal and expression code. The expression code is decoded to vacuum level (in inches of water) in real-time, then convert to MIDI velocity.
 
@@ -19,7 +19,9 @@ Currently, 9 virtual tracker bars are available.
 - Themodist
     - `Themodist e-Valve` supports e-valve midi note output. (18 for sustain, 19 for bass snakebite, 109 for treble snakebite)
 
-Support image formats are `.CIS`, `.jpg`, `.tif`, `.png`, `.bmp`. The `.CIS` supports various scanners such as stepper, wheel/shaft encoder, bi-color, twin-array.
+Support image formats are `.CIS`, `.jpg`, `.tif`, `.png`, `.bmp`. The `.CIS` supports various scanners such as stepper, wheel/shaft encoder, bi-color, twin-array.  
+[Also, There is software that converts MIDI files into piano roll images](https://github.com/nai-kon/PlaySK-Midi-PianoRoll-Image-Converter). This allows you to play e-roll MIDI files on PlaySK.
+
 
 ## Demo
 

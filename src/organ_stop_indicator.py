@@ -1,9 +1,9 @@
 import math
-import platform
 
 import wx
 import wx.grid
 
+from color import Color
 from controls import BasePanel
 
 
@@ -12,6 +12,7 @@ class OrganStopIndicator(BasePanel):
         BasePanel.__init__(self, parent, wx.ID_ANY)
         self.data: dict[str, dict[str, dict[str, int]]] = {}
         self.grid = wx.grid.Grid(self)
+        self.grid.SetDefaultCellBackgroundColour(Color.organ_stop_off_bg())
         self.grid.EnableGridLines(False)
         # disable edit
         self.grid.EnableEditing(False)
@@ -24,12 +25,6 @@ class OrganStopIndicator(BasePanel):
         self.grid.EnableDragColSize(False)
         self.grid.EnableDragRowSize(False)
         self.grid.EnableDragGridSize(False)
-
-        self.cell_color_off = "#303030"
-        self.cell_color_on = "#f6b26b"
-        self.text_color_off = "white"
-        self.text_color_on = "black"
-        self.grid.SetDefaultCellBackgroundColour(self.cell_color_off)
 
     def init_stop(self, data: dict[str, dict[str, bool]]) -> None:
         if self.grid.GetNumberRows() > 0:
@@ -54,20 +49,12 @@ class OrganStopIndicator(BasePanel):
         # create grid
         self.grid.CreateGrid(cur_row, cols)
 
-        # set header color
-        if platform.system() == "Windows":
-            header_bg_color = "#AAAAAA"
-        elif wx.SystemSettings.GetAppearance().IsDark():
-            header_bg_color = "#362927"
-        else:
-            header_bg_color = "#F3ECEB"
-
         # set cells
         cur_row = 0
         for part in data:
             # header
             self.grid.SetCellValue(cur_row, 0, part)
-            self.grid.SetCellBackgroundColour(cur_row, 0, header_bg_color)
+            self.grid.SetCellBackgroundColour(cur_row, 0, Color.organ_stop_header())
             self.grid.SetCellAlignment(cur_row, 0, wx.ALIGN_LEFT, wx.ALIGN_BOTTOM)
             self.grid.SetCellSize(cur_row, 0, 1, 3)
 
@@ -94,11 +81,11 @@ class OrganStopIndicator(BasePanel):
 
                 row, col = pos["row"], pos["col"]
                 if is_on:
-                    self.grid.SetCellBackgroundColour(row, col, self.cell_color_on)
-                    self.grid.SetCellTextColour(row, col, self.text_color_on)
+                    self.grid.SetCellBackgroundColour(row, col, Color.organ_stop_on_bg())
+                    self.grid.SetCellTextColour(row, col, Color.organ_stop_on_text())
                 else:
-                    self.grid.SetCellBackgroundColour(row, col, self.cell_color_off)
-                    self.grid.SetCellTextColour(row, col, self.text_color_off)
+                    self.grid.SetCellBackgroundColour(row, col, Color.organ_stop_off_bg())
+                    self.grid.SetCellTextColour(row, col, Color.organ_stop_off_text())
 
         self.Refresh()
 

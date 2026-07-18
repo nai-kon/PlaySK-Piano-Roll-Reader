@@ -12,6 +12,7 @@ import numpy as np
 import wx
 
 from cis_image import CisImage
+from color import Color
 from controls import BasePanel
 from input_editor import ImgEditDlg
 
@@ -142,6 +143,14 @@ class InputVideo(BasePanel):
 
         self.repeat_btn_pos = (0, 0, 0, 0)
         self.play_btn_focused = False
+        self.play_btn_color = Color.play_btn()
+        self.play_btn_color_focused = Color.play_btn_focused()
+        self.repeat_btn_color = Color.repeat_btn()
+        self.repeat_btn_color_focused = Color.repeat_btn_focused()
+        self.manual_ctrl_bg_color = Color.manual_ctrl_bg()
+        self.manual_ctrl_text_color = Color.manual_ctrl_text()
+        self.manual_ctrl_key_color = Color.manual_ctrl_key()
+        self.manual_ctrl_key_pressed_color = Color.manual_ctrl_key_pressed()
         self.thread_enable = True
         self.thread_worker = threading.Thread(target=self.load_thread)
         self.worker_fps = 60
@@ -193,9 +202,7 @@ class InputVideo(BasePanel):
         dc = wx.GCDC(dc)  # for anti-aliasing
 
         # Play button outer
-        bg_color =  "#60a5fa"  # tailwind bg-blue-400 color
-        focused_color = "#3b82f6"  # tailwind bg-blue-500 color
-        color = focused_color if self.play_btn_focused else bg_color
+        color = self.play_btn_color_focused if self.play_btn_focused else self.play_btn_color
         dc.SetBrush(wx.Brush(color))
         dc.SetPen(wx.Pen(color))
         rad = self.disp_h // 14
@@ -203,9 +210,7 @@ class InputVideo(BasePanel):
         dc.DrawCircle(center_x, center_y, rad)
 
         # Repeat button outer
-        bg_color =  "#4ade80"  # tailwind bg-green-400 color
-        focused_color = "#22c55e"  # tailwind bg-green-500 color
-        color = focused_color if self.repeat_btn_focused else bg_color
+        color = self.repeat_btn_color_focused if self.repeat_btn_focused else self.repeat_btn_color
         dc.SetBrush(wx.Brush(color))
         dc.SetPen(wx.Pen(color))
         x1, y1 = center_x - rad * 4, center_y - rad
@@ -233,13 +238,14 @@ class InputVideo(BasePanel):
         dc = wx.GCDC(dc)  # for anti-aliasing
 
         # draw background
-        dc.SetBrush(wx.Brush("#eeeeee"))
-        dc.SetPen(wx.Pen("#eeeeee"))
+        dc.SetBrush(wx.Brush(self.manual_ctrl_bg_color))
+        # dc.SetPen(wx.Pen(self.manual_ctrl_bg_color))
         base_x, base_y = 0, 4 * self.disp_h // 5
         base_h = self.disp_h // 5
         dc.DrawRectangle((base_x, base_y), (self.disp_w, self.disp_h))
 
         # guidance
+        dc.SetTextForeground(self.manual_ctrl_text_color)
         txt = "Manual Expression Keyboard Controls"
         if "guid_font_size" not in self.draw_cache:
             guid_font_size = 10
@@ -279,7 +285,7 @@ class InputVideo(BasePanel):
         button_w, button_h = dc.GetTextExtent("AAAA")
         for key, title in zip(("A", "S"), ("Bass", "Treble")):
             # key outer
-            color = "#fca5a5" if self.expression_btn_pressed[ord(key)] else "#cccccc"
+            color = self.manual_ctrl_key_pressed_color if self.expression_btn_pressed[ord(key)] else self.manual_ctrl_key_color
             dc.SetBrush(wx.Brush(color))
             dc.SetPen(wx.Pen(color))
             dc.DrawRoundedRectangle(x1, y1, button_w, int(button_h * 1.1), radius=button_h // 5)
@@ -302,7 +308,7 @@ class InputVideo(BasePanel):
         x1 += txt_w + txt_h // 2
         for key, title in zip(("J", "K", "L"), ("Lv1", "Lv2", "Lv4")):
             # key outer
-            color = "#fca5a5" if self.expression_btn_pressed[ord(key)] else "#cccccc"
+            color = self.manual_ctrl_key_pressed_color if self.expression_btn_pressed[ord(key)] else self.manual_ctrl_key_color
             dc.SetBrush(wx.Brush(color))
             dc.SetPen(wx.Pen(color))
             dc.DrawRoundedRectangle(x1, y1, button_w, int(button_h * 1.1), radius=button_h // 5)
