@@ -2,7 +2,7 @@
 
 Optically reading a piano roll image, emulates expression and output midi signal in real-time.
 
-![Overall System](./assets/Overall_System.webp)
+![Overall System](./assets/Overall_System.jpg)
 
 The "Virtual Tracker Bar" optically picks up roll holes then emulates note, pedal and expression code. The expression code is decoded to vacuum level (in inches of water) in real-time, then convert to MIDI velocity.
 
