@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-ver: [3.11]
+        python-ver: [3.13]
         # macos-13 for Intel Mac, macos-14 for apple silicon Mac
         os: [windows-latest, macos-13, macos-14]
         include: 

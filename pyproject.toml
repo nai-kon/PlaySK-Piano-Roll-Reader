@@ -3,7 +3,7 @@ name = "PlaySK-Piano-Roll-Reader"
 version = "3.8.0"
 description = "Optically reading a piano roll image, emulates expression and output midi signal in real-time."
 authors = [{ name = "Katz Sasaki" }]
-requires-python = ">=3.13"
+requires-python = "==3.13.*"
 readme = "README.md"
 dependencies = [
     "wxPython @ https://github.com/wxWidgets/Phoenix/releases/download/4.3.0a16087%2B2cddce01/wxpython-4.3.0a16087+2cddce01-cp313-cp313-win_amd64.whl ; sys_platform == 'win32'",
