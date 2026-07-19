@@ -19,18 +19,17 @@ jobs:
       fail-fast: false
       matrix:
         python-ver: [3.13]
-        # macos-13 for Intel Mac, macos-14 for apple silicon Mac
-        os: [windows-latest, macos-13, macos-14]
+        os: [windows-latest, macos-26, macos-26-intel]
         include: 
           - os: windows-latest
             build_cmd: ./build_win.bat
             zip_name: PlaySK-PianoRoll-Reader-Win.x64.zip
-          - os: macos-13
-            build_cmd: bash build_mac.sh
-            zip_name: PlaySK-PianoRoll-Reader-Mac.x64.zip
-          - os: macos-14
+          - os: macos-26
             build_cmd: bash build_mac.sh
             zip_name: PlaySK-PianoRoll-Reader-Mac.ARM.zip
+          - os: macos-26-intel
+            build_cmd: bash build_mac.sh
+            zip_name: PlaySK-PianoRoll-Reader-Mac.x64.zip
 
     runs-on: ${{ matrix.os }}
     steps:

@@ -18,8 +18,8 @@ jobs:
       fail-fast: false
       matrix:
         os: 
-        - windows-latest
-        - macos-14    
+        - windows-2025
+        - macos-26    
         python-ver:
         - 3.13
     steps:
@@ -44,7 +44,7 @@ jobs:
       run: uv run ruff check src/
 
     - name: Check library license
-      run: uv run pip-licenses --partial-match --allow-only="MIT;BSD;MPL;Apache;HPND;GPLv2;Python Software;wxWindows"
+      run: uv run pip-licenses --partial-match --allow-only="MIT;BSD;MPL;Apache;HPND;GPLv2;Python Software;wxWindows;PSF-2.0"
 
     - name: Test with pytest
       run: uv run pytest
