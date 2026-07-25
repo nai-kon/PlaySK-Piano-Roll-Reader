@@ -100,7 +100,7 @@ class SetEdgePane(wx.Panel):
         self.guide_font = wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD)
         self.scale = parent.get_dpiscale_factor()
 
-        text = "Roll edge could not be detected. Please set it manually."
+        text = "Set the roll edge position"
         guidance = wx.StaticText(self, label=text, size=wx.Size(self.frame_w, 0), style=wx.ALIGN_CENTRE_HORIZONTAL)
         guidance.SetFont(wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
 
