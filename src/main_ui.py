@@ -132,6 +132,10 @@ class MainFrame(wx.Frame):
 
         self.Bind(wx.EVT_SIZE, self.on_resize)
         self.Bind(wx.EVT_CLOSE, self.on_close)
+        self.Bind(wx.EVT_KEY_DOWN, self.on_keydown)
+        self.Bind(wx.EVT_KEY_UP, self.on_keyup)
+        self.Bind(wx.EVT_ACTIVATE, self.on_activate)
+        self.manual_expression.Bind(wx.EVT_CHECKBOX, self.on_check_manual_expression)
         self.Show()
 
         # notify update
@@ -140,10 +144,6 @@ class MainFrame(wx.Frame):
         if len(sys.argv) > 1:
             # app was opened with file
             wx.CallAfter(self.load_file, path=sys.argv[1])
-
-        self.Bind(wx.EVT_KEY_DOWN, self.on_keydown)
-        self.Bind(wx.EVT_KEY_UP, self.on_keyup)
-        self.manual_expression.Bind(wx.EVT_CHECKBOX, self.on_check_manual_expression)
 
     def get_dipscaled_size(self, size:wx.Size | int) -> int | wx.Size:
         if isinstance(size, int):
@@ -269,6 +269,16 @@ class MainFrame(wx.Frame):
         keycode = event.GetUnicodeKey()
         self.spool.set_pressed_key(keycode, False)
         self.callback.key_event(keycode, False)
+
+    def on_activate(self, event: wx.ActivateEvent):
+        """On Mac wxPython4.3, the widget bg-color on status-bar is incorrect, so manually adjust"""
+        if platform.system() == "Darwin":
+            active = bool(event.GetActive())
+            color = Color.mac_status_bar_focused() if active else Color.mac_status_bar_unfocused()
+            for item in (self.port_sel, self.player_sel, self.theme_sel, self.scale_sel):
+                item.SetBackgroundColour(color)
+
+        event.Skip()
 
     def on_check_manual_expression(self, event):
         checked = event.GetEventObject().IsChecked()

@@ -90,3 +90,12 @@ class Color:
     @staticmethod
     def manual_ctrl_text() -> str:
         return "#ffffff" if Color.cur_theme() == "Dark" else "#000000"
+
+    @staticmethod
+    def mac_status_bar_focused() -> str:
+        return "#353636" if Color.cur_theme() == "Dark" else "#f3f3f3"
+
+    @staticmethod
+    def mac_status_bar_unfocused() -> str:
+        return "#272829" if Color.cur_theme() == "Dark" else "#e6e6e6"
+
