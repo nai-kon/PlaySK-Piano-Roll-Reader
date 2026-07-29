@@ -202,9 +202,7 @@ dependencies = [
     { name = "opencv-python-headless" },
     { name = "pydantic" },
     { name = "python-rtmidi" },
-    { name = "wxpython", version = "4.3.0a16087+2cddce01", source = { url = "https://github.com/wxWidgets/Phoenix/releases/download/4.3.0a16087%2B2cddce01/wxpython-4.3.0a16087+2cddce01-cp313-cp313-macosx_10_13_x86_64.whl" }, marker = "platform_machine == 'x86_64' and sys_platform == 'darwin'" },
-    { name = "wxpython", version = "4.3.0a16087+2cddce01", source = { url = "https://github.com/wxWidgets/Phoenix/releases/download/4.3.0a16087%2B2cddce01/wxpython-4.3.0a16087+2cddce01-cp313-cp313-macosx_11_0_arm64.whl" }, marker = "platform_machine == 'arm64' and sys_platform == 'darwin'" },
-    { name = "wxpython", version = "4.3.0a16087+2cddce01", source = { url = "https://github.com/wxWidgets/Phoenix/releases/download/4.3.0a16087%2B2cddce01/wxpython-4.3.0a16087+2cddce01-cp313-cp313-win_amd64.whl" }, marker = "sys_platform == 'win32'" },
+    { name = "wxpython" },
 ]
 
 [package.dev-dependencies]
@@ -226,9 +224,7 @@ requires-dist = [
     { name = "opencv-python-headless", specifier = ">=4.13.0.92" },
     { name = "pydantic", specifier = ">=2.13.4" },
     { name = "python-rtmidi", specifier = ">=1.5.8" },
-    { name = "wxpython", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'", url = "https://github.com/wxWidgets/Phoenix/releases/download/4.3.0a16087%2B2cddce01/wxpython-4.3.0a16087+2cddce01-cp313-cp313-macosx_11_0_arm64.whl" },
-    { name = "wxpython", marker = "platform_machine == 'x86_64' and sys_platform == 'darwin'", url = "https://github.com/wxWidgets/Phoenix/releases/download/4.3.0a16087%2B2cddce01/wxpython-4.3.0a16087+2cddce01-cp313-cp313-macosx_10_13_x86_64.whl" },
-    { name = "wxpython", marker = "sys_platform == 'win32'", url = "https://github.com/wxWidgets/Phoenix/releases/download/4.3.0a16087%2B2cddce01/wxpython-4.3.0a16087+2cddce01-cp313-cp313-win_amd64.whl" },
+    { name = "wxpython", specifier = ">=4.3.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -476,51 +472,13 @@ wheels = [
 
 [[package]]
 name = "wxpython"
-version = "4.3.0a16087+2cddce01"
-source = { url = "https://github.com/wxWidgets/Phoenix/releases/download/4.3.0a16087%2B2cddce01/wxpython-4.3.0a16087+2cddce01-cp313-cp313-macosx_10_13_x86_64.whl" }
-resolution-markers = [
-    "platform_machine == 'x86_64' and sys_platform == 'darwin'",
-]
+version = "4.3.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5f/59/8da2f898b3e1772ba501e5108d7d7824175485731c9b5f79381cb1e682d0/wxpython-4.3.0.tar.gz", hash = "sha256:33d17964ba7392a7d08d4cdfe6573ab331fe61b3ba2e281f202fd8b4e0ef7810", size = 64071549, upload-time = "2026-07-28T13:05:46.102Z" }
 wheels = [
-    { url = "https://github.com/wxWidgets/Phoenix/releases/download/4.3.0a16087%2B2cddce01/wxpython-4.3.0a16087+2cddce01-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:4e515768ee614b330895fa4b21826b24db5651f7bb093dd14af4ec8629c7b990" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "numpy", marker = "python_full_version >= '3' and python_full_version < '3.12'" },
-    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
-]
-
-[[package]]
-name = "wxpython"
-version = "4.3.0a16087+2cddce01"
-source = { url = "https://github.com/wxWidgets/Phoenix/releases/download/4.3.0a16087%2B2cddce01/wxpython-4.3.0a16087+2cddce01-cp313-cp313-macosx_11_0_arm64.whl" }
-resolution-markers = [
-    "platform_machine == 'arm64' and sys_platform == 'darwin'",
-]
-wheels = [
-    { url = "https://github.com/wxWidgets/Phoenix/releases/download/4.3.0a16087%2B2cddce01/wxpython-4.3.0a16087+2cddce01-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:aba63236f034bdac417aee32bc9d8ecb3f682e379e7d5cb5eddcee49eed9446f" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "numpy", marker = "python_full_version >= '3' and python_full_version < '3.12'" },
-    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
-]
-
-[[package]]
-name = "wxpython"
-version = "4.3.0a16087+2cddce01"
-source = { url = "https://github.com/wxWidgets/Phoenix/releases/download/4.3.0a16087%2B2cddce01/wxpython-4.3.0a16087+2cddce01-cp313-cp313-win_amd64.whl" }
-resolution-markers = [
-    "sys_platform == 'win32'",
-]
-wheels = [
-    { url = "https://github.com/wxWidgets/Phoenix/releases/download/4.3.0a16087%2B2cddce01/wxpython-4.3.0a16087+2cddce01-cp313-cp313-win_amd64.whl", hash = "sha256:066d28992aa3f9935ccca02bfada792401146ee6f17ffd09e58adb32dd39df4f" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "numpy", marker = "python_full_version >= '3' and python_full_version < '3.12'" },
-    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
+    { url = "https://files.pythonhosted.org/packages/12/f2/34b3c58ad773b880dd6ec401eb891ccec1bf5f8ca3aa40fe82d8a965e46e/wxpython-4.3.0-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:dd1dbd38e2518930ac7c1ee51aa257dd4d7b6b6fdd4ddf07f1e181e831d1c683", size = 20021622, upload-time = "2026-07-28T13:05:09.934Z" },
+    { url = "https://files.pythonhosted.org/packages/ff/66/4d689210beb9059522259eafe48787ebe6b0252628f158f9515b41a3d1b7/wxpython-4.3.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:a9ac7978260a05bb4b7e881667dd39e06b96f2218fae0858591cbecb57c66fd4", size = 18818590, upload-time = "2026-07-28T13:05:13.201Z" },
+    { url = "https://files.pythonhosted.org/packages/4c/ef/63d79eaa841a8c9cd587312a77224d51f1d08b221b2f5f9b0a807ed60469/wxpython-4.3.0-cp313-cp313-win32.whl", hash = "sha256:ecbcdb33ee382cc52a90569ead687a86cda97f0e796ae44f09987abf8cb2abfc", size = 16280841, upload-time = "2026-07-28T13:05:16.873Z" },
+    { url = "https://files.pythonhosted.org/packages/5f/f1/937c2d596b36487353df53a8ccad0fd6b73656b4cce2c033bfb3118d30e0/wxpython-4.3.0-cp313-cp313-win_amd64.whl", hash = "sha256:38308c9c577bd55087cc24b2fe4f924a749f0c47e1fea80c7e77197b59af60ce", size = 18524756, upload-time = "2026-07-28T13:05:20.374Z" },
+    { url = "https://files.pythonhosted.org/packages/b6/35/683b1e5d4fcd411d20db709cba0f465c672f2878922519f1da945dcc694f/wxpython-4.3.0-cp313-cp313-win_arm64.whl", hash = "sha256:b669385dd75e6afa16d79195dbadcc1eaeba22e77c5929d7bbf59e182e9de43c", size = 16322496, upload-time = "2026-07-28T13:05:23.661Z" },
 ]

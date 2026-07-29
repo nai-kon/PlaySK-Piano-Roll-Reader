@@ -7112,7 +7112,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 
 wxPython
-4.3.0a16087+2cddce01
+4.3.0a16092+3b3ff012
 wxWindows Library License (https://opensource.org/licenses/wxwindows.php)
 Copyright (c) since 2006, Oliver Schoenborn
 All rights reserved.
