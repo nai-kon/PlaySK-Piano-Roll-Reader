@@ -130,7 +130,6 @@ class MainFrame(wx.Frame):
         self.SetDropTarget(self.droptarget)
         self.adjust_btn.Hide()
 
-        self.Bind(wx.EVT_SIZE, self.on_resize)
         self.Bind(wx.EVT_CLOSE, self.on_close)
         self.Bind(wx.EVT_KEY_DOWN, self.on_keydown)
         self.Bind(wx.EVT_KEY_UP, self.on_keyup)
@@ -179,10 +178,9 @@ class MainFrame(wx.Frame):
         # midi port
         self.sbar.SetStatusText(midiout_caption, 0)
         ports = self.midiobj.port_list
-        rect = self.sbar.GetFieldRect(1)
-        self.port_sel = wx.Choice(self.sbar, choices=ports, size=(rect.width, h))
+        self.port_sel = wx.Choice(self.sbar, choices=ports)
+        self.sbar.AddFieldControl(1, self.port_sel)
         self.port_sel.Bind(wx.EVT_CHOICE, self.change_midi_port)
-        self.port_sel.SetPosition((rect.x, 0))
         last_sel = ports.index(self.conf.last_midi_port) if self.conf.last_midi_port in ports else 0
         self.port_sel.SetSelection(last_sel)
         self.change_midi_port()  # call manually for init
@@ -190,21 +188,19 @@ class MainFrame(wx.Frame):
         # tracker bar
         self.sbar.SetStatusText(tracker_caption, 2)
         players = self.player_mng.player_list
-        rect = self.sbar.GetFieldRect(3)
-        self.player_sel = wx.Choice(self.sbar, choices=players, size=(rect.width, h))
+        self.player_sel = wx.Choice(self.sbar, choices=players)
+        self.sbar.AddFieldControl(3, self.player_sel)
         self.player_sel.Bind(wx.EVT_CHOICE, self.change_player)
-        self.player_sel.SetPosition((rect.x, 0))
         last_sel = players.index(self.conf.last_tracker) if self.conf.last_tracker in players else 0
         self.player_sel.SetSelection(last_sel)
         self.change_player()  # call manually for init
 
         # Theme dark/light
         self.sbar.SetStatusText(theme_caption, 5)
-        rect = self.sbar.GetFieldRect(6)
         themes = ["Dark", "Light"]
-        self.theme_sel = wx.Choice(self.sbar, choices=themes, size=(rect.width, h))
+        self.theme_sel = wx.Choice(self.sbar, choices=themes)
+        self.sbar.AddFieldControl(6, self.theme_sel)
         self.theme_sel.Bind(wx.EVT_CHOICE, self.change_theme)
-        self.theme_sel.SetPosition((rect.x, 0))
         last_sel = themes.index(self.conf.theme)
         self.theme_sel.SetSelection(last_sel)
 
@@ -218,32 +214,16 @@ class MainFrame(wx.Frame):
         scale_lim = min(height_scale_lim, width_scale_lim, 300)  # Max300%
         scales = [f"{v}%" for v in range(100, int(scale_lim + 1), 5)]
 
-        rect = self.sbar.GetFieldRect(8)
-        self.scale_sel = wx.Choice(self.sbar, choices=scales, size=(rect.width, h))
+        self.scale_sel = wx.Choice(self.sbar, choices=scales)
+        self.sbar.AddFieldControl(8, self.scale_sel)
         self.scale_sel.Bind(wx.EVT_CHOICE, self.change_scale)
-        self.scale_sel.SetPosition((rect.x, 0))
         last_sel = scales.index(self.conf.window_scale) if self.conf.window_scale in scales else 0
         self.scale_sel.SetSelection(last_sel)
 
+        self.sbar.SendSizeEvent()  # workaround from https://github.com/wxWidgets/wxWidgets/issues/25735
+
     def post_status_msg(self, msg: str):
         wx.CallAfter(self.sbar.SetStatusText, text="   " + msg, i=4)
-
-    def on_resize(self, event):
-        # selection of status bar needs manually re-position
-        # midi port sel
-        rect = self.sbar.GetFieldRect(1)
-        self.port_sel.SetPosition((rect.x, 0))
-        # tracker bar sel
-        rect = self.sbar.GetFieldRect(3)
-        self.player_sel.SetPosition((rect.x, 0))
-        # theme scale sel
-        rect = self.sbar.GetFieldRect(6)
-        self.theme_sel.SetPosition((rect.x, 0))
-        # windows scale sel
-        rect = self.sbar.GetFieldRect(8)
-        self.scale_sel.SetPosition((rect.x, 0))
-
-        event.Skip()
 
     def on_close(self, event):
         print("on_close called")
