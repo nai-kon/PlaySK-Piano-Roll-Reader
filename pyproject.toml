@@ -12,7 +12,7 @@ dependencies = [
     "opencv-python-headless>=4.13.0.92",
     "pydantic>=2.13.4",
     "python-rtmidi>=1.5.8",
-    "wxpython>=4.3.0",
+    "wxpython>=4.3.1",
 ]
 
 [project.urls]
