@@ -12,17 +12,17 @@ from cis_image import CisImage, ScannerType
 class TestCisImage:
     @pytest.mark.parametrize("cis_path, expect", [
         # expect is (tempo, scanner_type, hol_dpi, hol_px, vert_res, vert_px, is_clocked, is_twin_array, is_bicolor, encoder_division, vert_sep_twin, overlap_twin, lpt)
-        ("clocked_single.CIS", (90, ScannerType.WHEELENCODER, 300, 3648, 309, 34128, True, False, False, 16, 0, 0, 10)),
-        ("stepper_single.CIS", (90, ScannerType.STEPPER, 200, 2432, 180, 59425, False, False, False, 1, 0, 0, 0)),
-        ("stepper_bicolor.CIS", (90, ScannerType.STEPPER, 300, 3648, 300, 116858, False, False, True, 1, 0, 0, 0)),
-        ("stepper_twin.CIS", (90, ScannerType.STEPPER, 300, 2600, 204, 63661, False, True, False, 1, 490, 244, 0)),
-        ("unknown_scanner.CIS", (70, ScannerType.UNKNOWN, 200, 2432, 180, 187151, False, False, False, 1, 0, 0, 0)),
+        ("clocked_single.CIS", (90, ScannerType.WHEELENCODER, 300, 3648, 309, 34128, True, False, False, 0, 0, 10)),
+        ("stepper_single.CIS", (90, ScannerType.STEPPER, 200, 2432, 180, 59425, False, False, False, 0, 0, 0)),
+        ("stepper_bicolor.CIS", (90, ScannerType.STEPPER, 300, 3648, 300, 116858, False, False, True, 0, 0, 0)),
+        ("stepper_twin.CIS", (90, ScannerType.STEPPER, 300, 2600, 204, 63661, False, True, False, 490, 244, 0)),
+        ("unknown_scanner.CIS", (70, ScannerType.UNKNOWN, 200, 2432, 180, 187151, False, False, False, 0, 0, 0)),
     ])
     def test_load_file(self, cis_path, expect):
         obj = CisImage()
         obj._load_file("test/test_images/" + cis_path)
         res = (obj.tempo, obj.scanner_type, obj.hol_dpi, obj.hol_px, obj.vert_res, obj.vert_px, obj.is_clocked,
-               obj.is_twin_array, obj.is_bicolor, obj.encoder_division, obj.twin_array_vert_sep, obj.twin_array_overlap, obj.lpt)
+               obj.is_twin_array, obj.is_bicolor, obj.twin_array_vert_sep, obj.twin_array_overlap, obj.lpt)
         assert res == expect
 
     @pytest.mark.parametrize("cis_path, expect", [
@@ -92,9 +92,6 @@ class TestCisImage:
 
     def test_convert_bw(self):
         obj = CisImage()
-
-        # nothing happens
-        obj.convert_bw()
 
         # convert black pixel to white
         obj.decoded_img = np.zeros((100, 100), dtype=np.uint8)

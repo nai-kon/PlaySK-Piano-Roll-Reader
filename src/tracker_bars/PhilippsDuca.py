@@ -2,20 +2,20 @@ from .base_player import BasePlayer
 
 
 class PhilippsDuca(BasePlayer):
-    def __init__(self, confpath, midiobj):
+    def __init__(self, confpath, midiobj) -> None:
         super().__init__(confpath, midiobj)
 
         self.pre_time = None
         self.bass_vacuum = 12
         self.treble_vacuum = 12
 
-    def emulate_off(self):
+    def emulate_off(self) -> None:
         super().emulate_off()
 
-    def emulate_expression(self, curtime):
+    def emulate_expression(self, curtime: float) -> None:
         pass
 
-    def emulate_pedals(self):
+    def emulate_pedals(self) -> None:
         # sustain pedal
         if self.holes["sustain_on"]["is_open"]:
             self.midi.sustain_on()

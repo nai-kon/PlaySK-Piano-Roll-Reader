@@ -2,21 +2,21 @@ from .RecordoA import RecordoA
 
 
 class RecordoB(RecordoA):
-    def __init__(self, confpath, midiobj):
+    def __init__(self, confpath, midiobj) -> None:
         super().__init__(confpath, midiobj)
 
         # from Robert Billings's notebook  (US Music Co.)
-        self.pp_with_hammer_rail = 8
+        self.pp_with_hammer_rail = 8.0
         self.intensities = [
-            9,      # pp
+            9.0,      # pp
             11.25,  # p
             15.5,   # mf
             19.5,   # f
-            35,     # ff
+            35.0,     # ff
         ]
 
 
-    def emulate_expression(self, curtime):
+    def emulate_expression(self, curtime: float) -> None:
         vac_lv = 0
         if self.holes["ff"]["is_open"]:
             vac_lv = 4

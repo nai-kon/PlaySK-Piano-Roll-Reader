@@ -6,7 +6,7 @@ extensions = [
     Extension(
         "cis_decoder",
         ["cis_decoder.pyx"],
-        extra_compile_args=["-O3"],
+        extra_compile_args=["-O2"],
     ),
 ]
 

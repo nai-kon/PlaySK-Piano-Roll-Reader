@@ -2,13 +2,13 @@ from .Themodist import Themodist
 
 
 class Themodist_eValve(Themodist):
-    def __init__(self, confpath, midiobj):
+    def __init__(self, confpath, midiobj) -> None:
         super().__init__(confpath, midiobj)
         self.sustein_midi_no = 18
         self.bass_snake_midi_no = 19
         self.treble_snake_midi_no = 109
 
-    def emulate_expression(self, curtime):
+    def emulate_expression(self, curtime: float) -> None:
         super().emulate_expression(curtime)
 
         # send e-valve midi signal
@@ -22,7 +22,7 @@ class Themodist_eValve(Themodist):
         elif self.holes["treble_snakebite"]["to_close"]:
             self.midi.note_off(self.treble_snake_midi_no, velocity=64)
 
-    def emulate_pedals(self):
+    def emulate_pedals(self) -> None:
         super().emulate_pedals()
 
         # send e-valve midi signal

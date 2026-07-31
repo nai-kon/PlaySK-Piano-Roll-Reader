@@ -8,7 +8,7 @@ from midi_controller import MidiWrap
 
 
 class TrackerHoles:
-    def __init__(self, conf):
+    def __init__(self, conf) -> None:
         self.xoffset = 0
         holes = conf["tracker_holes"]
         self.is_dark_hole = holes["is_dark_hole"]
@@ -58,7 +58,7 @@ class TrackerHoles:
             for pos in v["pos"]:
                 self.draw_rects.append((pos[0], pos[1], k[0] + 1, k[1] + 1))
 
-    def set_frame(self, frame, xoffset):
+    def set_frame(self, frame, xoffset: int) -> None:
         self.xoffset = xoffset
 
         # calc hole open ratio
@@ -153,9 +153,8 @@ class BasePlayer:
         # set piano sound for GM sound
         self.midi.program_change(0, channel=0)
 
-    def calc_velocity(self):
-        idx = np.digitize([self.bass_vacuum, self.treble_vacuum], bins=self.velocity_bins)
-        return self.velocity[0] + idx
+    def calc_velocity(self) -> tuple[int, int]:
+        return (self.velocity[0] + np.digitize([self.bass_vacuum, self.treble_vacuum], bins=self.velocity_bins)).tolist()
 
     def emulate_off(self) -> None:
         self.emulate_enable = False

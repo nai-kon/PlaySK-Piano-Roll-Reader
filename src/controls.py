@@ -7,8 +7,10 @@ import urllib.request
 
 import certifi
 import wx
+from packaging.version import Version
 from wx.adv import HyperlinkCtrl
 
+from color import Color
 from config import ConfigMng
 from version import APP_TITLE, APP_VERSION, COPY_RIGHT
 
@@ -17,6 +19,7 @@ class BasePanel(wx.Panel):
     # Base class that propagates key events to parent
     def __init__(self, *args, **kwargs) -> None:
         wx.Panel.__init__(self, *args, **kwargs)
+        self.SetBackgroundColour(Color.main_bg())
         self.Bind(wx.EVT_KEY_DOWN, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
         self.Bind(wx.EVT_KEY_UP, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
 
@@ -25,6 +28,16 @@ class BaseButton(wx.Button):
     # Base class that propagates key events to parent
     def __init__(self, *args, **kwargs) -> None:
         wx.Button.__init__(self, *args, **kwargs)
+        self.SetBackgroundColour(Color.main_bg())
+        self.Bind(wx.EVT_KEY_DOWN, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
+        self.Bind(wx.EVT_KEY_UP, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
+
+
+class BaseToggleButton(wx.ToggleButton):
+    # Base class that propagates key events to parent
+    def __init__(self, *args, **kwargs) -> None:
+        wx.ToggleButton.__init__(self, *args, **kwargs)
+        self.SetBackgroundColour(Color.main_bg())
         self.Bind(wx.EVT_KEY_DOWN, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
         self.Bind(wx.EVT_KEY_UP, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
 
@@ -33,6 +46,7 @@ class BaseSlider(wx.Slider):
     # Base class that propagates key events to parent
     def __init__(self, *args, **kwargs) -> None:
         wx.Slider.__init__(self, *args, **kwargs)
+        self.SetBackgroundColour(Color.main_bg())
         self.Bind(wx.EVT_KEY_DOWN, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
         self.Bind(wx.EVT_KEY_UP, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
 
@@ -41,6 +55,7 @@ class BaseCheckbox(wx.CheckBox):
     # Base class that propagates key events to parent
     def __init__(self, *args, **kwargs) -> None:
         wx.CheckBox.__init__(self, *args, **kwargs)
+        self.SetBackgroundColour(Color.main_bg())
         self.Bind(wx.EVT_KEY_DOWN, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
         self.Bind(wx.EVT_KEY_UP, lambda e: self.GetParent().GetEventHandler().ProcessEvent(e))
 
@@ -48,8 +63,8 @@ class BaseCheckbox(wx.CheckBox):
 class WelcomeMsg(BasePanel):
     def __init__(self, parent, pos=(0, 0), size=(800, 600)):
         BasePanel.__init__(self, parent, wx.ID_ANY, pos, parent.get_dipscaled_size(wx.Size(size)))
-
-        self.SetForegroundColour("white")
+        self.SetForegroundColour(Color.welcome_text())
+        self.SetBackgroundColour(Color.welcome_bg())
 
         dummy = wx.StaticText(self, wx.ID_ANY, "")
         msg1 = wx.StaticText(self, wx.ID_ANY, "SELECT or DROP FILE here!")
@@ -71,6 +86,7 @@ class WelcomeMsg(BasePanel):
         lnk2.SetFont(wx.Font(text_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
         msg5 = wx.StaticText(self, wx.ID_ANY, COPY_RIGHT)
         msg5.SetFont(wx.Font(text_size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_SEMIBOLD))
+        dummy2 = wx.StaticText(self, wx.ID_ANY, "")
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(dummy, 4, wx.ALIGN_CENTER)
@@ -81,8 +97,8 @@ class WelcomeMsg(BasePanel):
         sizer.Add(msg4, 0, wx.ALIGN_CENTER)
         sizer.Add(lnk2, 0, wx.ALIGN_CENTER)
         sizer.Add(msg5, 0, wx.ALIGN_CENTER)
+        sizer.Add(dummy2, 0, wx.ALIGN_CENTER)
         self.SetSizer(sizer)
-        self.SetBackgroundColour("#555555")
         self.Layout()
 
     def start_worker(self) -> None:
@@ -152,10 +168,10 @@ class TrackerCtrl(BasePanel):
         self.auto_track = True
         self.label = wx.StaticText(self, wx.ID_ANY, "+0")
         self.label.SetFont(wx.Font(20, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-        self.left = wx.Button(self, wx.ID_ANY, label="＜")
+        self.left = BaseButton(self, wx.ID_ANY, label="＜")
         self.left.Disable()
         self.left.Bind(wx.EVT_BUTTON, lambda event: self.changed(self.offset - 1))
-        self.right = wx.Button(self, wx.ID_ANY, label="＞")
+        self.right = BaseButton(self, wx.ID_ANY, label="＞")
         self.right.Bind(wx.EVT_BUTTON, lambda event: self.changed(self.offset + 1))
         self.right.Disable()
 
@@ -234,7 +250,7 @@ class NotifyUpdate:
                 "X-LastTracker": self.conf.last_tracker,
             })
             with urllib.request.urlopen(req, timeout=10, context=context) as res:
-                title = json.loads(res.read().decode("utf8")).get("name", None)
+                title = json.loads(res.read().decode("utf8")).get("name", "")
                 matched = re.findall(r"^Ver(\d.\d.\d)$", title)
                 ver = matched[0] if matched else None
 
@@ -244,10 +260,11 @@ class NotifyUpdate:
         return ver
 
     def need_notify(self, ver: str | None) -> bool:
+        # ver: XX.YY.ZZ
         print(ver, self.conf.update_notified_version, APP_VERSION)
         return (ver is not None and
-            ver > self.conf.update_notified_version and
-            ver > APP_VERSION)
+            Version(ver) > Version(self.conf.update_notified_version) and
+            Version(ver) > Version(APP_VERSION))
 
     def notify(self, ver: str) -> None:
         # once notify, no notify until next release

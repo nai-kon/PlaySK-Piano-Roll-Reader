@@ -41,15 +41,16 @@ class SingleInstWin:
         try:
             with socket.create_connection(("localhost", self.port), timeout=0.01) as sock:
                 if len(sys.argv) > 1:
+                    # send file path to exist app
                     sock.sendall(f"{self.message_path}{sys.argv[1]}".encode())
                 else:
+                    # notify that app is already opened
                     sock.sendall(self.message_notify.encode())
             print("The software is already exists.")
             return True
         except OSError:
             # app is not exists. run socket server as a daemon
-            th = threading.Thread(target=self.file_path_receiver, daemon=True)
-            th.start()
+            threading.Thread(target=self.file_path_receiver, daemon=True).start()
             return False
 
 
@@ -66,6 +67,15 @@ class AppMain(wx.App):
             sys.argv.append(path)
         else:
             wx.CallAfter(self.GetTopWindow().load_file, path=path)
+
+
+def SetAppearance(app: wx.App) -> None:
+    from config import ConfigMng
+    conf = ConfigMng()
+    if conf.theme == "Dark":
+        app.SetAppearance(app.Appearance.Dark)
+    else:
+        app.SetAppearance(app.Appearance.Light)
 
 
 if __name__ == "__main__":
@@ -89,6 +99,8 @@ if __name__ == "__main__":
     if not os.path.exists("playsk_config/"):
         wx.MessageBox("config directory is not found. Exit software.", "Config error")
         exit(-1)
+
+    SetAppearance(app)
 
     from main_ui import MainFrame
     frame = MainFrame()

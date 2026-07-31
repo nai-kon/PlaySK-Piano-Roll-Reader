@@ -42,6 +42,7 @@ class TestPlayerMng:
             "Themodist",
             "Themodist e-Valve",
             "Aeolian 176-note Pipe Organ",
+            "Artrio Angelus (beta)",
         ])
         assert player_names == gt_names
 

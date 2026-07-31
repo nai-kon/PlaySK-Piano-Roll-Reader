@@ -5,6 +5,7 @@ import time
 import numpy as np
 import wx
 
+from color import Color
 from controls import BasePanel
 from roll_scroll import FPScounter
 
@@ -13,7 +14,7 @@ class VacuumGauge(BasePanel):
     def __init__(self, parent, pos: tuple[int, int]=(0, 0), caption: str="") -> None:
         BasePanel.__init__(self, parent, wx.ID_ANY, pos=pos)
         caption = wx.StaticText(self, wx.ID_ANY, caption)
-        scale = parent.get_dpiscale_factor()
+        scale: float = parent.get_dpiscale_factor()
         self.meter = OscilloGraph(self, scale, parent.get_dipscaled_size(wx.Size(200, 150)))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -37,19 +38,20 @@ class VacuumGauge(BasePanel):
 class OscilloGraph(BasePanel):
     def __init__(self, parent, scale, size, max_vacuum=50) -> None:
         BasePanel.__init__(self, parent, wx.ID_ANY, size=size)
-        self.w = size[0]
-        self.h = size[1]
+        self.w: int = size[0]
+        self.h: int = size[1]
         self.scale = scale
         self.max_vacuum = max_vacuum
         self.plot_scale = self.h / self.max_vacuum
         self.SetDoubleBuffered(True)
 
-        self.val = 0
+        self.val = 0.0
         self.xs = np.arange(self.w, step=self.scale).astype(np.intc)
         self.ys = np.full(self.xs.size, self.h - 1, dtype=np.intc)
         self.plots = np.dstack((self.xs, self.ys))
 
         self.graph = wx.Bitmap(self.w, self.h)
+        self.graph_color = Color.vacuum_gauge_graph()
         self.grid = wx.Bitmap(self.w, self.h)
         self.init_grid()
         self.count = FPScounter("vacuum")
@@ -73,17 +75,17 @@ class OscilloGraph(BasePanel):
         dc = wx.BufferedDC(wx.ClientDC(self), self.grid)
         dc = wx.GCDC(dc)  # for anti-aliasing
 
-        dc.SetBackground(wx.Brush("#303030"))
+        dc.SetBackground(wx.Brush(Color.vacuum_gauge_bg()))
         dc.Clear()
 
         # grid line
-        dc.SetPen(wx.Pen("black", int(1 * self.scale), wx.SOLID))
+        dc.SetPen(wx.Pen(Color.vacuum_gauge_grid(), int(1 * self.scale), wx.SOLID))
         dc.DrawLineList([(x, 0, x, self.h - 1) for x in range(0, self.w, int(50 * self.scale))])
         dc.DrawLineList([(0, int(y * self.plot_scale), self.w - 1, int(y * self.plot_scale)) for y in range(0, self.max_vacuum, 10)])
 
         # scale
         dc.SetFont(wx.Font(int(12 * self.scale), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-        dc.SetTextForeground((255, 255, 255))
+        dc.SetTextForeground(Color.vacuum_gauge_scale())
         _, txt_h = dc.GetTextExtent("0")
         dc.DrawTextList(["40", "30", "20", "10"], [(2, int(v * self.plot_scale - txt_h // 2)) for v in (10, 20, 30, 40)])
 
@@ -109,7 +111,7 @@ class OscilloGraph(BasePanel):
         dc = wx.PaintDC(self)
         dc.DrawBitmap(self.grid, 0, 0)
         dc = wx.GCDC(dc)  # for anti-aliasing
-        dc.SetPen(wx.Pen("yellow", int(2 * self.scale), wx.SOLID))
+        dc.SetPen(wx.Pen(self.graph_color, int(2 * self.scale), wx.SOLID))
         with self.thread_lock:
             dc.DrawLinesFromBuffer(self.plots)
 

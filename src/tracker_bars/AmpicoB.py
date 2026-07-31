@@ -4,14 +4,14 @@ from .base_player import BasePlayer
 
 
 class AmpicoB(BasePlayer):
-    def __init__(self, confpath, midiobj):
+    def __init__(self, confpath, midiobj) -> None:
         super().__init__(confpath, midiobj)
 
         self.amp_lock_range = [0, 1.0]
-        self.amp_cres_pos = 0
+        self.amp_cres_pos = 0.0
         self.slow_cres_rate = 1 / 4  # 4sec
         self.fast_cres_rate = 1 / 0.8  # 0.8sec
-        self.pre_time = None
+        self.pre_time = -1.0
 
         self.bass_intensity_lock = [False, False, False]  # 2->4->6
         self.treble_intensity_lock = [False, False, False]  # 2->4->6
@@ -42,18 +42,18 @@ class AmpicoB(BasePlayer):
         self.bass_vacuum = self.treble_vacuum = self.intensity_range["none"][0]
         self.bass_vacuum_pre = self.treble_vacuum_pre = self.intensity_range["none"][0]
 
-    def emulate_off(self):
+    def emulate_off(self) -> None:
         super().emulate_off()
         self.bass_intensity_lock = [False, False, False]
         self.treble_intensity_lock = [False, False, False]
         self.bass_sub_intensity_lock = False
         self.treble_sub_intensity_lock = False
         self.amp_lock_range = [0, 1.0]
-        self.amp_cres_pos = 0
+        self.amp_cres_pos = 0.0
         self.bass_vacuum = self.treble_vacuum = self.intensity_range["none"][0]
         self.bass_vacuum_pre = self.treble_vacuum_pre = self.intensity_range["none"][0]
 
-    def emulate_expression(self, curtime):
+    def emulate_expression(self, curtime: float) -> None:
         bass_cancel = self.holes["bass_cancel"]
         treble_cancel = self.holes["treble_cancel"]
         bass_intensities = self.holes["bass_intensity"]  # [2, 4, 6]
@@ -86,8 +86,8 @@ class AmpicoB(BasePlayer):
         self.calc_crescendo(curtime)
         self.calc_expression()
 
-    def calc_crescendo(self, curtime):
-        if self.pre_time is None:
+    def calc_crescendo(self, curtime: float) -> None:
+        if self.pre_time == -1.0:
             self.pre_time = curtime
         delta_time = curtime - self.pre_time
 
@@ -123,8 +123,8 @@ class AmpicoB(BasePlayer):
 
         self.pre_time = curtime
 
-    def calc_expression(self):
-        def calc_vacuum(intensity_lock, sub_intensity_lock):
+    def calc_expression(self) -> None:
+        def calc_vacuum(intensity_lock: list[bool], sub_intensity_lock: bool) -> float:
             opcode = ""
             if not any(intensity_lock):
                 opcode = "none"
@@ -149,7 +149,7 @@ class AmpicoB(BasePlayer):
         self.bass_vacuum_pre = self.bass_vacuum
         self.treble_vacuum_pre = self.treble_vacuum
 
-    def draw_tracker(self, wxdc: wx.PaintDC):
+    def draw_tracker(self, wxdc: wx.PaintDC) -> None:
         super().draw_tracker(wxdc)
         # overdraw lock & cancel holes
         self.holes.draw(wxdc, self.bass_sub_intensity_lock or self.treble_sub_intensity_lock, "subintensity")

@@ -40,11 +40,13 @@ class TestNotifyUpdate:
         assert not obj.need_notify("3.3.0")
         assert not obj.need_notify(None)
         # notify
+        assert obj.need_notify("3.3.1")
         assert obj.need_notify("3.4.0")
+        assert obj.need_notify("3.10.0")
+
         # already notified this version. skip
         conf.update_notified_version = "3.4.0"
         assert not obj.need_notify("3.4.0")
-        # more new version is coming. notify
         assert obj.need_notify("3.4.1")
 
     def test_notify(self, mocker):

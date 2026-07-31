@@ -38,11 +38,11 @@ if __name__ == "__main__":
         windll.shcore.SetProcessDpiAwareness(True)
 
     paths = list(glob.glob("../sample_scans/*Ampico*"))
+    app = wx.App()
 
     def launch_app():
         path = random.choice(paths)
         print("start app")
-        app = wx.App()
         Aging(path)
         app.MainLoop()
         print("end app")

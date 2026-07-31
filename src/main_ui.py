@@ -6,10 +6,12 @@ from pathlib import Path
 import wx
 from wx.adv import HyperlinkCtrl
 
+from color import Color
 from config import ConfigMng
 from controls import (
     BaseButton,
     BaseCheckbox,
+    BaseToggleButton,
     NotifyUpdate,
     SpeedSlider,
     TrackerCtrl,
@@ -59,9 +61,8 @@ class MainFrame(wx.Frame):
     def __init__(self):
         super().__init__(parent=None, title=APP_TITLE, style=wx.CAPTION | wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.CLIP_CHILDREN)
         self.SetIcon(wx.Icon(os.path.join("playsk_config", "PlaySK_icon.ico"), wx.BITMAP_TYPE_ICO))
-        if platform.system() == "Windows":
-            # wxpython on Windows does not support Darkmode
-            self.SetBackgroundColour("#AAAAAA")
+        self.SetBackgroundColour(Color.main_bg())
+
         self.conf = ConfigMng()
         self.img_path = None
 
@@ -71,11 +72,11 @@ class MainFrame(wx.Frame):
         self.supported_imgs = (".cis", ".jpg", ".png", ".tif", ".bmp")
 
         # Midi on/off button
-        self.midi_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="MIDI On")
-        self.midi_btn.Bind(wx.EVT_BUTTON, self.midi_onoff)
+        self.midi_btn = BaseToggleButton(self, size=self.get_dipscaled_size(wx.Size((80, 50))), label="MIDI")
+        self.midi_btn.Bind(wx.EVT_TOGGLEBUTTON, self.midi_onoff)
         self.midi_btn.Disable()
         # File Open button
-        self.file_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((90, 50))), label="File")
+        self.file_btn = BaseButton(self, size=self.get_dipscaled_size(wx.Size((80, 50))), label="File")
         self.file_btn.Bind(wx.EVT_BUTTON, self.open_file)
         # Tempo slider
         self.speed = SpeedSlider(self, callback=self.speed_change)
@@ -129,8 +130,11 @@ class MainFrame(wx.Frame):
         self.SetDropTarget(self.droptarget)
         self.adjust_btn.Hide()
 
-        self.Bind(wx.EVT_SIZE, self.on_resize)
         self.Bind(wx.EVT_CLOSE, self.on_close)
+        self.Bind(wx.EVT_KEY_DOWN, self.on_keydown)
+        self.Bind(wx.EVT_KEY_UP, self.on_keyup)
+        self.Bind(wx.EVT_ACTIVATE, self.on_activate)
+        self.manual_expression.Bind(wx.EVT_CHECKBOX, self.on_check_manual_expression)
         self.Show()
 
         # notify update
@@ -139,10 +143,6 @@ class MainFrame(wx.Frame):
         if len(sys.argv) > 1:
             # app was opened with file
             wx.CallAfter(self.load_file, path=sys.argv[1])
-
-        self.Bind(wx.EVT_KEY_DOWN, self.on_keydown)
-        self.Bind(wx.EVT_KEY_UP, self.on_keyup)
-        self.manual_expression.Bind(wx.EVT_CHECKBOX, self.on_check_manual_expression)
 
     def get_dipscaled_size(self, size:wx.Size | int) -> int | wx.Size:
         if isinstance(size, int):
@@ -157,38 +157,52 @@ class MainFrame(wx.Frame):
         return int(size * self.conf.window_scale_ratio)
 
     def create_status_bar(self):
-        self.sbar = self.CreateStatusBar(9)  # midi-port, tracker-bar
+        self.sbar = self.CreateStatusBar(9)
         _, h = self.sbar.Size[:2]
-        midiout_caption = "MIDI Out :"
-        tracker_caption = "Tracker Bar :"
-        wsize_caption = "Window Size :"
+        midiout_caption = "MIDI Out "
+        tracker_caption = "    Tracker Bar "
+        theme_caption = "Theme "
+        wsize_caption = "    Size "
+        margin_str = "____"
         midiout_caption_w = wx.Window.GetTextExtent(self, midiout_caption).Width
+        midiout_max_w = wx.Window.GetTextExtent(self, "a" * 32 + margin_str).Width
         tracker_caption_w = wx.Window.GetTextExtent(self, tracker_caption).Width
+        tracker_max_w = wx.Window.GetTextExtent(self, max(self.player_mng.player_list, key=len) + margin_str).Width
+        theme_caption_w = wx.Window.GetTextExtent(self, theme_caption).Width
+        theme_max_w = wx.Window.GetTextExtent(self, "Light" + margin_str).Width
         wsize_caption_w = wx.Window.GetTextExtent(self, wsize_caption).Width
+        wsize_max_w = wx.Window.GetTextExtent(self, "000%" + margin_str).Width
 
-        self.sbar.SetStatusWidths([midiout_caption_w, -4, -1, tracker_caption_w, -4, -1,  -2, wsize_caption_w, -1])
+        self.sbar.SetStatusWidths([midiout_caption_w, midiout_max_w, tracker_caption_w, tracker_max_w, -1, theme_caption_w, theme_max_w, wsize_caption_w, wsize_max_w])
 
         # midi port
         self.sbar.SetStatusText(midiout_caption, 0)
         ports = self.midiobj.port_list
-        rect = self.sbar.GetFieldRect(1)
-        self.port_sel = wx.Choice(self.sbar, choices=ports, size=(rect.width, h))
+        self.port_sel = wx.Choice(self.sbar, choices=ports)
+        self.sbar.AddFieldControl(1, self.port_sel)
         self.port_sel.Bind(wx.EVT_CHOICE, self.change_midi_port)
-        self.port_sel.SetPosition((rect.x, 0))
         last_sel = ports.index(self.conf.last_midi_port) if self.conf.last_midi_port in ports else 0
         self.port_sel.SetSelection(last_sel)
         self.change_midi_port()  # call manually for init
 
         # tracker bar
-        self.sbar.SetStatusText(tracker_caption, 3)
+        self.sbar.SetStatusText(tracker_caption, 2)
         players = self.player_mng.player_list
-        rect = self.sbar.GetFieldRect(4)
-        self.player_sel = wx.Choice(self.sbar, choices=players, size=(rect.width, h))
+        self.player_sel = wx.Choice(self.sbar, choices=players)
+        self.sbar.AddFieldControl(3, self.player_sel)
         self.player_sel.Bind(wx.EVT_CHOICE, self.change_player)
-        self.player_sel.SetPosition((rect.x, 0))
         last_sel = players.index(self.conf.last_tracker) if self.conf.last_tracker in players else 0
         self.player_sel.SetSelection(last_sel)
         self.change_player()  # call manually for init
+
+        # Theme dark/light
+        self.sbar.SetStatusText(theme_caption, 5)
+        themes = ["Dark", "Light"]
+        self.theme_sel = wx.Choice(self.sbar, choices=themes)
+        self.sbar.AddFieldControl(6, self.theme_sel)
+        self.theme_sel.Bind(wx.EVT_CHOICE, self.change_theme)
+        last_sel = themes.index(self.conf.theme)
+        self.theme_sel.SetSelection(last_sel)
 
         # window scale
         self.sbar.SetStatusText(wsize_caption, 7)
@@ -200,29 +214,16 @@ class MainFrame(wx.Frame):
         scale_lim = min(height_scale_lim, width_scale_lim, 300)  # Max300%
         scales = [f"{v}%" for v in range(100, int(scale_lim + 1), 5)]
 
-        rect = self.sbar.GetFieldRect(8)
-        self.scale_sel = wx.Choice(self.sbar, choices=scales, size=(rect.width, h))
+        self.scale_sel = wx.Choice(self.sbar, choices=scales)
+        self.sbar.AddFieldControl(8, self.scale_sel)
         self.scale_sel.Bind(wx.EVT_CHOICE, self.change_scale)
-        self.scale_sel.SetPosition((rect.x, 0))
         last_sel = scales.index(self.conf.window_scale) if self.conf.window_scale in scales else 0
         self.scale_sel.SetSelection(last_sel)
 
+        self.sbar.SendSizeEvent()  # workaround from https://github.com/wxWidgets/wxWidgets/issues/25735
+
     def post_status_msg(self, msg: str):
-        wx.CallAfter(self.sbar.SetStatusText, text=msg, i=6)
-
-    def on_resize(self, event):
-        # selection of status bar needs manually re-position
-        # midi port sel
-        rect = self.sbar.GetFieldRect(1)
-        self.port_sel.SetPosition((rect.x, 0))
-        # tracker bar sel
-        rect = self.sbar.GetFieldRect(4)
-        self.player_sel.SetPosition((rect.x, 0))
-        # windows scale sel
-        rect = self.sbar.GetFieldRect(8)
-        self.scale_sel.SetPosition((rect.x, 0))
-
-        event.Skip()
+        wx.CallAfter(self.sbar.SetStatusText, text="   " + msg, i=4)
 
     def on_close(self, event):
         print("on_close called")
@@ -249,6 +250,16 @@ class MainFrame(wx.Frame):
         self.spool.set_pressed_key(keycode, False)
         self.callback.key_event(keycode, False)
 
+    def on_activate(self, event: wx.ActivateEvent):
+        """On Mac wxPython4.3, the widget bg-color on status-bar is incorrect, so manually adjust"""
+        if platform.system() == "Darwin":
+            active = bool(event.GetActive())
+            color = Color.mac_status_bar_focused() if active else Color.mac_status_bar_unfocused()
+            for item in (self.port_sel, self.player_sel, self.theme_sel, self.scale_sel):
+                item.SetBackgroundColour(color)
+
+        event.Skip()
+
     def on_check_manual_expression(self, event):
         checked = event.GetEventObject().IsChecked()
         self.spool.set_manual_expression(checked)
@@ -266,7 +277,9 @@ class MainFrame(wx.Frame):
         self.conf.last_tracker = name
         if (player_tmp:= self.player_mng.get_player_obj(name, self.midiobj)) is not None:
             self.midiobj.all_off()
-            self.midi_btn.SetLabel("MIDI On")
+            self.midi_btn.SetValue(False)
+            if platform.system() == "Windows":
+                self.midi_btn.SetBackgroundColour(wx.NullColour)
             player_tmp.tracker_offset = self.tracking.offset
             player_tmp.auto_tracking = self.tracking.auto_tracking
             self.callback.player = player_tmp
@@ -290,6 +303,14 @@ class MainFrame(wx.Frame):
             self.organ_midi_map.Hide()
         self.Fit()
 
+    def change_theme(self, event=None):
+        idx = self.theme_sel.GetSelection()
+        select_theme = self.theme_sel.GetString(idx)
+        if select_theme != self.conf.theme:
+            self.conf.theme = select_theme
+            wx.MessageBox("Exit the software. Please re-start after exit.", "Change Theme needs Restart")
+            self.on_close(event=None)
+
     def change_scale(self, event=None):
         idx = self.scale_sel.GetSelection()
         select_scale = self.scale_sel.GetString(idx)
@@ -300,15 +321,18 @@ class MainFrame(wx.Frame):
 
     def midi_onoff(self, event):
         obj = event.GetEventObject()
-        if obj.GetLabel() == "MIDI On":
+        if obj.GetValue():
             self.callback.player.emulate_on()
-            obj.SetLabel("MIDI Off")
+            if platform.system() == "Windows":
+                obj.SetBackgroundColour(Color.midi_btn_bg())
         else:
             self.midi_off()
 
     def midi_off(self):
         self.callback.player.emulate_off()
-        self.midi_btn.SetLabel("MIDI On")
+        self.midi_btn.SetValue(False)
+        if platform.system() == "Windows":
+            self.midi_btn.SetBackgroundColour(wx.NullColour)
 
     def load_file(self, path: str, force_manual_adjust: bool=False):
         if Path(path).suffix.lower() not in self.supported_imgs:
@@ -332,7 +356,9 @@ class MainFrame(wx.Frame):
         tmp.Destroy()
         self.spool.start_worker()
 
-        self.midi_btn.SetLabel("MIDI On")
+        self.midi_btn.SetValue(False)
+        if platform.system() == "Windows":
+            self.midi_btn.SetBackgroundColour(wx.NullColour)
         self.midi_btn.Enable()
 
         # Set tempo

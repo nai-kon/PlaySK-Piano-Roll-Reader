@@ -2,6 +2,7 @@ from .Aeolian176note import Aeolian176note
 from .AmpicoA import AmpicoA
 from .AmpicoB import AmpicoB
 from .Artecho import Artecho
+from .ArtrioAngelus import ArtrioAngelus
 from .base_player import BasePlayer
 from .DuoArt import DuoArt
 from .PhilippsDuca import PhilippsDuca
@@ -18,6 +19,7 @@ __all__ = [
     "AmpicoA",
     "AmpicoB",
     "Artecho",
+    "ArtrioAngelus",
     "BasePlayer",
     "DuoArt",
     "PhilippsDuca",

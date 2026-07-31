@@ -4,10 +4,10 @@ from .base_player import BasePlayer
 
 
 class AmpicoA(BasePlayer):
-    def __init__(self, confpath, midiobj):
+    def __init__(self, confpath, midiobj) -> None:
         super().__init__(confpath, midiobj)
 
-        self.amplifier_pos = 0
+        self.amplifier_pos = 0.0
         self.full_amplifier_time = 0.5  # 0.5 sec to full collapse
 
         # intensities (W.G) with amplifier 0% and 100%
@@ -42,24 +42,23 @@ class AmpicoA(BasePlayer):
             "fast": 12,  # 2sec to max
         }
 
-        self.pre_time = None
+        self.pre_time = -1.0
         self.bass_intensity_lock = [False, False, False]  # 2->4->6
         self.treble_intensity_lock = [False, False, False]  # 2->4->6
-
         self.delay_ratio = 0.6
 
-    def emulate_off(self):
+    def emulate_off(self) -> None:
         super().emulate_off()
         self.bass_intensity_lock = [False, False, False]
         self.treble_intensity_lock = [False, False, False]
-        self.amplifier_pos = 0
+        self.amplifier_pos = 0.0
         self.bass_crescendo_vacuum = self.min_vacuum
         self.treble_crescendo_vacuum = self.min_vacuum
         self.bass_vacuum = self.treble_vacuum = self.min_vacuum
         self.bass_vacuum_pre = self.treble_vacuum_pre = self.min_vacuum
 
-    def emulate_expression(self, curtime):
-        if self.pre_time is None:
+    def emulate_expression(self, curtime: float) -> None:
+        if self.pre_time == -1.0:
             self.pre_time = curtime
         delta_time = curtime - self.pre_time
 
@@ -88,9 +87,9 @@ class AmpicoA(BasePlayer):
         self.calc_expression(delta_time)
         self.pre_time = curtime
 
-    def calc_amplifier(self, delta_time):
+    def calc_amplifier(self, delta_time: float) -> None:
         # intensity triggers amplifier
-        target_amp_pos = 0
+        target_amp_pos = 0.0
         if self.bass_intensity_lock[1] and self.bass_intensity_lock[2] or \
             self.treble_intensity_lock[1] and self.treble_intensity_lock[2]:
             # amplifier will 100% with 4&6 open.
@@ -122,8 +121,8 @@ class AmpicoA(BasePlayer):
         self.amplifier_pos = max(self.amplifier_pos, 0)
         self.amplifier_pos = min(self.amplifier_pos, 1)
 
-    def calc_expression(self, delta_time):
-        def calc_vacuum(intensity_lock):
+    def calc_expression(self, delta_time: float) -> None:
+        def calc_vacuum(intensity_lock: list[bool]) -> tuple[float, str]:
             opcode = ""
             if not any(intensity_lock):
                 opcode = "none"
@@ -173,7 +172,7 @@ class AmpicoA(BasePlayer):
         self.bass_vacuum_pre = self.bass_vacuum
         self.treble_vacuum_pre = self.treble_vacuum
 
-    def draw_tracker(self, wxdc: wx.PaintDC):
+    def draw_tracker(self, wxdc: wx.PaintDC) -> None:
         super().draw_tracker(wxdc)
         # overdraw lock & cancel holes
         for idx in range(3):

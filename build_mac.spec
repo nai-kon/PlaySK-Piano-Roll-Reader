@@ -44,7 +44,7 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='PlaySK Piano Roll Reader.app',
-    icon='src/playsk_config/PlaySK_icon.ico',
+    icon='src/playsk_config/PlaySK_icon.icns',
     bundle_identifier=None,
-    version='3.7.1'
+    version='3.8.0'
 )

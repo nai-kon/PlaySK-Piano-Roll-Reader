@@ -2,35 +2,35 @@ from .base_player import BasePlayer
 
 
 class RecordoA(BasePlayer):
-    def __init__(self, confpath, midiobj):
+    def __init__(self, confpath, midiobj) -> None:
         super().__init__(confpath, midiobj)
 
         # hammer rail halfway between next level.
-        self.pp_with_hammer_rail = 7
+        self.pp_with_hammer_rail = 7.0
         self.intensities = [
-            8,      # no port
-            9,      # port1
-            10,     # port2
+            8.0,      # no port
+            9.0,      # port1
+            10.0,     # port2
             11.5,   # port1-2
-            13,     # port3
+            13.0,     # port3
             14.5,   # port3-1
-            16,     # port3-2
-            18,     # port3-2-1
+            16.0,     # port3-2
+            18.0,     # port3-2-1
             20.5,   # port4
-            27,     # port4-1
-            35,     # port4-2 above
+            27.0,     # port4-1
+            35.0,     # port4-2 above
         ]
 
         self.delay_ratio = 0.15
         self.bass_vacuum_pre = self.treble_vacuum_pre = self.intensities[0]
         self.bass_vacuum = self.treble_vacuum = self.intensities[0]
 
-    def emulate_off(self):
+    def emulate_off(self) -> None:
         super().emulate_off()
         self.bass_vacuum_pre = self.treble_vacuum_pre = self.intensities[0]
         self.bass_vacuum = self.treble_vacuum = self.intensities[0]
 
-    def emulate_pedals(self):
+    def emulate_pedals(self) -> None:
         # sustain pedal
         sustain = self.holes["sustain"]
         if sustain["to_open"]:
@@ -41,8 +41,7 @@ class RecordoA(BasePlayer):
 
         # no soft pedal
 
-    def emulate_expression(self, curtime):
-
+    def emulate_expression(self, curtime: float) -> None:
         vac_lv = 0
         if self.holes["ff"]["is_open"]:
             vac_lv += 8

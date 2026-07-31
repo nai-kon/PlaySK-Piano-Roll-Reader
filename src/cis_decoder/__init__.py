@@ -3,7 +3,7 @@ try:
 except ModuleNotFoundError as e:
     raise ModuleNotFoundError(
         """
-        Can't import cis_decoder. You need to build cis_decoder.
+        Can't import cis_decoder. You need to build cis_decoder firstly.
         "python setup.py build_ext --inplace"
         """,
     ) from e

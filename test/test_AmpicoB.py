@@ -29,8 +29,8 @@ class TestAmpicoB:
         player.bass_vacuum = 40
         player.treble_vacuum = 40
         player.emulate_off()
-        assert player.amp_lock_range == [0, 1.0]
-        assert player.amp_cres_pos == 0
+        assert player.amp_lock_range == [0.0, 1.0]
+        assert player.amp_cres_pos == 0.0
         assert player.bass_intensity_lock == [False, False, False]
         assert player.treble_intensity_lock == [False, False, False]
         assert not player.bass_sub_intensity_lock
@@ -85,7 +85,7 @@ class TestAmpicoB:
             assert player.treble_intensity_lock[idx]
 
     def test_calc_crescendo(self, player):
-        player.pre_time = None
+        player.pre_time = -1.0
         player.calc_crescendo(100)
         assert player.pre_time == 100
 
@@ -99,7 +99,7 @@ class TestAmpicoB:
         player.calc_crescendo(2)
         assert math.isclose(player.amp_cres_pos, 0.5)
         player.calc_crescendo(4)
-        assert math.isclose(player.amp_cres_pos, 1)
+        assert math.isclose(player.amp_cres_pos, 1.0)
 
         # slow decrescendo. 4sec max to min
         x1, y1, x2, y2 = player.holes["treble_slow_cresc"]["pos"][0]
@@ -108,7 +108,7 @@ class TestAmpicoB:
         player.calc_crescendo(6)
         assert math.isclose(player.amp_cres_pos, 0.5)
         player.calc_crescendo(8)
-        assert math.isclose(player.amp_cres_pos, 0)
+        assert math.isclose(player.amp_cres_pos, 0.0)
 
         # fast crescendeo. 0.8 sec min to max
         frame = np.full((600, 800, 3), 0, np.uint8)
@@ -122,7 +122,7 @@ class TestAmpicoB:
         player.calc_crescendo(0.4)
         assert math.isclose(player.amp_cres_pos, 0.5)
         player.calc_crescendo(0.8)
-        assert math.isclose(player.amp_cres_pos, 1)
+        assert math.isclose(player.amp_cres_pos, 1.0)
 
         # fast decrescendo. 0.8 sec max to min
         x1, y1, x2, y2 = player.holes["treble_slow_cresc"]["pos"][0]
@@ -133,7 +133,7 @@ class TestAmpicoB:
         player.calc_crescendo(1.2)
         assert math.isclose(player.amp_cres_pos, 0.5)
         player.calc_crescendo(1.6)
-        assert math.isclose(player.amp_cres_pos, 0)
+        assert math.isclose(player.amp_cres_pos, 0.0)
 
         # amplifier triggers fast crescendo
         frame = np.full((600, 800, 3), 0, np.uint8)
@@ -147,7 +147,7 @@ class TestAmpicoB:
         player.calc_crescendo(0.4)
         assert math.isclose(player.amp_cres_pos, 0.5)
         player.calc_crescendo(0.8)
-        assert math.isclose(player.amp_cres_pos, 1)
+        assert math.isclose(player.amp_cres_pos, 1.0)
 
         # amplifier triggers fast crescendo
         x1, y1, x2, y2 = player.holes["treble_slow_cresc"]["pos"][0]
@@ -158,7 +158,7 @@ class TestAmpicoB:
         player.calc_crescendo(1.2)
         assert math.isclose(player.amp_cres_pos, 0.5)
         player.calc_crescendo(1.6)
-        assert math.isclose(player.amp_cres_pos, 0)
+        assert math.isclose(player.amp_cres_pos, 0.0)
 
         # 1st amplifier lock
         frame = np.full((600, 800, 3), 0, np.uint8)
@@ -190,8 +190,8 @@ class TestAmpicoB:
         frame[y1:y2, x1:x2, :] = 0  # 1st amplifier unlocked
         player.holes.set_frame(frame, 0)
         player.calc_crescendo(30)
-        assert math.isclose(player.amp_cres_pos, 0)  # min is 0
-        assert player.amp_lock_range == [0, 1.0]
+        assert math.isclose(player.amp_cres_pos, 0.0)  # min is 0
+        assert player.amp_lock_range == [0.0, 1.0]
 
         # 2nd amplifier lock
         frame = np.full((600, 800, 3), 0, np.uint8)
@@ -207,13 +207,13 @@ class TestAmpicoB:
         frame[y1:y2, x1:x2, :] = 0  # 1st amplifier locked
         player.holes.set_frame(frame, 0)
         player.calc_crescendo(10)
-        assert math.isclose(player.amp_cres_pos, 1)  # max is 1
+        assert math.isclose(player.amp_cres_pos, 1.0)  # max is 1
         x1, y1, x2, y2 = player.holes["treble_slow_cresc"]["pos"][0]
         frame[y1:y2, x1:x2, :] = 0
         player.holes.set_frame(frame, 0)
         player.calc_crescendo(20)
         assert math.isclose(player.amp_cres_pos, 0.85)  # min is 0.85
-        assert player.amp_lock_range == [0.85, 1]
+        assert player.amp_lock_range == [0.85, 1.0]
 
         # 2nd amplifier to no amplifier
         x1, y1, x2, y2 = player.holes["amplifier"]["pos"][0]
@@ -223,6 +223,6 @@ class TestAmpicoB:
         frame[y1:y2, x1:x2, :] = 0  # 1st amplifier unlocked
         player.holes.set_frame(frame, 0)
         player.calc_crescendo(30)
-        assert math.isclose(player.amp_cres_pos, 0)  # min is 0
-        assert player.amp_lock_range == [0, 1.0]
+        assert math.isclose(player.amp_cres_pos, 0.0)  # min is 0
+        assert player.amp_lock_range == [0.0, 1.0]
 
