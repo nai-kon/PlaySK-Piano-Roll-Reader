@@ -16,9 +16,9 @@ class ArtrioAngelus(BasePlayer):
         ]
         # if accomp hole is not open, reduce vacuum by multiply solo vacuum
         self.accomp_multiply = [
-            0.9,
-            0.9,
-            0.9,
+            0.8,
+            0.8,
+            0.8,
         ]
         self.leaker_multiply = 1.3
         self.delay_ratio = 3  # 1 is no delay. larger value
