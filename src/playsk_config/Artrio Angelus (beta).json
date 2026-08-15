@@ -5,7 +5,7 @@
   "spool_diameter": 1.9,
   "default_tempo": 80,
   "expression": {
-    "stack_split_point": 41
+    "stack_split_point": 43
   },
   "tracker_holes": {
     "is_dark_hole": false,
@@ -101,8 +101,8 @@
       "y": 298,
       "w": 5,
       "h": 5,
-      "on_apature": 0.3,
-      "off_apature": 0.1
+      "on_apature": 0.15,
+      "off_apature": 0.05
     },
     "soft": {
       "x": 774,
@@ -113,7 +113,7 @@
       "off_apature": 0.05
     },
     "sustain": {
-      "x": 35,
+      "x": 34,
       "y": 293,
       "w": 5,
       "h": 15,
@@ -121,7 +121,7 @@
       "off_apature": 0.05
     },
     "leaker": {
-      "x": 20,
+      "x": 18,
       "y": 293,
       "w": 5,
       "h": 10,
@@ -130,7 +130,7 @@
     },
     "accomp": {
       "x": [
-        13,
+        11,
         59,
         67
       ],
