@@ -8,6 +8,10 @@ resolution-markers = [
     "(platform_machine != 'arm64' and platform_machine != 'x86_64' and sys_platform == 'darwin') or (sys_platform != 'darwin' and sys_platform != 'win32')",
 ]
 
+[options]
+exclude-newer = "2026-10-03T00:40:12.7849886Z"
+exclude-newer-span = "P7D"
+
 [[package]]
 name = "altgraph"
 version = "0.17.5"

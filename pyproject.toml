@@ -31,6 +31,7 @@ dev = [
 
 [tool.uv]
 package = false
+exclude-newer = "7 days"  # cool down for supply chain attack
 
 [build-system]
 requires = ["hatchling"]
