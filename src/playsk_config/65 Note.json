@@ -85,22 +85,6 @@
       "h": 5,
       "on_apature": 0.25,
       "off_apature": 0.1
-    },
-    "soft": {
-      "x": 0,
-      "y": 0,
-      "w": 0,
-      "h": 0,
-      "on_apature": 0.1,
-      "off_apature": 0.05
-    },
-    "sustain": {
-      "x": 0,
-      "y": 0,
-      "w": 0,
-      "h": 0,
-      "on_apature": 0.1,
-      "off_apature": 0.05
     }
   }
 }

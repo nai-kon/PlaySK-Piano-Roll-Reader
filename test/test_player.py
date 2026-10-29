@@ -89,8 +89,7 @@ class TestTrackerHoles:
         assert sustain_hole["to_open"]
         assert not sustain_hole["to_close"]
 
-        with pytest.raises(KeyError):
-            sustain_hole = holes["not exists hole"]
+        assert holes["not exists hole"] == {}
 
 
 class TestPlayer:

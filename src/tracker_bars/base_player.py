@@ -97,7 +97,11 @@ class TrackerHoles:
         wxdc.DrawRectangle(pos[0] + self.xoffset, pos[1], hole_size[0] + 1, hole_size[1] + 1)
 
     def __getitem__(self, hole_name: str) -> dict:
-        hole_size, idx = self.group_by_name[hole_name]
+        group = self.group_by_name.get(hole_name)
+        if group is None:
+            return {}  # return empty dict
+
+        hole_size, idx = group
         ret = {
             "pos": self.group_by_size[hole_size]["pos"][idx],
             "is_open": self.group_by_size[hole_size]["is_open"][idx],
@@ -223,20 +227,20 @@ class BasePlayer:
 
     def emulate_pedals(self) -> None:
         # sustain pedal
-        sustain = self.holes["sustain"]
-        if sustain["to_open"]:
-            self.midi.sustain_on()
+        if (sustain := self.holes["sustain"]):
+            if sustain["to_open"]:
+                self.midi.sustain_on()
 
-        elif sustain["to_close"]:
-            self.midi.sustain_off()
+            elif sustain["to_close"]:
+                self.midi.sustain_off()
 
         # hammer rail lift emulation
-        soft = self.holes["soft"]
-        if soft["to_open"]:
-            self.midi.hammer_lift_on()
+        if (soft := self.holes["soft"]):
+            if soft["to_open"]:
+                self.midi.hammer_lift_on()
 
-        elif soft["to_close"]:
-            self.midi.hammer_lift_off()
+            elif soft["to_close"]:
+                self.midi.hammer_lift_off()
 
     def emulate_notes(self) -> None:
         note = self.holes["note"]

@@ -28,6 +28,7 @@ class TestPlayerMng:
     def test_player_list(self, player_mng):
         player_names = sorted(player_mng.player_list)
         gt_names = sorted([
+            "65 Note",
             "88 Note",
             "Ampico A Brilliant",
             "Ampico B",
@@ -54,6 +55,7 @@ class TestPlayerMng:
         assert type(player_mng.get_player_obj("Duo-Art", midiobj)) is tracker_bars.DuoArt
         assert type(player_mng.get_player_obj("Philipps Duca (no expression)", midiobj)) is tracker_bars.PhilippsDuca
         assert type(player_mng.get_player_obj("88 Note", midiobj)) is tracker_bars.BasePlayer
+        assert type(player_mng.get_player_obj("65 Note", midiobj)) is tracker_bars.BasePlayer
         assert type(player_mng.get_player_obj("Welte Licensee", midiobj)) is tracker_bars.WelteLicensee
         assert type(player_mng.get_player_obj("Welte T100", midiobj)) is tracker_bars.WelteT100
         assert type(player_mng.get_player_obj("Recordo A", midiobj)) is tracker_bars.RecordoA
