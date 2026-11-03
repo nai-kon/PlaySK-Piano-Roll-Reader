@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-ver: [3.13]
+        python-ver: [3.14]
         os: [windows-latest, macos-26, macos-26-intel]
         include: 
           - os: windows-latest

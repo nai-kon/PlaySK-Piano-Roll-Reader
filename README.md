@@ -75,8 +75,8 @@ The app is written in Python and uses wxPython for the UI. For faster processing
 
 ## Requirements
 
-* Python 3.13
-* uv 0.11
+* Python 3.14
+* uv 0.13
 
 Quick Start
 ```
