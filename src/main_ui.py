@@ -133,7 +133,6 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.on_close)
         self.Bind(wx.EVT_KEY_DOWN, self.on_keydown)
         self.Bind(wx.EVT_KEY_UP, self.on_keyup)
-        self.Bind(wx.EVT_ACTIVATE, self.on_activate)
         self.manual_expression.Bind(wx.EVT_CHECKBOX, self.on_check_manual_expression)
         self.Show()
 
@@ -249,16 +248,6 @@ class MainFrame(wx.Frame):
         keycode = event.GetUnicodeKey()
         self.spool.set_pressed_key(keycode, False)
         self.callback.key_event(keycode, False)
-
-    def on_activate(self, event: wx.ActivateEvent):
-        """On Mac wxPython4.3, the widget bg-color on status-bar is incorrect, so manually adjust"""
-        if platform.system() == "Darwin":
-            active = bool(event.GetActive())
-            color = Color.mac_status_bar_focused() if active else Color.mac_status_bar_unfocused()
-            for item in (self.port_sel, self.player_sel, self.theme_sel, self.scale_sel):
-                item.SetBackgroundColour(color)
-
-        event.Skip()
 
     def on_check_manual_expression(self, event):
         checked = event.GetEventObject().IsChecked()
