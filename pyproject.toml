@@ -3,7 +3,7 @@ name = "PlaySK-Piano-Roll-Reader"
 version = "3.8.1"
 description = "Optically reading a piano roll image, emulates expression and output midi signal in real-time."
 authors = [{ name = "Katz Sasaki" }]
-requires-python = "==3.13.*"
+requires-python = "==3.14.*"
 readme = "README.md"
 dependencies = [
     "certifi>=2026.6.17",
